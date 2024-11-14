@@ -1,0 +1,2612 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+    /* cyrillic-ext */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9X6VLKzA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9e6VLKzA.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9b6VLKzA.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B09;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9W6VLKzA.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9Z6VLKzA.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9V6VLKzA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9U6VLKzA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyD9A-9a6VI.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAjBO9X6VLKzA.woff2) format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAjBO9e6VLKzA.woff2) format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* devanagari */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAjBO9b6VLKzA.woff2) format('woff2');
+  unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+20A8, U+20B9, U+20F0, U+25CC, U+A830-A839, U+A8E0-A8FF, U+11B00-11B09;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAjBO9W6VLKzA.woff2) format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAjBO9Z6VLKzA.woff2) format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAjBO9V6VLKzA.woff2) format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAjBO9U6VLKzA.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Noto Sans';
+  font-style: normal;
+  font-weight: 600;
+  font-stretch: 100%;
+  font-display: block;
+  src: url(http://localhost:9001/internal/gfonts/font/notosans/v37/o-0mIpQlx3QUlC5A4PNB6Ryti20_6n1iPHjcz6L1SoM-jCpoiyAjBO9a6VI.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+
+html, body {
+  margin: 0;
+  min-height: 100%;
+  min-width: 100%;
+  padding: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100vw;
+  min-height: 100vh;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.text-node { background-clip: text !important; -webkit-background-clip: text !important; }
+
+/* Toolbox */
+.toolbox-4411ea635c94 {
+  position: relative;
+  width: 100%;
+  background: #C1C1C1;
+  border-radius: 15px;
+  overflow: hidden;
+  display: flex;
+  align-items: start;
+  align-content: stretch;
+  justify-content: center;
+  row-gap: 4.29px;
+  padding: 3px 0px 3px 0px;
+  z-index: 0;
+  flex-direction: column-reverse;
+  flex-wrap: nowrap;
+  flex-grow: 1;
+}
+
+/* BlockObject */
+.block-objec-4411ea64ca36 {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+/* Graphics / app.svg */
+.graphics-4411ea64ca38 {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Graphics / app.svg */
+.graphics-4411ea64ca39 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.graphics-4411ea64ca39 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+}
+
+/* svg-path */
+.svgpath-4411ea64ca3b > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea64ca3b {
+  position: absolute;
+  left: 1px;
+  top: 1px;
+  width: 14px;
+  height: 14px;
+}
+
+/* base-background */
+.basebackg-4411ea64ca3a > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.basebackg-4411ea64ca3a {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+  border-radius: 0px;
+  display: none;
+}
+
+/* Rectangle */
+.rectangle-4411ea64ca37 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 32px;
+  height: 32px;
+  background: #E5E5E5;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+}
+
+/* ParagraphObject */
+.paragraph-o-4411ea6509db {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+/* Graphics / textarea-t.svg */
+.graphics-4411ea6509dd {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Graphics / textarea-t.svg */
+.graphics-4411ea6509de > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(2.2737367544323206e-13px,0px);
+}
+.graphics-4411ea6509de {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+}
+
+/* svg-path */
+.svgpath-4411ea6509e1 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea6509e1 {
+  position: absolute;
+  left: 4.5px;
+  top: 4px;
+  width: 7px;
+  height: 8px;
+}
+
+/* svg-path */
+.svgpath-4411ea6509e0 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(2.2737367544323206e-13px,0px);
+}
+.svgpath-4411ea6509e0 {
+  position: absolute;
+  left: 0px;
+  top: 1px;
+  width: 16px;
+  height: 14px;
+}
+
+/* base-background */
+.basebackg-4411ea6509df > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.basebackg-4411ea6509df {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+  border-radius: 0px;
+  display: none;
+}
+
+/* Rectangle */
+.rectangle-4411ea6509dc {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 32px;
+  height: 32px;
+  background: #E5E5E5;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+}
+
+/* PictureObject */
+.picture-obj-4411ea657943 {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+/* Graphics / image.svg */
+.graphics-4411ea657945 {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Graphics / image.svg */
+.graphics-4411ea657946 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.graphics-4411ea657946 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+}
+
+/* svg-path */
+.svgpath-4411ea657949 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea657949 {
+  position: absolute;
+  left: 0px;
+  top: 1px;
+  width: 16px;
+  height: 14px;
+}
+
+/* svg-path */
+.svgpath-4411ea657948 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea657948 {
+  position: absolute;
+  left: 3px;
+  top: 4px;
+  width: 3px;
+  height: 3px;
+}
+
+/* base-background */
+.basebackg-4411ea657947 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.basebackg-4411ea657947 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+  border-radius: 0px;
+  display: none;
+}
+
+/* Rectangle */
+.rectangle-4411ea657944 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 32px;
+  height: 32px;
+  background: #E5E5E5;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+}
+
+/* TextObject */
+.text-object-4411ea65b7b2 {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+/* Graphics / input-cursor-text.svg */
+.graphics-4411ea65b7b4 {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Graphics / input-cursor-text.svg */
+.graphics-4411ea65b7b5 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.graphics-4411ea65b7b5 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+}
+
+/* svg-path */
+.svgpath-4411ea65b7b8 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea65b7b8 {
+  position: absolute;
+  left: 0px;
+  top: 4px;
+  width: 16px;
+  height: 8px;
+}
+
+/* svg-path */
+.svgpath-4411ea65b7b7 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea65b7b7 {
+  position: absolute;
+  left: 5px;
+  top: 1.5px;
+  width: 6px;
+  height: 13px;
+}
+
+/* base-background */
+.basebackg-4411ea65b7b6 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.basebackg-4411ea65b7b6 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+  border-radius: 0px;
+  display: none;
+}
+
+/* Rectangle */
+.rectangle-4411ea65b7b3 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 32px;
+  height: 32px;
+  background: #E5E5E5;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+}
+
+/* PreBuildObject */
+.pre-build-ob-4411ea635c99 {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* Graphics / card-list.svg */
+.graphics-4411ea635cb5 {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Graphics / card-list.svg */
+.graphics-4411ea635cb6 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.graphics-4411ea635cb6 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+}
+
+/* svg-path */
+.svgpath-4411ea635cb9 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea635cb9 {
+  position: absolute;
+  left: 3px;
+  top: 5px;
+  width: 10px;
+  height: 6px;
+}
+
+/* svg-path */
+.svgpath-4411ea635cb8 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea635cb8 {
+  position: absolute;
+  left: 0px;
+  top: 2px;
+  width: 16px;
+  height: 12px;
+}
+
+/* base-background */
+.basebackg-4411ea635cb7 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.basebackg-4411ea635cb7 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+  border-radius: 0px;
+  display: none;
+}
+
+/* Rectangle */
+.rectangle-4411ea635cb4 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 32px;
+  height: 32px;
+  background: #E5E5E5;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+}
+
+/* ParagraphObject */
+.paragraph-o-4411ea635c9a {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* Graphics / textarea-t.svg */
+.graphics-4411ea635cbb {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Graphics / textarea-t.svg */
+.graphics-4411ea635cbc > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(2.2737367544323206e-13px,0px);
+}
+.graphics-4411ea635cbc {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+}
+
+/* svg-path */
+.svgpath-4411ea635cbf > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea635cbf {
+  position: absolute;
+  left: 4.5px;
+  top: 4px;
+  width: 7px;
+  height: 8px;
+}
+
+/* svg-path */
+.svgpath-4411ea635cbe > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(2.2737367544323206e-13px,0px);
+}
+.svgpath-4411ea635cbe {
+  position: absolute;
+  left: 0px;
+  top: 1px;
+  width: 16px;
+  height: 14px;
+}
+
+/* base-background */
+.basebackg-4411ea635cbd > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.basebackg-4411ea635cbd {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+  border-radius: 0px;
+  display: none;
+}
+
+/* Rectangle */
+.rectangle-4411ea635cba {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 32px;
+  height: 32px;
+  background: #E5E5E5;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+}
+
+/* PictureObject */
+.picture-obj-4411ea635c9b {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* Graphics / image.svg */
+.graphics-4411ea635cc1 {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Graphics / image.svg */
+.graphics-4411ea635cc2 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.graphics-4411ea635cc2 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+}
+
+/* svg-path */
+.svgpath-4411ea635cc5 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea635cc5 {
+  position: absolute;
+  left: 0px;
+  top: 1px;
+  width: 16px;
+  height: 14px;
+}
+
+/* svg-path */
+.svgpath-4411ea635cc4 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea635cc4 {
+  position: absolute;
+  left: 3px;
+  top: 4px;
+  width: 3px;
+  height: 3px;
+}
+
+/* base-background */
+.basebackg-4411ea635cc3 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.basebackg-4411ea635cc3 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+  border-radius: 0px;
+  display: none;
+}
+
+/* Rectangle */
+.rectangle-4411ea635cc0 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 32px;
+  height: 32px;
+  background: #E5E5E5;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+}
+
+/* TextObject */
+.text-object-4411ea635c9c {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  box-shadow: 4px 4px 4px 0px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+  align-self: center;
+}
+
+/* Graphics / input-cursor-text.svg */
+.graphics-4411ea635cc7 {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  width: 16px;
+  height: 16px;
+}
+
+/* Graphics / input-cursor-text.svg */
+.graphics-4411ea635cc8 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.graphics-4411ea635cc8 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+}
+
+/* svg-path */
+.svgpath-4411ea635ccb > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea635ccb {
+  position: absolute;
+  left: 0px;
+  top: 4px;
+  width: 16px;
+  height: 8px;
+}
+
+/* svg-path */
+.svgpath-4411ea635cca > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea635cca {
+  position: absolute;
+  left: 5px;
+  top: 1.5px;
+  width: 6px;
+  height: 13px;
+}
+
+/* base-background */
+.basebackg-4411ea635cc9 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.basebackg-4411ea635cc9 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 16px;
+  height: 16px;
+  border-radius: 0px;
+  display: none;
+}
+
+/* Rectangle */
+.rectangle-4411ea635cc6 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 32px;
+  height: 32px;
+  background: #E5E5E5;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 15px;
+}
+
+/* Navbar */
+.navbar-4411ea6308be {
+  position: relative;
+  width: 1218px;
+  height: 30px;
+  background: #FFFFFF;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* AboutButton */
+.about-butto-4411ea6308c5 {
+  position: absolute;
+  left: 1039px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px 0px #8F8F8F;
+}
+
+/* ProjectButton */
+.project-but-4411ea635c91 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* About */
+.about-4411ea635c93 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.about-4411ea635c93 {
+  position: absolute;
+  left: 52.21px;
+  top: 3.6px;
+  width: 56.96px;
+  height: 16.8px;
+}
+.about-4411ea635c93 .root-0 {
+  
+  
+  display: flex;
+  white-space: break-spaces;
+  align-items: flex-start;
+}
+.about-4411ea635c93 .root-0-paragraph-set-0 {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: inherit;
+  min-width: 100%;
+  margin-right: 1px;
+  vertical-align: top;
+}
+.about-4411ea635c93 .root-0-paragraph-set-0-paragraph-0 {
+  font-size: 0;
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+}
+.about-4411ea635c93 .root-0-paragraph-set-0-paragraph-0-text-0 {
+  color: rgba(140, 153, 252, 1);
+  text-transform: unset;
+  
+  line-break: auto;
+  overflow-wrap: initial;
+  white-space: break-spaces;
+  font-size: 18px;
+  text-rendering: geometricPrecision;
+  caret-color: rgba(140, 153, 252, 1);
+  text-decoration: none;
+  letter-spacing: 0px;
+  font-family: "Noto Sans";
+  font-style: normal;
+  font-weight: 400;
+}
+
+/* Rectangle */
+.rectangle-4411ea635c92 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.rectangle-4411ea635c92 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* SettingsButton */
+.settings-bu-4411ea6308c4 {
+  position: absolute;
+  left: 860.44px;
+  top: -0.1px;
+  width: 178px;
+  height: 30px;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px 0px #8F8F8F;
+}
+
+/* ProjectButton */
+.project-but-4411ea635c8e {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* Settings */
+.settings-4411ea635c90 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.settings-4411ea635c90 {
+  position: absolute;
+  left: 52.21px;
+  top: 3.6px;
+  width: 56.96px;
+  height: 16.8px;
+}
+.settings-4411ea635c90 .root-0 {
+  
+  
+  display: flex;
+  white-space: break-spaces;
+  align-items: flex-start;
+}
+.settings-4411ea635c90 .root-0-paragraph-set-0 {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: inherit;
+  min-width: 100%;
+  margin-right: 1px;
+  vertical-align: top;
+}
+.settings-4411ea635c90 .root-0-paragraph-set-0-paragraph-0 {
+  font-size: 0;
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+}
+.settings-4411ea635c90 .root-0-paragraph-set-0-paragraph-0-text-0 {
+  color: rgba(140, 153, 252, 1);
+  text-transform: unset;
+  
+  line-break: auto;
+  overflow-wrap: initial;
+  white-space: break-spaces;
+  font-size: 18px;
+  text-rendering: geometricPrecision;
+  caret-color: rgba(140, 153, 252, 1);
+  text-decoration: none;
+  letter-spacing: 0px;
+  font-family: "Noto Sans";
+  font-style: normal;
+  font-weight: 400;
+}
+
+/* Rectangle */
+.rectangle-4411ea635c8f > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.rectangle-4411ea635c8f {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* PreviewButton */
+.preview-but-4411ea6308c3 {
+  position: absolute;
+  left: 681px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px 0px #8F8F8F;
+}
+
+/* ProjectButton */
+.project-but-4411ea635c8b {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* Preview
+ */
+.preview-4411ea635c8d > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.preview-4411ea635c8d {
+  position: absolute;
+  left: 52.21px;
+  top: 3.6px;
+  width: 56.96px;
+  height: 16.8px;
+}
+.preview-4411ea635c8d .root-0 {
+  
+  
+  display: flex;
+  white-space: break-spaces;
+  align-items: flex-start;
+}
+.preview-4411ea635c8d .root-0-paragraph-set-0 {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: inherit;
+  min-width: 100%;
+  margin-right: 1px;
+  vertical-align: top;
+}
+.preview-4411ea635c8d .root-0-paragraph-set-0-paragraph-0 {
+  font-size: 0;
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+}
+.preview-4411ea635c8d .root-0-paragraph-set-0-paragraph-0-text-0 {
+  color: rgba(140, 153, 252, 1);
+  text-transform: unset;
+  
+  line-break: auto;
+  overflow-wrap: initial;
+  white-space: break-spaces;
+  font-size: 18px;
+  text-rendering: geometricPrecision;
+  caret-color: rgba(140, 153, 252, 1);
+  text-decoration: none;
+  letter-spacing: 0px;
+  font-family: "Noto Sans";
+  font-style: normal;
+  font-weight: 400;
+}
+.preview-4411ea635c8d .root-0-paragraph-set-0-paragraph-1 {
+  font-size: 0;
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+}
+.preview-4411ea635c8d .root-0-paragraph-set-0-paragraph-1-text-0 {
+  
+  
+  
+  line-break: auto;
+  overflow-wrap: initial;
+  white-space: break-spaces;
+  
+  text-rendering: geometricPrecision;
+  caret-color: black;
+  
+  font-family: "sourcesanspro";
+  
+  
+}
+
+/* Rectangle */
+.rectangle-4411ea635c8c > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.rectangle-4411ea635c8c {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* DataButton */
+.data-button-4411ea6308c2 {
+  position: absolute;
+  left: 535px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px 0px #8F8F8F;
+}
+
+/* ProjectButton */
+.project-but-4411ea635c88 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* Data */
+.data-4411ea635c8a > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.data-4411ea635c8a {
+  position: absolute;
+  left: 52.21px;
+  top: 3.6px;
+  width: 56.96px;
+  height: 16.8px;
+}
+.data-4411ea635c8a .root-0 {
+  
+  
+  display: flex;
+  white-space: break-spaces;
+  align-items: flex-start;
+}
+.data-4411ea635c8a .root-0-paragraph-set-0 {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: inherit;
+  min-width: 100%;
+  margin-right: 1px;
+  vertical-align: top;
+}
+.data-4411ea635c8a .root-0-paragraph-set-0-paragraph-0 {
+  font-size: 0;
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+}
+.data-4411ea635c8a .root-0-paragraph-set-0-paragraph-0-text-0 {
+  color: rgba(140, 153, 252, 1);
+  text-transform: unset;
+  
+  line-break: auto;
+  overflow-wrap: initial;
+  white-space: break-spaces;
+  font-size: 18px;
+  text-rendering: geometricPrecision;
+  caret-color: rgba(140, 153, 252, 1);
+  text-decoration: none;
+  letter-spacing: 0px;
+  font-family: "Noto Sans";
+  font-style: normal;
+  font-weight: 400;
+}
+
+/* Rectangle */
+.rectangle-4411ea635c89 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.rectangle-4411ea635c89 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* PageButton */
+.page-button-4411ea6308c1 {
+  position: absolute;
+  left: 356px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px 0px #8F8F8F;
+}
+
+/* ProjectButton */
+.project-but-4411ea635c85 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* Page */
+.page-4411ea635c87 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.page-4411ea635c87 {
+  position: absolute;
+  left: 52.21px;
+  top: 3.6px;
+  width: 56.96px;
+  height: 16.8px;
+}
+.page-4411ea635c87 .root-0 {
+  
+  
+  display: flex;
+  white-space: break-spaces;
+  align-items: flex-start;
+}
+.page-4411ea635c87 .root-0-paragraph-set-0 {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: inherit;
+  min-width: 100%;
+  margin-right: 1px;
+  vertical-align: top;
+}
+.page-4411ea635c87 .root-0-paragraph-set-0-paragraph-0 {
+  font-size: 0;
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+}
+.page-4411ea635c87 .root-0-paragraph-set-0-paragraph-0-text-0 {
+  color: rgba(140, 153, 252, 1);
+  text-transform: unset;
+  
+  line-break: auto;
+  overflow-wrap: initial;
+  white-space: break-spaces;
+  font-size: 18px;
+  text-rendering: geometricPrecision;
+  caret-color: rgba(140, 153, 252, 1);
+  text-decoration: none;
+  letter-spacing: 0px;
+  font-family: "Noto Sans";
+  font-style: normal;
+  font-weight: 400;
+}
+
+/* Rectangle */
+.rectangle-4411ea635c86 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.rectangle-4411ea635c86 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* EditionButton */
+.edition-but-4411ea6308c0 {
+  position: absolute;
+  left: 178px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px 0px #8F8F8F;
+}
+
+/* ProjectButton */
+.project-but-4411ea6308c9 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* Edition */
+.edition-4411ea635c84 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.edition-4411ea635c84 {
+  position: absolute;
+  left: 52.21px;
+  top: 3.6px;
+  width: 56.96px;
+  height: 16.8px;
+}
+.edition-4411ea635c84 .root-0 {
+  
+  
+  display: flex;
+  white-space: break-spaces;
+  align-items: flex-start;
+}
+.edition-4411ea635c84 .root-0-paragraph-set-0 {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: inherit;
+  min-width: 100%;
+  margin-right: 1px;
+  vertical-align: top;
+}
+.edition-4411ea635c84 .root-0-paragraph-set-0-paragraph-0 {
+  font-size: 0;
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+}
+.edition-4411ea635c84 .root-0-paragraph-set-0-paragraph-0-text-0 {
+  color: rgba(140, 153, 252, 1);
+  text-transform: unset;
+  
+  line-break: auto;
+  overflow-wrap: initial;
+  white-space: break-spaces;
+  font-size: 18px;
+  text-rendering: geometricPrecision;
+  caret-color: rgba(140, 153, 252, 1);
+  text-decoration: none;
+  letter-spacing: 0px;
+  font-family: "Noto Sans";
+  font-style: normal;
+  font-weight: 400;
+}
+
+/* Rectangle */
+.rectangle-4411ea635c83 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.rectangle-4411ea635c83 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* ProjectButton */
+.project-but-4411ea6308bf {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+  border-radius: 5px;
+  box-shadow: 1px 1px 1px 0px #8F8F8F;
+}
+
+/* ProjectButton */
+.project-but-4411ea6308c6 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* Project */
+.project-4411ea6308c8 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.project-4411ea6308c8 {
+  position: absolute;
+  left: 52.21px;
+  top: 3.6px;
+  width: 56.96px;
+  height: 16.8px;
+}
+.project-4411ea6308c8 .root-0 {
+  
+  
+  display: flex;
+  white-space: break-spaces;
+  align-items: flex-start;
+}
+.project-4411ea6308c8 .root-0-paragraph-set-0 {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: inherit;
+  min-width: 100%;
+  margin-right: 1px;
+  vertical-align: top;
+}
+.project-4411ea6308c8 .root-0-paragraph-set-0-paragraph-0 {
+  font-size: 0;
+  line-height: 1;
+  margin: 0;
+  text-align: center;
+}
+.project-4411ea6308c8 .root-0-paragraph-set-0-paragraph-0-text-0 {
+  color: rgba(140, 153, 252, 1);
+  text-transform: unset;
+  
+  line-break: auto;
+  overflow-wrap: initial;
+  white-space: break-spaces;
+  font-size: 18px;
+  text-rendering: geometricPrecision;
+  caret-color: rgba(140, 153, 252, 1);
+  text-decoration: none;
+  letter-spacing: 0px;
+  font-family: "Noto Sans";
+  font-style: normal;
+  font-weight: 400;
+}
+
+/* Rectangle */
+.rectangle-4411ea6308c7 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.rectangle-4411ea6308c7 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 178px;
+  height: 30px;
+}
+
+/* Board */
+.board-4411ea6308b7 {
+  position: relative;
+  width: 1000px;
+  height: 1015px;
+  background: #FFFFFF;
+  overflow: hidden;
+  z-index: 0;
+}
+
+/* New Document */
+.new-docume-4411ea6308ba {
+  position: absolute;
+  left: 409px;
+  top: 594px;
+  width: 181px;
+  height: 24px;
+}
+.new-docume-4411ea6308ba .root-0 {
+  
+  
+  display: flex;
+  white-space: break-spaces;
+  align-items: flex-start;
+}
+.new-docume-4411ea6308ba .root-0-paragraph-set-0 {
+  display: inline-flex;
+  flex-direction: column;
+  justify-content: inherit;
+  
+  margin-right: 1px;
+  vertical-align: top;
+}
+.new-docume-4411ea6308ba .root-0-paragraph-set-0-paragraph-0 {
+  font-size: 0;
+  line-height: 1;
+  margin: 0;
+  text-align: left;
+}
+.new-docume-4411ea6308ba .root-0-paragraph-set-0-paragraph-0-text-0 {
+  color: rgba(1, 1, 1, 1);
+  text-transform: capitalize;
+  
+  line-break: auto;
+  overflow-wrap: initial;
+  white-space: pre;
+  font-size: 24px;
+  text-rendering: geometricPrecision;
+  caret-color: rgba(1, 1, 1, 1);
+  text-decoration: none;
+  letter-spacing: 0px;
+  font-family: "Noto Sans";
+  font-style: normal;
+  font-weight: 600;
+}
+
+/* Graphics / plus-circle-dotted.svg */
+.graphics-4411ea6308b9 {
+  position: absolute;
+  left: 460px;
+  top: 509px;
+  width: 64px;
+  height: 64px;
+}
+
+/* Graphics / plus-circle-dotted.svg */
+.graphics-4411ea6308bb > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.graphics-4411ea6308bb {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 64px;
+  height: 64px;
+}
+
+/* svg-path */
+.svgpath-4411ea6308bd > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.svgpath-4411ea6308bd {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 64px;
+  height: 64px;
+}
+
+/* base-background */
+.basebackg-4411ea6308bc > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.basebackg-4411ea6308bc {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 64px;
+  height: 64px;
+  border-radius: 0px;
+  display: none;
+}
+
+/* EditorBg */
+.editor-bg-4411ea6308b8 {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  width: 1000px;
+  height: 1015px;
+  background: #CDCDCD;
+  border-radius: 0px;
+}
+
+/* RootBackground */
+.root-backgr-4411ea6308b6 > svg {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  transform: translate(0px,0px);
+}
+.root-backgr-4411ea6308b6 {
+  position: absolute;
+  left: -1831.36px;
+  top: -2673.17px;
+  width: 1920px;
+  height: 1093px;
+}
+    </style>
+  </head>
+  <body>
+  <!-- path: RootBackground -->
+<div class="shape path root-backgr-4411ea6308b6">
+  <svg width="1920" xmlns="http://www.w3.org/2000/svg" height="1093" id="screenshot-6b3ffe85-5267-8025-8005-4411ea6308b6" viewBox="-1831.355 -2673.166 1920 1093" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+    <g id="shape-6b3ffe85-5267-8025-8005-4411ea6308b6">
+      <defs></defs>
+      <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea6308b6">
+        <path d="M-1831.355,-2673.166L88.645,-2673.166L88.645,-1580.166L-1831.355,-1580.166L-1831.355,-2673.166Z" style="fill:#B1B2B5;fill-opacity:0.3"></path>
+      </g>
+      <g id="strokes-6b3ffe85-5267-8025-8005-4411ea6308b6" class="strokes">
+        <g class="inner-stroke-shape">
+          <defs>
+            <clipPath id="inner-stroke-render-6709-6b3ffe85-5267-8025-8005-4411ea6308b6-0">
+              <use href="#stroke-shape-render-6709-6b3ffe85-5267-8025-8005-4411ea6308b6-0"></use>
+            </clipPath>
+            <path d="M-1831.355,-2673.166L88.645,-2673.166L88.645,-1580.166L-1831.355,-1580.166L-1831.355,-2673.166Z" style="fill:none;fill-opacity:none;stroke-width:2;stroke:#000000;stroke-opacity:1" id="stroke-shape-render-6709-6b3ffe85-5267-8025-8005-4411ea6308b6-0"></path>
+          </defs>
+          <use href="#stroke-shape-render-6709-6b3ffe85-5267-8025-8005-4411ea6308b6-0" clip-path="url(&#x27;#inner-stroke-render-6709-6b3ffe85-5267-8025-8005-4411ea6308b6-0&#x27;)"></use>
+        </g>
+      </g>
+    </g>
+  </svg>
+</div>
+<!-- frame: Navbar -->
+<div class="frame navbar-4411ea6308be">
+  <!-- frame: ProjectButton -->
+  <div class="frame project-but-4411ea6308bf">
+    <!-- group: ProjectButton -->
+    <div class="group project-but-4411ea6308c6">
+      <!-- path: Rectangle -->
+      <div class="shape path rectangle-4411ea6308c7">
+        <svg width="182" xmlns="http://www.w3.org/2000/svg" height="34" id="screenshot-6b3ffe85-5267-8025-8005-4411ea6308c7" viewBox="-1832.355 -2674.166 182 34" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea6308c7">
+            <defs>
+              <filter id="filter-render-6710" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+              <filter id="filter-shadow-render-6710" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+            </defs>
+            <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea6308c7">
+              <path d="M-1830.355,-2672.166L-1652.355,-2672.166L-1652.355,-2642.166L-1830.355,-2642.166L-1830.355,-2672.166Z" filter="url(#filter-render-6710)" style="fill:#2e354c;fill-opacity:1"></path>
+            </g>
+            <g id="strokes-6b3ffe85-5267-8025-8005-4411ea6308c7" class="strokes">
+              <g class="stroke-shape">
+                <defs></defs>
+                <path d="M-1830.355,-2672.166L-1652.355,-2672.166L-1652.355,-2642.166L-1830.355,-2642.166L-1830.355,-2672.166Z" style="fill:none;fill-opacity:none;stroke-width:1;stroke:#000000;stroke-opacity:1"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <!-- text: Project -->
+      <div class="shape text project-4411ea6308c8">
+        <svg width="60.96" xmlns="http://www.w3.org/2000/svg" height="20.8" id="screenshot-6b3ffe85-5267-8025-8005-4411ea6308c8" viewBox="-1780.142 -2670.566 60.96 20.8" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <style></style>
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea6308c8">
+            <defs></defs>
+            <g transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" class="text-container" x="-1778.1418363378134" y="-2668.5660107708195" width="56.960000000000036" height="16.800000000000182" rx="0" ry="0">
+              <defs>
+                <pattern patternUnits="userSpaceOnUse" x="-1778.1418363378134" y="-2668.5660107708195" width="58.75000762939453" height="24.444446563720703" id="fill-0-render-6711-0">
+                  <g>
+                    <rect width="58.75000762939453" height="24.444446563720703" style="fill:#8c99fc;fill-opacity:1"></rect>
+                  </g>
+                </pattern>
+              </defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea6308c8"><text x="-1778.1418363378134" y="-2647.454897699378" dominant-baseline="ideographic" textLength="58.75000762939453" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:#8c99fc;fill-opacity:1">Project</text></g>
+              <g id="strokes-6b3ffe85-5267-8025-8005-4411ea6308c8" class="strokes">
+                <g class="outer-stroke-shape">
+                  <defs>
+                    <mask id="outer-stroke-render-6711-0-6b3ffe85-5267-8025-8005-4411ea6308c8-0" x="-1779.5560499001865" y="-2673.3135578254714" width="61.57843475414072" height="27.272873688466895" maskUnits="userSpaceOnUse">
+                      <use href="#stroke-shape-render-6711-0-6b3ffe85-5267-8025-8005-4411ea6308c8-0" style="fill:none;stroke:white;stroke-width:2"></use>
+                      <use href="#stroke-shape-render-6711-0-6b3ffe85-5267-8025-8005-4411ea6308c8-0" style="fill:black;stroke:none"></use>
+                    </mask><text x="-1778.1418363378134" y="-2647.454897699378" dominant-baseline="ideographic" textLength="58.75000762939453" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr" id="stroke-shape-render-6711-0-6b3ffe85-5267-8025-8005-4411ea6308c8-0">Project</text>
+                  </defs>
+                  <use href="#stroke-shape-render-6711-0-6b3ffe85-5267-8025-8005-4411ea6308c8-0" mask="url(#outer-stroke-render-6711-0-6b3ffe85-5267-8025-8005-4411ea6308c8-0)" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;stroke-width:2;stroke:#3e3e3f;stroke-opacity:1"></use>
+                  <use href="#stroke-shape-render-6711-0-6b3ffe85-5267-8025-8005-4411ea6308c8-0" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;fill-opacity:none;stroke-width:1;stroke:none;stroke-opacity:1"></use>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: EditionButton -->
+  <div class="frame edition-but-4411ea6308c0">
+    <!-- group: ProjectButton -->
+    <div class="group project-but-4411ea6308c9">
+      <!-- path: Rectangle -->
+      <div class="shape path rectangle-4411ea635c83">
+        <svg width="182" xmlns="http://www.w3.org/2000/svg" height="34" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635c83" viewBox="-1654.355 -2674.166 182 34" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635c83">
+            <defs>
+              <filter id="filter-render-6712" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+              <filter id="filter-shadow-render-6712" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+            </defs>
+            <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c83">
+              <path d="M-1652.355,-2672.166L-1474.355,-2672.166L-1474.355,-2642.166L-1652.355,-2642.166L-1652.355,-2672.166Z" filter="url(#filter-render-6712)" style="fill:#2e354c;fill-opacity:1"></path>
+            </g>
+            <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c83" class="strokes">
+              <g class="stroke-shape">
+                <defs></defs>
+                <path d="M-1652.355,-2672.166L-1474.355,-2672.166L-1474.355,-2642.166L-1652.355,-2642.166L-1652.355,-2672.166Z" style="fill:none;fill-opacity:none;stroke-width:1;stroke:#000000;stroke-opacity:1"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <!-- text: Edition -->
+      <div class="shape text edition-4411ea635c84">
+        <svg width="60.96" xmlns="http://www.w3.org/2000/svg" height="20.8" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635c84" viewBox="-1602.142 -2670.566 60.96 20.8" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <style></style>
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635c84">
+            <defs></defs>
+            <g transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" class="text-container" x="-1600.1418363378134" y="-2668.5660107708195" width="56.960000000000036" height="16.800000000000182" rx="0" ry="0">
+              <defs>
+                <pattern patternUnits="userSpaceOnUse" x="-1600.1418363378134" y="-2668.5660107708195" width="58.83680725097656" height="24.444446563720703" id="fill-0-render-6713-0">
+                  <g>
+                    <rect width="58.83680725097656" height="24.444446563720703" style="fill:#8c99fc;fill-opacity:1"></rect>
+                  </g>
+                </pattern>
+              </defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c84"><text x="-1600.1418363378134" y="-2647.454897699378" dominant-baseline="ideographic" textLength="58.83680725097656" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:#8c99fc;fill-opacity:1">Edition</text></g>
+              <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c84" class="strokes">
+                <g class="outer-stroke-shape">
+                  <defs>
+                    <mask id="outer-stroke-render-6713-0-6b3ffe85-5267-8025-8005-4411ea635c84-0" x="-1601.5560499001865" y="-2673.3135578254714" width="61.665234375722754" height="27.272873688466895" maskUnits="userSpaceOnUse">
+                      <use href="#stroke-shape-render-6713-0-6b3ffe85-5267-8025-8005-4411ea635c84-0" style="fill:none;stroke:white;stroke-width:2"></use>
+                      <use href="#stroke-shape-render-6713-0-6b3ffe85-5267-8025-8005-4411ea635c84-0" style="fill:black;stroke:none"></use>
+                    </mask><text x="-1600.1418363378134" y="-2647.454897699378" dominant-baseline="ideographic" textLength="58.83680725097656" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr" id="stroke-shape-render-6713-0-6b3ffe85-5267-8025-8005-4411ea635c84-0">Edition</text>
+                  </defs>
+                  <use href="#stroke-shape-render-6713-0-6b3ffe85-5267-8025-8005-4411ea635c84-0" mask="url(#outer-stroke-render-6713-0-6b3ffe85-5267-8025-8005-4411ea635c84-0)" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;stroke-width:2;stroke:#3e3e3f;stroke-opacity:1"></use>
+                  <use href="#stroke-shape-render-6713-0-6b3ffe85-5267-8025-8005-4411ea635c84-0" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;fill-opacity:none;stroke-width:1;stroke:none;stroke-opacity:1"></use>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: PageButton -->
+  <div class="frame page-button-4411ea6308c1">
+    <!-- group: ProjectButton -->
+    <div class="group project-but-4411ea635c85">
+      <!-- path: Rectangle -->
+      <div class="shape path rectangle-4411ea635c86">
+        <svg width="182" xmlns="http://www.w3.org/2000/svg" height="34" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635c86" viewBox="-1476.355 -2674.166 182 34" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635c86">
+            <defs>
+              <filter id="filter-render-6714" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+              <filter id="filter-shadow-render-6714" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+            </defs>
+            <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c86">
+              <path d="M-1474.355,-2672.166L-1296.355,-2672.166L-1296.355,-2642.166L-1474.355,-2642.166L-1474.355,-2672.166Z" filter="url(#filter-render-6714)" style="fill:#2e354c;fill-opacity:1"></path>
+            </g>
+            <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c86" class="strokes">
+              <g class="stroke-shape">
+                <defs></defs>
+                <path d="M-1474.355,-2672.166L-1296.355,-2672.166L-1296.355,-2642.166L-1474.355,-2642.166L-1474.355,-2672.166Z" style="fill:none;fill-opacity:none;stroke-width:1;stroke:#000000;stroke-opacity:1"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <!-- text: Page -->
+      <div class="shape text page-4411ea635c87">
+        <svg width="60.96" xmlns="http://www.w3.org/2000/svg" height="20.8" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635c87" viewBox="-1424.142 -2670.566 60.96 20.8" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <style></style>
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635c87">
+            <defs></defs>
+            <g transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" class="text-container" x="-1422.1418363378134" y="-2668.5660107708195" width="56.960000000000036" height="16.800000000000182" rx="0" ry="0">
+              <defs>
+                <pattern patternUnits="userSpaceOnUse" x="-1422.1418363378134" y="-2668.5660107708195" width="42.1875" height="24.444446563720703" id="fill-0-render-6715-0">
+                  <g>
+                    <rect width="42.1875" height="24.444446563720703" style="fill:#8c99fc;fill-opacity:1"></rect>
+                  </g>
+                </pattern>
+              </defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c87"><text x="-1414.763363055953" y="-2647.454897699378" dominant-baseline="ideographic" textLength="42.1875" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:#8c99fc;fill-opacity:1">Page</text></g>
+              <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c87" class="strokes">
+                <g class="outer-stroke-shape">
+                  <defs>
+                    <mask id="outer-stroke-render-6715-0-6b3ffe85-5267-8025-8005-4411ea635c87-0" x="-1416.1775766183262" y="-2673.3135578254714" width="45.01592712474619" height="27.272873688466895" maskUnits="userSpaceOnUse">
+                      <use href="#stroke-shape-render-6715-0-6b3ffe85-5267-8025-8005-4411ea635c87-0" style="fill:none;stroke:white;stroke-width:2"></use>
+                      <use href="#stroke-shape-render-6715-0-6b3ffe85-5267-8025-8005-4411ea635c87-0" style="fill:black;stroke:none"></use>
+                    </mask><text x="-1414.763363055953" y="-2647.454897699378" dominant-baseline="ideographic" textLength="42.1875" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr" id="stroke-shape-render-6715-0-6b3ffe85-5267-8025-8005-4411ea635c87-0">Page</text>
+                  </defs>
+                  <use href="#stroke-shape-render-6715-0-6b3ffe85-5267-8025-8005-4411ea635c87-0" mask="url(#outer-stroke-render-6715-0-6b3ffe85-5267-8025-8005-4411ea635c87-0)" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;stroke-width:2;stroke:#3e3e3f;stroke-opacity:1"></use>
+                  <use href="#stroke-shape-render-6715-0-6b3ffe85-5267-8025-8005-4411ea635c87-0" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;fill-opacity:none;stroke-width:1;stroke:none;stroke-opacity:1"></use>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: DataButton -->
+  <div class="frame data-button-4411ea6308c2">
+    <!-- group: ProjectButton -->
+    <div class="group project-but-4411ea635c88">
+      <!-- path: Rectangle -->
+      <div class="shape path rectangle-4411ea635c89">
+        <svg width="182" xmlns="http://www.w3.org/2000/svg" height="34" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635c89" viewBox="-1297.355 -2674.166 182 34" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635c89">
+            <defs>
+              <filter id="filter-render-6716" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+              <filter id="filter-shadow-render-6716" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+            </defs>
+            <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c89">
+              <path d="M-1295.355,-2672.166L-1117.355,-2672.166L-1117.355,-2642.166L-1295.355,-2642.166L-1295.355,-2672.166Z" filter="url(#filter-render-6716)" style="fill:#2e354c;fill-opacity:1"></path>
+            </g>
+            <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c89" class="strokes">
+              <g class="stroke-shape">
+                <defs></defs>
+                <path d="M-1295.355,-2672.166L-1117.355,-2672.166L-1117.355,-2642.166L-1295.355,-2642.166L-1295.355,-2672.166Z" style="fill:none;fill-opacity:none;stroke-width:1;stroke:#000000;stroke-opacity:1"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <!-- text: Data -->
+      <div class="shape text data-4411ea635c8a">
+        <svg width="60.96" xmlns="http://www.w3.org/2000/svg" height="20.8" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635c8a" viewBox="-1245.142 -2670.566 60.96 20.8" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <style></style>
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635c8a">
+            <defs></defs>
+            <g transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" class="text-container" x="-1243.1418363378134" y="-2668.5660107708195" width="56.960000000000036" height="16.800000000000182" rx="0" ry="0">
+              <defs>
+                <pattern patternUnits="userSpaceOnUse" x="-1243.1418363378134" y="-2668.5660107708195" width="39.80902862548828" height="24.444446563720703" id="fill-0-render-6717-0">
+                  <g>
+                    <rect width="39.80902862548828" height="24.444446563720703" style="fill:#8c99fc;fill-opacity:1"></rect>
+                  </g>
+                </pattern>
+              </defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c8a"><text x="-1234.5828077123251" y="-2647.454897699378" dominant-baseline="ideographic" textLength="39.80902862548828" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:#8c99fc;fill-opacity:1">Data</text></g>
+              <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c8a" class="strokes">
+                <g class="outer-stroke-shape">
+                  <defs>
+                    <mask id="outer-stroke-render-6717-0-6b3ffe85-5267-8025-8005-4411ea635c8a-0" x="-1235.9970212746982" y="-2673.3135578254714" width="42.63745575023447" height="27.272873688466895" maskUnits="userSpaceOnUse">
+                      <use href="#stroke-shape-render-6717-0-6b3ffe85-5267-8025-8005-4411ea635c8a-0" style="fill:none;stroke:white;stroke-width:2"></use>
+                      <use href="#stroke-shape-render-6717-0-6b3ffe85-5267-8025-8005-4411ea635c8a-0" style="fill:black;stroke:none"></use>
+                    </mask><text x="-1234.5828077123251" y="-2647.454897699378" dominant-baseline="ideographic" textLength="39.80902862548828" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr" id="stroke-shape-render-6717-0-6b3ffe85-5267-8025-8005-4411ea635c8a-0">Data</text>
+                  </defs>
+                  <use href="#stroke-shape-render-6717-0-6b3ffe85-5267-8025-8005-4411ea635c8a-0" mask="url(#outer-stroke-render-6717-0-6b3ffe85-5267-8025-8005-4411ea635c8a-0)" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;stroke-width:2;stroke:#3e3e3f;stroke-opacity:1"></use>
+                  <use href="#stroke-shape-render-6717-0-6b3ffe85-5267-8025-8005-4411ea635c8a-0" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;fill-opacity:none;stroke-width:1;stroke:none;stroke-opacity:1"></use>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: PreviewButton -->
+  <div class="frame preview-but-4411ea6308c3">
+    <!-- group: ProjectButton -->
+    <div class="group project-but-4411ea635c8b">
+      <!-- path: Rectangle -->
+      <div class="shape path rectangle-4411ea635c8c">
+        <svg width="182" xmlns="http://www.w3.org/2000/svg" height="34" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635c8c" viewBox="-1151.355 -2674.166 182 34" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635c8c">
+            <defs>
+              <filter id="filter-render-6718" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+              <filter id="filter-shadow-render-6718" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+            </defs>
+            <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c8c">
+              <path d="M-1149.355,-2672.166L-971.355,-2672.166L-971.355,-2642.166L-1149.355,-2642.166L-1149.355,-2672.166Z" filter="url(#filter-render-6718)" style="fill:#2e354c;fill-opacity:1"></path>
+            </g>
+            <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c8c" class="strokes">
+              <g class="stroke-shape">
+                <defs></defs>
+                <path d="M-1149.355,-2672.166L-971.355,-2672.166L-971.355,-2642.166L-1149.355,-2642.166L-1149.355,-2672.166Z" style="fill:none;fill-opacity:none;stroke-width:1;stroke:#000000;stroke-opacity:1"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <!-- text: Preview
+ -->
+      <div class="shape text preview-4411ea635c8d">
+        <svg width="60.96" xmlns="http://www.w3.org/2000/svg" height="20.8" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635c8d" viewBox="-1099.142 -2670.566 60.96 20.8" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <style></style>
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635c8d">
+            <defs></defs>
+            <g transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" class="text-container" x="-1097.1418363378134" y="-2668.5660107708195" width="56.960000000000036" height="16.800000000000182" rx="0" ry="0">
+              <defs>
+                <pattern patternUnits="userSpaceOnUse" x="-1097.1418363378134" y="-2668.5660107708195" width="65.43402862548828" height="42.4479193687439" id="fill-0-render-6719-0">
+                  <g>
+                    <rect width="65.43402862548828" height="42.4479193687439" style="fill:#8c99fc;fill-opacity:1"></rect>
+                  </g>
+                </pattern>
+                <pattern patternUnits="userSpaceOnUse" x="-1097.1418363378134" y="-2668.5660107708195" width="65.43402862548828" height="42.4479193687439" id="fill-1-render-6719-0">
+                  <g>
+                    <rect width="65.43402862548828" height="42.4479193687439" style="fill:#8c99fc;fill-opacity:1"></rect>
+                  </g>
+                </pattern>
+              </defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c8d"><text x="-1097.1418363378134" y="-2647.454897699378" dominant-baseline="ideographic" textLength="65.43402862548828" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:#8c99fc;fill-opacity:1">Preview</text></g>
+              <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c8d" class="strokes">
+                <g class="outer-stroke-shape">
+                  <defs>
+                    <mask id="outer-stroke-render-6719-0-6b3ffe85-5267-8025-8005-4411ea635c8d-0" x="-1098.5560499001865" y="-2673.3135578254714" width="68.26245575023447" height="45.27634649349009" maskUnits="userSpaceOnUse">
+                      <use href="#stroke-shape-render-6719-0-6b3ffe85-5267-8025-8005-4411ea635c8d-0" style="fill:none;stroke:white;stroke-width:2"></use>
+                      <use href="#stroke-shape-render-6719-0-6b3ffe85-5267-8025-8005-4411ea635c8d-0" style="fill:black;stroke:none"></use>
+                    </mask><text x="-1097.1418363378134" y="-2647.454897699378" dominant-baseline="ideographic" textLength="65.43402862548828" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr" id="stroke-shape-render-6719-0-6b3ffe85-5267-8025-8005-4411ea635c8d-0">Preview</text>
+                  </defs>
+                  <use href="#stroke-shape-render-6719-0-6b3ffe85-5267-8025-8005-4411ea635c8d-0" mask="url(#outer-stroke-render-6719-0-6b3ffe85-5267-8025-8005-4411ea635c8d-0)" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;stroke-width:2;stroke:#3e3e3f;stroke-opacity:1"></use>
+                  <use href="#stroke-shape-render-6719-0-6b3ffe85-5267-8025-8005-4411ea635c8d-0" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;fill-opacity:none;stroke-width:1;stroke:none;stroke-opacity:1"></use>
+                </g>
+              </g>
+              <defs>
+                <pattern patternUnits="userSpaceOnUse" x="-1097.1418363378134" y="-2668.5660107708195" width="65.43402862548828" height="42.4479193687439" id="fill-0-render-6719-1">
+                  <g>
+                    <rect width="65.43402862548828" height="42.4479193687439" style="fill:#8c99fc;fill-opacity:1"></rect>
+                  </g>
+                </pattern>
+                <pattern patternUnits="userSpaceOnUse" x="-1097.1418363378134" y="-2668.5660107708195" width="65.43402862548828" height="42.4479193687439" id="fill-1-render-6719-1">
+                  <g>
+                    <rect width="65.43402862548828" height="42.4479193687439" style="fill:#8c99fc;fill-opacity:1"></rect>
+                  </g>
+                </pattern>
+              </defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c8d"><text x="-1071.013363055953" y="-2629.4514248943547" dominant-baseline="ideographic" textLength="4.6875" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:#8c99fc;fill-opacity:1"> </text></g>
+              <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c8d" class="strokes">
+                <g class="outer-stroke-shape">
+                  <defs>
+                    <mask id="outer-stroke-render-6719-1-6b3ffe85-5267-8025-8005-4411ea635c8d-0" x="-1098.5560499001865" y="-2673.3135578254714" width="68.26245575023447" height="45.27634649349009" maskUnits="userSpaceOnUse">
+                      <use href="#stroke-shape-render-6719-1-6b3ffe85-5267-8025-8005-4411ea635c8d-0" style="fill:none;stroke:white;stroke-width:2"></use>
+                      <use href="#stroke-shape-render-6719-1-6b3ffe85-5267-8025-8005-4411ea635c8d-0" style="fill:black;stroke:none"></use>
+                    </mask><text x="-1071.013363055953" y="-2629.4514248943547" dominant-baseline="ideographic" textLength="4.6875" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr" id="stroke-shape-render-6719-1-6b3ffe85-5267-8025-8005-4411ea635c8d-0"> </text>
+                  </defs>
+                  <use href="#stroke-shape-render-6719-1-6b3ffe85-5267-8025-8005-4411ea635c8d-0" mask="url(#outer-stroke-render-6719-1-6b3ffe85-5267-8025-8005-4411ea635c8d-0)" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;stroke-width:2;stroke:#3e3e3f;stroke-opacity:1"></use>
+                  <use href="#stroke-shape-render-6719-1-6b3ffe85-5267-8025-8005-4411ea635c8d-0" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;fill-opacity:none;stroke-width:1;stroke:none;stroke-opacity:1"></use>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: SettingsButton -->
+  <div class="frame settings-bu-4411ea6308c4">
+    <!-- group: ProjectButton -->
+    <div class="group project-but-4411ea635c8e">
+      <!-- path: Rectangle -->
+      <div class="shape path rectangle-4411ea635c8f">
+        <svg width="182" xmlns="http://www.w3.org/2000/svg" height="34" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635c8f" viewBox="-971.912 -2674.264 182 34" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635c8f">
+            <defs>
+              <filter id="filter-render-6720" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+              <filter id="filter-shadow-render-6720" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+            </defs>
+            <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c8f">
+              <path d="M-969.912,-2672.264L-791.912,-2672.264L-791.912,-2642.264L-969.912,-2642.264L-969.912,-2672.264Z" filter="url(#filter-render-6720)" style="fill:#2e354c;fill-opacity:1"></path>
+            </g>
+            <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c8f" class="strokes">
+              <g class="stroke-shape">
+                <defs></defs>
+                <path d="M-969.912,-2672.264L-791.912,-2672.264L-791.912,-2642.264L-969.912,-2642.264L-969.912,-2672.264Z" style="fill:none;fill-opacity:none;stroke-width:1;stroke:#000000;stroke-opacity:1"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <!-- text: Settings -->
+      <div class="shape text settings-4411ea635c90">
+        <svg width="60.96" xmlns="http://www.w3.org/2000/svg" height="20.8" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635c90" viewBox="-919.699 -2670.664 60.96 20.8" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <style></style>
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635c90">
+            <defs></defs>
+            <g transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" class="text-container" x="-917.6989247592628" y="-2668.6636761347017" width="56.960000000000036" height="16.800000000000182" rx="0" ry="0">
+              <defs>
+                <pattern patternUnits="userSpaceOnUse" x="-917.6989247592628" y="-2668.6636761347017" width="68.4375" height="24.444446563720703" id="fill-0-render-6721-0">
+                  <g>
+                    <rect width="68.4375" height="24.444446563720703" style="fill:#8c99fc;fill-opacity:1"></rect>
+                  </g>
+                </pattern>
+              </defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c90"><text x="-917.6989247592628" y="-2647.55256306326" dominant-baseline="ideographic" textLength="68.4375" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:#8c99fc;fill-opacity:1">Settings</text></g>
+              <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c90" class="strokes">
+                <g class="outer-stroke-shape">
+                  <defs>
+                    <mask id="outer-stroke-render-6721-0-6b3ffe85-5267-8025-8005-4411ea635c90-0" x="-919.1131383216359" y="-2673.4112231893537" width="71.26592712474618" height="27.272873688466895" maskUnits="userSpaceOnUse">
+                      <use href="#stroke-shape-render-6721-0-6b3ffe85-5267-8025-8005-4411ea635c90-0" style="fill:none;stroke:white;stroke-width:2"></use>
+                      <use href="#stroke-shape-render-6721-0-6b3ffe85-5267-8025-8005-4411ea635c90-0" style="fill:black;stroke:none"></use>
+                    </mask><text x="-917.6989247592628" y="-2647.55256306326" dominant-baseline="ideographic" textLength="68.4375" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr" id="stroke-shape-render-6721-0-6b3ffe85-5267-8025-8005-4411ea635c90-0">Settings</text>
+                  </defs>
+                  <use href="#stroke-shape-render-6721-0-6b3ffe85-5267-8025-8005-4411ea635c90-0" mask="url(#outer-stroke-render-6721-0-6b3ffe85-5267-8025-8005-4411ea635c90-0)" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;stroke-width:2;stroke:#3e3e3f;stroke-opacity:1"></use>
+                  <use href="#stroke-shape-render-6721-0-6b3ffe85-5267-8025-8005-4411ea635c90-0" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;fill-opacity:none;stroke-width:1;stroke:none;stroke-opacity:1"></use>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: AboutButton -->
+  <div class="frame about-butto-4411ea6308c5">
+    <!-- group: ProjectButton -->
+    <div class="group project-but-4411ea635c91">
+      <!-- path: Rectangle -->
+      <div class="shape path rectangle-4411ea635c92">
+        <svg width="182" xmlns="http://www.w3.org/2000/svg" height="34" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635c92" viewBox="-793.355 -2674.166 182 34" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635c92">
+            <defs>
+              <filter id="filter-render-6722" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+              <filter id="filter-shadow-render-6722" x="-0.011235955056179775" y="-0.06666666666666667" width="1.0224719101123596" height="1.1333333333333333" filterUnits="objectBoundingBox" color-interpolation-filters="sRGB">
+                <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+                <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"></feColorMatrix>
+                <feOffset dx="4" dy="10"></feOffset>
+                <feGaussianBlur stdDeviation="0.5"></feGaussianBlur>
+                <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"></feComposite>
+                <feColorMatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.2 0"></feColorMatrix>
+                <feBlend mode="normal" in2="shape" result="filter_6b3ffe85-5267-8025-8005-43f9ac028ce8"></feBlend>
+              </filter>
+            </defs>
+            <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c92">
+              <path d="M-791.355,-2672.166L-613.355,-2672.166L-613.355,-2642.166L-791.355,-2642.166L-791.355,-2672.166Z" filter="url(#filter-render-6722)" style="fill:#2e354c;fill-opacity:1"></path>
+            </g>
+            <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c92" class="strokes">
+              <g class="stroke-shape">
+                <defs></defs>
+                <path d="M-791.355,-2672.166L-613.355,-2672.166L-613.355,-2642.166L-791.355,-2642.166L-791.355,-2672.166Z" style="fill:none;fill-opacity:none;stroke-width:1;stroke:#000000;stroke-opacity:1"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+      <!-- text: About -->
+      <div class="shape text about-4411ea635c93">
+        <svg width="60.96" xmlns="http://www.w3.org/2000/svg" height="20.8" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635c93" viewBox="-741.142 -2670.566 60.96 20.8" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <style></style>
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635c93">
+            <defs></defs>
+            <g transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" class="text-container" x="-739.1418363378134" y="-2668.5660107708195" width="56.960000000000036" height="16.800000000000182" rx="0" ry="0">
+              <defs>
+                <pattern patternUnits="userSpaceOnUse" x="-739.1418363378134" y="-2668.5660107708195" width="51.05902862548828" height="24.444446563720703" id="fill-0-render-6723-0">
+                  <g>
+                    <rect width="51.05902862548828" height="24.444446563720703" style="fill:#8c99fc;fill-opacity:1"></rect>
+                  </g>
+                </pattern>
+              </defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635c93"><text x="-736.2078084275809" y="-2647.454897699378" dominant-baseline="ideographic" textLength="51.05902862548828" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:#8c99fc;fill-opacity:1">About</text></g>
+              <g id="strokes-6b3ffe85-5267-8025-8005-4411ea635c93" class="strokes">
+                <g class="outer-stroke-shape">
+                  <defs>
+                    <mask id="outer-stroke-render-6723-0-6b3ffe85-5267-8025-8005-4411ea635c93-0" x="-737.622021989954" y="-2673.3135578254714" width="53.88745575023447" height="27.272873688466895" maskUnits="userSpaceOnUse">
+                      <use href="#stroke-shape-render-6723-0-6b3ffe85-5267-8025-8005-4411ea635c93-0" style="fill:none;stroke:white;stroke-width:2"></use>
+                      <use href="#stroke-shape-render-6723-0-6b3ffe85-5267-8025-8005-4411ea635c93-0" style="fill:black;stroke:none"></use>
+                    </mask><text x="-736.2078084275809" y="-2647.454897699378" dominant-baseline="ideographic" textLength="51.05902862548828" lengthAdjust="spacingAndGlyphs" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr" id="stroke-shape-render-6723-0-6b3ffe85-5267-8025-8005-4411ea635c93-0">About</text>
+                  </defs>
+                  <use href="#stroke-shape-render-6723-0-6b3ffe85-5267-8025-8005-4411ea635c93-0" mask="url(#outer-stroke-render-6723-0-6b3ffe85-5267-8025-8005-4411ea635c93-0)" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;stroke-width:2;stroke:#3e3e3f;stroke-opacity:1"></use>
+                  <use href="#stroke-shape-render-6723-0-6b3ffe85-5267-8025-8005-4411ea635c93-0" style="text-transform:none;font-family:&quot;Noto Sans&quot;;letter-spacing:normal;font-style:normal;font-weight:400;white-space:pre;font-size:18px;text-decoration:none solid rgb(140, 153, 252);direction:ltr;fill:none;fill-opacity:none;stroke-width:1;stroke:none;stroke-opacity:1"></use>
+                </g>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- frame: Board -->
+<div class="frame board-4411ea6308b7">
+  <!-- rect: EditorBg -->
+  <div class="shape rect editor-bg-4411ea6308b8">
+  </div>
+  <!-- frame: Graphics / plus-circle-dotted.svg -->
+  <div class="frame graphics-4411ea6308b9">
+    <!-- group: Graphics / plus-circle-dotted.svg -->
+    <div class="shape group graphics-4411ea6308bb">
+      <svg width="64" xmlns="http://www.w3.org/2000/svg" height="64" id="screenshot-6b3ffe85-5267-8025-8005-4411ea6308bb" viewBox="-897.355 -2112.166 64 64" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+        <g id="shape-6b3ffe85-5267-8025-8005-4411ea6308bb" style="fill:#000000" class="bi bi-plus-circle-dotted" width="16" height="16" rx="0" ry="0">
+          <defs></defs>
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea6308bc" style="display:none">
+            <defs></defs>
+            <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea6308bc">
+              <rect rx="0" ry="0" x="-897.3551696711468" y="-2112.1660107708194" transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" width="64" height="64" fill="none" style="fill:none"></rect>
+            </g>
+          </g>
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea6308bd">
+            <defs></defs>
+            <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea6308bd">
+              <path d="M-865.355,-2112.166C-866.059,-2112.166,-866.755,-2112.142,-867.447,-2112.098L-867.191,-2108.106C-865.968,-2108.185,-864.742,-2108.185,-863.519,-2108.106L-863.263,-2112.098C-863.960,-2112.143,-864.657,-2112.166,-865.355,-2112.166ZZM-871.595,-2111.558C-872.979,-2111.282,-874.331,-2110.918,-875.643,-2110.478L-874.359,-2106.686C-873.211,-2107.078,-872.031,-2107.394,-870.823,-2107.634L-871.595,-2111.558ZZM-855.067,-2110.474C-856.390,-2110.922,-857.741,-2111.283,-859.111,-2111.554L-859.887,-2107.634C-858.679,-2107.394,-857.499,-2107.074,-856.351,-2106.686L-855.067,-2110.474ZZM-847.575,-2106.774C-848.736,-2107.551,-849.947,-2108.251,-851.199,-2108.870L-852.971,-2105.286C-851.871,-2104.742,-850.811,-2104.126,-849.799,-2103.450L-847.575,-2106.774ZZM-879.515,-2108.870C-880.771,-2108.250,-881.979,-2107.550,-883.135,-2106.774L-880.911,-2103.454C-879.895,-2104.133,-878.835,-2104.745,-877.739,-2105.286L-879.515,-2108.870ZZM-886.455,-2104.226C-887.503,-2103.306,-888.495,-2102.314,-889.415,-2101.266L-886.407,-2098.626C-885.599,-2099.546,-884.735,-2100.410,-883.815,-2101.218L-886.455,-2104.226ZZM-841.295,-2101.266C-842.217,-2102.316,-843.205,-2103.305,-844.255,-2104.226L-846.895,-2101.218C-845.975,-2100.410,-845.107,-2099.546,-844.303,-2098.626L-841.295,-2101.266ZZM-836.651,-2094.326C-837.270,-2095.577,-837.970,-2096.786,-838.747,-2097.946L-842.067,-2095.722C-841.391,-2094.710,-840.779,-2093.650,-840.235,-2092.550L-836.651,-2094.326ZZM-891.963,-2097.946C-892.739,-2096.790,-893.443,-2095.582,-894.059,-2094.322L-890.475,-2092.550C-889.931,-2093.650,-889.315,-2094.710,-888.639,-2095.722L-891.963,-2097.946ZZM-895.663,-2090.454C-896.112,-2089.131,-896.472,-2087.780,-896.743,-2086.410L-892.823,-2085.634C-892.583,-2086.842,-892.263,-2088.022,-891.875,-2089.170L-895.663,-2090.454ZZM-833.963,-2086.406C-834.234,-2087.778,-834.595,-2089.130,-835.043,-2090.454L-838.835,-2089.170C-838.443,-2088.022,-838.127,-2086.842,-837.887,-2085.634L-833.963,-2086.406ZZM-897.287,-2082.258C-897.377,-2080.865,-897.377,-2079.467,-897.287,-2078.074L-893.295,-2078.330C-893.374,-2079.553,-893.374,-2080.779,-893.295,-2082.002L-897.287,-2082.258ZZM-833.355,-2080.166C-833.355,-2080.864,-833.378,-2081.562,-833.423,-2082.258L-837.415,-2082.002C-837.336,-2080.779,-837.336,-2079.553,-837.415,-2078.330L-833.423,-2078.074C-833.378,-2078.770,-833.355,-2079.468,-833.355,-2080.166ZZM-896.747,-2073.926C-896.471,-2072.542,-896.107,-2071.190,-895.667,-2069.878L-891.875,-2071.162C-892.269,-2072.319,-892.585,-2073.500,-892.823,-2074.698L-896.747,-2073.926ZZM-835.047,-2069.878C-834.599,-2071.190,-834.239,-2072.542,-833.967,-2073.922L-837.887,-2074.698C-838.127,-2073.490,-838.447,-2072.310,-838.835,-2071.162L-835.047,-2069.878ZZM-894.059,-2066.006C-893.440,-2064.755,-892.740,-2063.546,-891.963,-2062.386L-888.643,-2064.610C-889.322,-2065.626,-889.934,-2066.686,-890.475,-2067.782L-894.059,-2066.006ZZM-838.747,-2062.386C-837.971,-2063.542,-837.267,-2064.750,-836.651,-2066.010L-840.235,-2067.782C-840.779,-2066.682,-841.395,-2065.622,-842.071,-2064.610L-838.747,-2062.386ZZM-889.415,-2059.066C-888.495,-2058.018,-887.503,-2057.026,-886.455,-2056.106L-883.815,-2059.114C-884.734,-2059.921,-885.600,-2060.787,-886.407,-2061.706L-889.415,-2059.066ZZM-844.255,-2056.106C-843.207,-2057.026,-842.215,-2058.018,-841.295,-2059.066L-844.303,-2061.706C-845.107,-2060.786,-845.975,-2059.918,-846.895,-2059.114L-844.255,-2056.106ZZM-851.195,-2051.462C-849.939,-2052.082,-848.731,-2052.782,-847.575,-2053.558L-849.799,-2056.878C-850.816,-2056.199,-851.875,-2055.587,-852.971,-2055.046L-851.195,-2051.462ZZM-883.135,-2053.558C-881.979,-2052.782,-880.771,-2052.078,-879.511,-2051.462L-877.739,-2055.046C-878.835,-2055.588,-879.895,-2056.201,-880.911,-2056.882L-883.135,-2053.558ZZM-875.643,-2049.858C-874.331,-2049.410,-872.979,-2049.050,-871.599,-2048.778L-870.823,-2052.698C-872.021,-2052.936,-873.203,-2053.253,-874.359,-2053.646L-875.643,-2049.858ZZM-859.115,-2048.774C-857.744,-2049.045,-856.391,-2049.405,-855.067,-2049.854L-856.351,-2053.646C-857.508,-2053.253,-858.689,-2052.936,-859.887,-2052.698L-859.115,-2048.774ZZM-867.447,-2048.234C-866.054,-2048.144,-864.656,-2048.144,-863.263,-2048.234L-863.519,-2052.226C-864.742,-2052.147,-865.968,-2052.147,-867.191,-2052.226L-867.447,-2048.234ZZM-863.355,-2094.166C-863.355,-2095.271,-864.251,-2096.166,-865.355,-2096.166C-866.460,-2096.166,-867.355,-2095.271,-867.355,-2094.166L-867.355,-2082.166L-879.355,-2082.166C-880.460,-2082.166,-881.355,-2081.271,-881.355,-2080.166C-881.355,-2079.061,-880.460,-2078.166,-879.355,-2078.166L-867.355,-2078.166L-867.355,-2066.166C-867.355,-2065.061,-866.460,-2064.166,-865.355,-2064.166C-864.251,-2064.166,-863.355,-2065.061,-863.355,-2066.166L-863.355,-2078.166L-851.355,-2078.166C-850.251,-2078.166,-849.355,-2079.061,-849.355,-2080.166C-849.355,-2081.271,-850.251,-2082.166,-851.355,-2082.166L-863.355,-2082.166L-863.355,-2094.166ZZ" style="fill:#000000"></path>
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
+  <!-- text: New Document -->
+  <div class="shape text new-docume-4411ea6308ba">
+    <div class="text-node-html" id="html-text-node-6b3ffe85-5267-8025-8005-4411ea6308ba" data-x="-948.3551696711468" data-y="-2027.1660107708194">
+      <div class="root rich-text root-0" style="display:flex;white-space:break-spaces;align-items:flex-start" xmlns="http://www.w3.org/1999/xhtml">
+        <div class="paragraph-set root-0-paragraph-set-0">
+          <p class="paragraph root-0-paragraph-set-0-paragraph-0" dir="ltr"><span class="text-node root-0-paragraph-set-0-paragraph-0-text-0" style="color:rgba(1, 1, 1, 1);text-transform:capitalize;line-break:auto;overflow-wrap:initial;white-space:pre;font-size:24px;text-rendering:geometricPrecision;caret-color:rgba(1, 1, 1, 1);text-decoration:none;--font-id:gfont-noto-sans;--fills:[[&quot;^ &quot;,&quot;~:fill-color&quot;,&quot;#010101&quot;,&quot;~:fill-opacity&quot;,1]];letter-spacing:0px;font-family:&quot;Noto Sans&quot;;font-style:normal;font-weight:600">New Document</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- frame: Toolbox -->
+<div class="frame toolbox-4411ea635c94">
+  <!-- frame: TextObject -->
+  <div class="frame text-object-4411ea635c9c">
+    <!-- rect: Rectangle -->
+    <div class="shape rect rectangle-4411ea635cc6">
+    </div>
+    <!-- frame: Graphics / input-cursor-text.svg -->
+    <div class="frame graphics-4411ea635cc7">
+      <!-- group: Graphics / input-cursor-text.svg -->
+      <div class="shape group graphics-4411ea635cc8">
+        <svg width="16" xmlns="http://www.w3.org/2000/svg" height="16" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635cc8" viewBox="-1800.355 -2007.666 16 16" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cc8" style="fill:#000000" class="bi bi-input-cursor-text" width="16" height="16" rx="0" ry="0">
+            <defs></defs>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cc9" style="display:none">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635cc9">
+                <rect rx="0" ry="0" x="-1800.3551696711468" y="-2007.6660107708194" transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" width="16" height="16" fill="none" style="fill:none"></rect>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cca">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635cca">
+                <path d="M-1795.355,-2005.666C-1795.355,-2005.942,-1795.131,-2006.166,-1794.855,-2006.166C-1793.993,-2006.166,-1793.282,-2005.879,-1792.795,-2005.600C-1792.621,-2005.501,-1792.474,-2005.402,-1792.355,-2005.314C-1792.236,-2005.402,-1792.089,-2005.501,-1791.915,-2005.600C-1791.289,-2005.965,-1790.579,-2006.160,-1789.855,-2006.166C-1789.579,-2006.166,-1789.355,-2005.942,-1789.355,-2005.666C-1789.355,-2005.390,-1789.579,-2005.166,-1789.855,-2005.166C-1790.493,-2005.166,-1791.032,-2004.953,-1791.419,-2004.732C-1791.572,-2004.645,-1791.717,-2004.547,-1791.855,-2004.438L-1791.855,-2000.166L-1791.355,-2000.166C-1791.079,-2000.166,-1790.855,-1999.942,-1790.855,-1999.666C-1790.855,-1999.390,-1791.079,-1999.166,-1791.355,-1999.166L-1791.855,-1999.166L-1791.855,-1994.894C-1791.755,-1994.814,-1791.607,-1994.707,-1791.419,-1994.600C-1791.032,-1994.379,-1790.493,-1994.166,-1789.855,-1994.166C-1789.579,-1994.166,-1789.355,-1993.942,-1789.355,-1993.666C-1789.355,-1993.390,-1789.579,-1993.166,-1789.855,-1993.166C-1790.579,-1993.172,-1791.289,-1993.367,-1791.915,-1993.732C-1792.067,-1993.818,-1792.214,-1993.913,-1792.355,-1994.016C-1792.496,-1993.913,-1792.643,-1993.817,-1792.795,-1993.731C-1793.421,-1993.366,-1794.131,-1993.171,-1794.855,-1993.165C-1795.131,-1993.165,-1795.355,-1993.389,-1795.355,-1993.665C-1795.355,-1993.941,-1795.131,-1994.165,-1794.855,-1994.165C-1794.217,-1994.165,-1793.678,-1994.378,-1793.291,-1994.599C-1793.103,-1994.706,-1792.956,-1994.813,-1792.855,-1994.893L-1792.855,-1999.166L-1793.355,-1999.166C-1793.631,-1999.166,-1793.855,-1999.390,-1793.855,-1999.666C-1793.855,-1999.942,-1793.631,-2000.166,-1793.355,-2000.166L-1792.855,-2000.166L-1792.855,-2004.438C-1792.993,-2004.547,-1793.139,-2004.645,-1793.291,-2004.732C-1793.766,-2005.010,-1794.305,-2005.160,-1794.855,-2005.166C-1795.131,-2005.166,-1795.355,-2005.390,-1795.355,-2005.666ZZ" fill-rule="evenodd" style="fill:#000000"></path>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea635ccb">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635ccb">
+                <path d="M-1790.355,-2002.666L-1786.355,-2002.666C-1785.803,-2002.666,-1785.355,-2002.218,-1785.355,-2001.666L-1785.355,-1997.666C-1785.355,-1997.114,-1785.803,-1996.666,-1786.355,-1996.666L-1790.355,-1996.666L-1790.355,-1995.666L-1786.355,-1995.666C-1785.251,-1995.666,-1784.355,-1996.561,-1784.355,-1997.666L-1784.355,-2001.666C-1784.355,-2002.771,-1785.251,-2003.666,-1786.355,-2003.666L-1790.355,-2003.666L-1790.355,-2002.666ZZM-1794.355,-2002.666L-1794.355,-2003.666L-1798.355,-2003.666C-1799.460,-2003.666,-1800.355,-2002.771,-1800.355,-2001.666L-1800.355,-1997.666C-1800.355,-1996.561,-1799.460,-1995.666,-1798.355,-1995.666L-1794.355,-1995.666L-1794.355,-1996.666L-1798.355,-1996.666C-1798.907,-1996.666,-1799.355,-1997.114,-1799.355,-1997.666L-1799.355,-2001.666C-1799.355,-2002.218,-1798.907,-2002.666,-1798.355,-2002.666L-1794.355,-2002.666ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: PictureObject -->
+  <div class="frame picture-obj-4411ea635c9b">
+    <!-- rect: Rectangle -->
+    <div class="shape rect rectangle-4411ea635cc0">
+    </div>
+    <!-- frame: Graphics / image.svg -->
+    <div class="frame graphics-4411ea635cc1">
+      <!-- group: Graphics / image.svg -->
+      <div class="shape group graphics-4411ea635cc2">
+        <svg width="16.002" xmlns="http://www.w3.org/2000/svg" height="16" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635cc2" viewBox="-1800.355 -2043.952 16.002 16" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cc2" style="fill:#000000" class="bi bi-image" width="16" height="16" rx="0" ry="0">
+            <defs></defs>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cc3" style="display:none">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635cc3">
+                <rect rx="0" ry="0" x="-1800.3551696711468" y="-2043.9517250565336" transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" width="16" height="16" fill="none" style="fill:none"></rect>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cc4">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635cc4">
+                <path d="M-1794.353,-2038.452C-1794.353,-2037.623,-1795.025,-2036.952,-1795.853,-2036.952C-1796.682,-2036.952,-1797.353,-2037.623,-1797.353,-2038.452C-1797.353,-2039.280,-1796.682,-2039.952,-1795.853,-2039.952C-1795.025,-2039.952,-1794.353,-2039.280,-1794.353,-2038.452ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cc5">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635cc5">
+                <path d="M-1798.353,-2042.952C-1799.458,-2042.952,-1800.353,-2042.056,-1800.353,-2040.952L-1800.353,-2030.952C-1800.353,-2029.847,-1799.458,-2028.952,-1798.353,-2028.952L-1786.353,-2028.952C-1785.249,-2028.952,-1784.353,-2029.847,-1784.353,-2030.952L-1784.353,-2040.952C-1784.353,-2042.056,-1785.249,-2042.952,-1786.353,-2042.952L-1798.353,-2042.952ZZM-1786.353,-2041.952C-1785.801,-2041.952,-1785.353,-2041.504,-1785.353,-2040.952L-1785.353,-2034.452L-1789.130,-2036.399C-1789.322,-2036.495,-1789.555,-2036.458,-1789.707,-2036.306L-1793.417,-2032.596L-1796.077,-2034.368C-1796.275,-2034.500,-1796.539,-2034.474,-1796.707,-2034.306L-1799.353,-2031.952L-1799.353,-2040.952C-1799.353,-2041.504,-1798.905,-2041.952,-1798.353,-2041.952L-1786.353,-2041.952ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: ParagraphObject -->
+  <div class="frame paragraph-o-4411ea635c9a">
+    <!-- rect: Rectangle -->
+    <div class="shape rect rectangle-4411ea635cba">
+    </div>
+    <!-- frame: Graphics / textarea-t.svg -->
+    <div class="frame graphics-4411ea635cbb">
+      <!-- group: Graphics / textarea-t.svg -->
+      <div class="shape group graphics-4411ea635cbc">
+        <svg width="16.004" xmlns="http://www.w3.org/2000/svg" height="16" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635cbc" viewBox="-1800.357 -2080.237 16.004 16" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cbc" style="fill:#000000" class="bi bi-textarea-t" width="16" height="16" rx="0" ry="0">
+            <defs></defs>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cbd" style="display:none">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635cbd">
+                <rect rx="0" ry="0" x="-1800.3551696711468" y="-2080.237439342248" transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" width="16" height="16" fill="none" style="fill:none"></rect>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cbe">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635cbe">
+                <path d="M-1798.855,-2077.737C-1798.855,-2078.566,-1798.184,-2079.237,-1797.355,-2079.237L-1787.355,-2079.237C-1786.527,-2079.237,-1785.855,-2078.566,-1785.855,-2077.737L-1785.855,-2074.174C-1784.971,-2073.947,-1784.353,-2073.150,-1784.353,-2072.237C-1784.353,-2071.325,-1784.971,-2070.528,-1785.855,-2070.300L-1785.855,-2066.737C-1785.855,-2065.909,-1786.527,-2065.237,-1787.355,-2065.237L-1797.355,-2065.237C-1798.184,-2065.237,-1798.855,-2065.909,-1798.855,-2066.737L-1798.855,-2070.300C-1799.739,-2070.528,-1800.357,-2071.325,-1800.357,-2072.237C-1800.357,-2073.150,-1799.739,-2073.947,-1798.855,-2074.174L-1798.855,-2077.737ZZM-1797.855,-2074.174C-1796.971,-2073.947,-1796.353,-2073.150,-1796.353,-2072.237C-1796.353,-2071.325,-1796.971,-2070.528,-1797.855,-2070.300L-1797.855,-2066.737C-1797.855,-2066.461,-1797.631,-2066.237,-1797.355,-2066.237L-1787.355,-2066.237C-1787.079,-2066.237,-1786.855,-2066.461,-1786.855,-2066.737L-1786.855,-2070.300C-1787.739,-2070.528,-1788.357,-2071.325,-1788.357,-2072.237C-1788.357,-2073.150,-1787.739,-2073.947,-1786.855,-2074.174L-1786.855,-2077.737C-1786.855,-2078.014,-1787.079,-2078.237,-1787.355,-2078.237L-1797.355,-2078.237C-1797.631,-2078.237,-1797.855,-2078.014,-1797.855,-2077.737L-1797.855,-2074.174ZZM-1798.355,-2073.237C-1798.907,-2073.237,-1799.355,-2072.790,-1799.355,-2072.237C-1799.355,-2071.685,-1798.907,-2071.237,-1798.355,-2071.237C-1797.803,-2071.237,-1797.355,-2071.685,-1797.355,-2072.237C-1797.355,-2072.790,-1797.803,-2073.237,-1798.355,-2073.237ZZM-1786.355,-2073.237C-1786.907,-2073.237,-1787.355,-2072.790,-1787.355,-2072.237C-1787.355,-2071.685,-1786.907,-2071.237,-1786.355,-2071.237C-1785.803,-2071.237,-1785.355,-2071.685,-1785.355,-2072.237C-1785.355,-2072.790,-1785.803,-2073.237,-1786.355,-2073.237ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cbf">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635cbf">
+                <path d="M-1788.921,-2076.237L-1795.789,-2076.237L-1795.855,-2074.243L-1795.469,-2074.243C-1795.259,-2075.495,-1794.857,-2075.689,-1793.296,-2075.738L-1792.953,-2075.749L-1792.953,-2069.406C-1792.953,-2068.869,-1793.069,-2068.741,-1794.002,-2068.658L-1794.002,-2068.237L-1790.708,-2068.237L-1790.708,-2068.658C-1791.646,-2068.741,-1791.762,-2068.868,-1791.762,-2069.406L-1791.762,-2075.749L-1791.414,-2075.739C-1789.854,-2075.689,-1789.451,-2075.495,-1789.241,-2074.243L-1788.855,-2074.243L-1788.921,-2076.237ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: PreBuildObject -->
+  <div class="frame pre-build-ob-4411ea635c99">
+    <!-- rect: Rectangle -->
+    <div class="shape rect rectangle-4411ea635cb4">
+    </div>
+    <!-- frame: Graphics / card-list.svg -->
+    <div class="frame graphics-4411ea635cb5">
+      <!-- group: Graphics / card-list.svg -->
+      <div class="shape group graphics-4411ea635cb6">
+        <svg width="16" xmlns="http://www.w3.org/2000/svg" height="16" id="screenshot-6b3ffe85-5267-8025-8005-4411ea635cb6" viewBox="-1800.355 -2116.523 16 16" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cb6" style="fill:#000000" class="bi bi-card-list" width="16" height="16" rx="0" ry="0">
+            <defs></defs>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cb7" style="display:none">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635cb7">
+                <rect rx="0" ry="0" x="-1800.3551696711468" y="-2116.523153627962" transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" width="16" height="16" fill="none" style="fill:none"></rect>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cb8">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635cb8">
+                <path d="M-1785.855,-2113.523C-1785.579,-2113.523,-1785.355,-2113.299,-1785.355,-2113.023L-1785.355,-2104.023C-1785.355,-2103.747,-1785.579,-2103.523,-1785.855,-2103.523L-1798.855,-2103.523C-1799.131,-2103.523,-1799.355,-2103.747,-1799.355,-2104.023L-1799.355,-2113.023C-1799.355,-2113.299,-1799.131,-2113.523,-1798.855,-2113.523L-1785.855,-2113.523ZZM-1798.855,-2114.523C-1799.684,-2114.523,-1800.355,-2113.852,-1800.355,-2113.023L-1800.355,-2104.023C-1800.355,-2103.195,-1799.684,-2102.523,-1798.855,-2102.523L-1785.855,-2102.523C-1785.027,-2102.523,-1784.355,-2103.195,-1784.355,-2104.023L-1784.355,-2113.023C-1784.355,-2113.852,-1785.027,-2114.523,-1785.855,-2114.523L-1798.855,-2114.523ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea635cb9">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea635cb9">
+                <path d="M-1795.355,-2108.523C-1795.355,-2108.799,-1795.131,-2109.023,-1794.855,-2109.023L-1787.855,-2109.023C-1787.579,-2109.023,-1787.355,-2108.799,-1787.355,-2108.523C-1787.355,-2108.247,-1787.579,-2108.023,-1787.855,-2108.023L-1794.855,-2108.023C-1795.131,-2108.023,-1795.355,-2108.247,-1795.355,-2108.523ZZM-1795.355,-2111.023C-1795.355,-2111.299,-1795.131,-2111.523,-1794.855,-2111.523L-1787.855,-2111.523C-1787.579,-2111.523,-1787.355,-2111.299,-1787.355,-2111.023C-1787.355,-2110.747,-1787.579,-2110.523,-1787.855,-2110.523L-1794.855,-2110.523C-1795.131,-2110.523,-1795.355,-2110.747,-1795.355,-2111.023ZZM-1795.355,-2106.023C-1795.355,-2106.299,-1795.131,-2106.523,-1794.855,-2106.523L-1787.855,-2106.523C-1787.579,-2106.523,-1787.355,-2106.299,-1787.355,-2106.023C-1787.355,-2105.747,-1787.579,-2105.523,-1787.855,-2105.523L-1794.855,-2105.523C-1795.131,-2105.523,-1795.355,-2105.747,-1795.355,-2106.023ZZM-1796.355,-2111.023C-1796.355,-2110.747,-1796.579,-2110.523,-1796.855,-2110.523C-1797.131,-2110.523,-1797.355,-2110.747,-1797.355,-2111.023C-1797.355,-2111.299,-1797.131,-2111.523,-1796.855,-2111.523C-1796.579,-2111.523,-1796.355,-2111.299,-1796.355,-2111.023ZZM-1796.355,-2108.523C-1796.355,-2108.247,-1796.579,-2108.023,-1796.855,-2108.023C-1797.131,-2108.023,-1797.355,-2108.247,-1797.355,-2108.523C-1797.355,-2108.799,-1797.131,-2109.023,-1796.855,-2109.023C-1796.579,-2109.023,-1796.355,-2108.799,-1796.355,-2108.523ZZM-1796.355,-2106.023C-1796.355,-2105.747,-1796.579,-2105.523,-1796.855,-2105.523C-1797.131,-2105.523,-1797.355,-2105.747,-1797.355,-2106.023C-1797.355,-2106.299,-1797.131,-2106.523,-1796.855,-2106.523C-1796.579,-2106.523,-1796.355,-2106.299,-1796.355,-2106.023ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: TextObject -->
+  <div class="frame text-object-4411ea65b7b2">
+    <!-- rect: Rectangle -->
+    <div class="shape rect rectangle-4411ea65b7b3">
+    </div>
+    <!-- frame: Graphics / input-cursor-text.svg -->
+    <div class="frame graphics-4411ea65b7b4">
+      <!-- group: Graphics / input-cursor-text.svg -->
+      <div class="shape group graphics-4411ea65b7b5">
+        <svg width="16" xmlns="http://www.w3.org/2000/svg" height="16" id="screenshot-6b3ffe85-5267-8025-8005-4411ea65b7b5" viewBox="-1800.355 -2152.809 16 16" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea65b7b5" style="fill:#000000" class="bi bi-input-cursor-text" width="16" height="16" rx="0" ry="0">
+            <defs></defs>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea65b7b6" style="display:none">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea65b7b6">
+                <rect rx="0" ry="0" x="-1800.3551696711468" y="-2152.8088679136763" transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" width="16" height="16" fill="none" style="fill:none"></rect>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea65b7b7">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea65b7b7">
+                <path d="M-1795.355,-2150.809C-1795.355,-2151.085,-1795.131,-2151.309,-1794.855,-2151.309C-1793.993,-2151.309,-1793.282,-2151.022,-1792.795,-2150.743C-1792.621,-2150.644,-1792.474,-2150.545,-1792.355,-2150.457C-1792.236,-2150.545,-1792.089,-2150.644,-1791.915,-2150.743C-1791.289,-2151.107,-1790.579,-2151.303,-1789.855,-2151.309C-1789.579,-2151.309,-1789.355,-2151.085,-1789.355,-2150.809C-1789.355,-2150.533,-1789.579,-2150.309,-1789.855,-2150.309C-1790.493,-2150.309,-1791.032,-2150.096,-1791.419,-2149.875C-1791.572,-2149.788,-1791.717,-2149.690,-1791.855,-2149.581L-1791.855,-2145.309L-1791.355,-2145.309C-1791.079,-2145.309,-1790.855,-2145.085,-1790.855,-2144.809C-1790.855,-2144.533,-1791.079,-2144.309,-1791.355,-2144.309L-1791.855,-2144.309L-1791.855,-2140.037C-1791.755,-2139.957,-1791.607,-2139.850,-1791.419,-2139.743C-1791.032,-2139.522,-1790.493,-2139.309,-1789.855,-2139.309C-1789.579,-2139.309,-1789.355,-2139.085,-1789.355,-2138.809C-1789.355,-2138.533,-1789.579,-2138.309,-1789.855,-2138.309C-1790.579,-2138.315,-1791.289,-2138.510,-1791.915,-2138.875C-1792.067,-2138.961,-1792.214,-2139.056,-1792.355,-2139.159C-1792.496,-2139.056,-1792.643,-2138.960,-1792.795,-2138.874C-1793.421,-2138.509,-1794.131,-2138.314,-1794.855,-2138.308C-1795.131,-2138.308,-1795.355,-2138.532,-1795.355,-2138.808C-1795.355,-2139.084,-1795.131,-2139.308,-1794.855,-2139.308C-1794.217,-2139.308,-1793.678,-2139.521,-1793.291,-2139.742C-1793.103,-2139.849,-1792.956,-2139.956,-1792.855,-2140.036L-1792.855,-2144.309L-1793.355,-2144.309C-1793.631,-2144.309,-1793.855,-2144.533,-1793.855,-2144.809C-1793.855,-2145.085,-1793.631,-2145.309,-1793.355,-2145.309L-1792.855,-2145.309L-1792.855,-2149.581C-1792.993,-2149.690,-1793.139,-2149.788,-1793.291,-2149.875C-1793.766,-2150.153,-1794.305,-2150.303,-1794.855,-2150.309C-1795.131,-2150.309,-1795.355,-2150.533,-1795.355,-2150.809ZZ" fill-rule="evenodd" style="fill:#000000"></path>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea65b7b8">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea65b7b8">
+                <path d="M-1790.355,-2147.809L-1786.355,-2147.809C-1785.803,-2147.809,-1785.355,-2147.361,-1785.355,-2146.809L-1785.355,-2142.809C-1785.355,-2142.257,-1785.803,-2141.809,-1786.355,-2141.809L-1790.355,-2141.809L-1790.355,-2140.809L-1786.355,-2140.809C-1785.251,-2140.809,-1784.355,-2141.704,-1784.355,-2142.809L-1784.355,-2146.809C-1784.355,-2147.913,-1785.251,-2148.809,-1786.355,-2148.809L-1790.355,-2148.809L-1790.355,-2147.809ZZM-1794.355,-2147.809L-1794.355,-2148.809L-1798.355,-2148.809C-1799.460,-2148.809,-1800.355,-2147.913,-1800.355,-2146.809L-1800.355,-2142.809C-1800.355,-2141.704,-1799.460,-2140.809,-1798.355,-2140.809L-1794.355,-2140.809L-1794.355,-2141.809L-1798.355,-2141.809C-1798.907,-2141.809,-1799.355,-2142.257,-1799.355,-2142.809L-1799.355,-2146.809C-1799.355,-2147.361,-1798.907,-2147.809,-1798.355,-2147.809L-1794.355,-2147.809ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: PictureObject -->
+  <div class="frame picture-obj-4411ea657943">
+    <!-- rect: Rectangle -->
+    <div class="shape rect rectangle-4411ea657944">
+    </div>
+    <!-- frame: Graphics / image.svg -->
+    <div class="frame graphics-4411ea657945">
+      <!-- group: Graphics / image.svg -->
+      <div class="shape group graphics-4411ea657946">
+        <svg width="16.002" xmlns="http://www.w3.org/2000/svg" height="16" id="screenshot-6b3ffe85-5267-8025-8005-4411ea657946" viewBox="-1800.355 -2189.095 16.002 16" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea657946" style="fill:#000000" class="bi bi-image" width="16" height="16" rx="0" ry="0">
+            <defs></defs>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea657947" style="display:none">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea657947">
+                <rect rx="0" ry="0" x="-1800.3551696711468" y="-2189.094582199391" transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" width="16" height="16" fill="none" style="fill:none"></rect>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea657948">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea657948">
+                <path d="M-1794.353,-2183.595C-1794.353,-2182.766,-1795.025,-2182.095,-1795.853,-2182.095C-1796.682,-2182.095,-1797.353,-2182.766,-1797.353,-2183.595C-1797.353,-2184.423,-1796.682,-2185.095,-1795.853,-2185.095C-1795.025,-2185.095,-1794.353,-2184.423,-1794.353,-2183.595ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea657949">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea657949">
+                <path d="M-1798.353,-2188.095C-1799.458,-2188.095,-1800.353,-2187.199,-1800.353,-2186.095L-1800.353,-2176.095C-1800.353,-2174.990,-1799.458,-2174.095,-1798.353,-2174.095L-1786.353,-2174.095C-1785.249,-2174.095,-1784.353,-2174.990,-1784.353,-2176.095L-1784.353,-2186.095C-1784.353,-2187.199,-1785.249,-2188.095,-1786.353,-2188.095L-1798.353,-2188.095ZZM-1786.353,-2187.095C-1785.801,-2187.095,-1785.353,-2186.647,-1785.353,-2186.095L-1785.353,-2179.595L-1789.130,-2181.542C-1789.322,-2181.638,-1789.555,-2181.600,-1789.707,-2181.449L-1793.417,-2177.739L-1796.077,-2179.511C-1796.275,-2179.642,-1796.539,-2179.616,-1796.707,-2179.449L-1799.353,-2177.095L-1799.353,-2186.095C-1799.353,-2186.647,-1798.905,-2187.095,-1798.353,-2187.095L-1786.353,-2187.095ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: ParagraphObject -->
+  <div class="frame paragraph-o-4411ea6509db">
+    <!-- rect: Rectangle -->
+    <div class="shape rect rectangle-4411ea6509dc">
+    </div>
+    <!-- frame: Graphics / textarea-t.svg -->
+    <div class="frame graphics-4411ea6509dd">
+      <!-- group: Graphics / textarea-t.svg -->
+      <div class="shape group graphics-4411ea6509de">
+        <svg width="16.004" xmlns="http://www.w3.org/2000/svg" height="16" id="screenshot-6b3ffe85-5267-8025-8005-4411ea6509de" viewBox="-1800.357 -2225.38 16.004 16" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea6509de" style="fill:#000000" class="bi bi-textarea-t" width="16" height="16" rx="0" ry="0">
+            <defs></defs>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea6509df" style="display:none">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea6509df">
+                <rect rx="0" ry="0" x="-1800.3551696711468" y="-2225.380296485105" transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" width="16" height="16" fill="none" style="fill:none"></rect>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea6509e0">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea6509e0">
+                <path d="M-1798.855,-2222.880C-1798.855,-2223.709,-1798.184,-2224.380,-1797.355,-2224.380L-1787.355,-2224.380C-1786.527,-2224.380,-1785.855,-2223.709,-1785.855,-2222.880L-1785.855,-2219.317C-1784.971,-2219.090,-1784.353,-2218.293,-1784.353,-2217.380C-1784.353,-2216.468,-1784.971,-2215.671,-1785.855,-2215.443L-1785.855,-2211.880C-1785.855,-2211.052,-1786.527,-2210.380,-1787.355,-2210.380L-1797.355,-2210.380C-1798.184,-2210.380,-1798.855,-2211.052,-1798.855,-2211.880L-1798.855,-2215.443C-1799.739,-2215.671,-1800.357,-2216.468,-1800.357,-2217.380C-1800.357,-2218.293,-1799.739,-2219.090,-1798.855,-2219.317L-1798.855,-2222.880ZZM-1797.855,-2219.317C-1796.971,-2219.090,-1796.353,-2218.293,-1796.353,-2217.380C-1796.353,-2216.468,-1796.971,-2215.671,-1797.855,-2215.443L-1797.855,-2211.880C-1797.855,-2211.604,-1797.631,-2211.380,-1797.355,-2211.380L-1787.355,-2211.380C-1787.079,-2211.380,-1786.855,-2211.604,-1786.855,-2211.880L-1786.855,-2215.443C-1787.739,-2215.671,-1788.357,-2216.468,-1788.357,-2217.380C-1788.357,-2218.293,-1787.739,-2219.090,-1786.855,-2219.317L-1786.855,-2222.880C-1786.855,-2223.156,-1787.079,-2223.380,-1787.355,-2223.380L-1797.355,-2223.380C-1797.631,-2223.380,-1797.855,-2223.156,-1797.855,-2222.880L-1797.855,-2219.317ZZM-1798.355,-2218.380C-1798.907,-2218.380,-1799.355,-2217.933,-1799.355,-2217.380C-1799.355,-2216.828,-1798.907,-2216.380,-1798.355,-2216.380C-1797.803,-2216.380,-1797.355,-2216.828,-1797.355,-2217.380C-1797.355,-2217.933,-1797.803,-2218.380,-1798.355,-2218.380ZZM-1786.355,-2218.380C-1786.907,-2218.380,-1787.355,-2217.933,-1787.355,-2217.380C-1787.355,-2216.828,-1786.907,-2216.380,-1786.355,-2216.380C-1785.803,-2216.380,-1785.355,-2216.828,-1785.355,-2217.380C-1785.355,-2217.933,-1785.803,-2218.380,-1786.355,-2218.380ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea6509e1">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea6509e1">
+                <path d="M-1788.921,-2221.380L-1795.789,-2221.380L-1795.855,-2219.386L-1795.469,-2219.386C-1795.259,-2220.638,-1794.857,-2220.832,-1793.296,-2220.881L-1792.953,-2220.892L-1792.953,-2214.549C-1792.953,-2214.012,-1793.069,-2213.884,-1794.002,-2213.801L-1794.002,-2213.380L-1790.708,-2213.380L-1790.708,-2213.801C-1791.646,-2213.884,-1791.762,-2214.011,-1791.762,-2214.549L-1791.762,-2220.892L-1791.414,-2220.882C-1789.854,-2220.832,-1789.451,-2220.638,-1789.241,-2219.386L-1788.855,-2219.386L-1788.921,-2221.380ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <!-- frame: BlockObject -->
+  <div class="frame block-objec-4411ea64ca36">
+    <!-- rect: Rectangle -->
+    <div class="shape rect rectangle-4411ea64ca37">
+    </div>
+    <!-- frame: Graphics / app.svg -->
+    <div class="frame graphics-4411ea64ca38">
+      <!-- group: Graphics / app.svg -->
+      <div class="shape group graphics-4411ea64ca39">
+        <svg width="16" xmlns="http://www.w3.org/2000/svg" height="16" id="screenshot-6b3ffe85-5267-8025-8005-4411ea64ca39" viewBox="-1800.355 -2261.666 16 16" style="-webkit-print-color-adjust::exact" xmlns:xlink="http://www.w3.org/1999/xlink" fill="none" version="1.1">
+          <g id="shape-6b3ffe85-5267-8025-8005-4411ea64ca39" style="fill:#000000" class="bi bi-app" width="16" height="16" rx="0" ry="0">
+            <defs></defs>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea64ca3a" style="display:none">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea64ca3a">
+                <rect rx="0" ry="0" x="-1800.3551696711468" y="-2261.6660107708194" transform="matrix(1.000000, 0.000000, 0.000000, 1.000000, 0.000000, 0.000000)" width="16" height="16" fill="none" style="fill:none"></rect>
+              </g>
+            </g>
+            <g id="shape-6b3ffe85-5267-8025-8005-4411ea64ca3b">
+              <defs></defs>
+              <g class="fills" id="fills-6b3ffe85-5267-8025-8005-4411ea64ca3b">
+                <path d="M-1789.355,-2259.666C-1787.698,-2259.666,-1786.355,-2258.323,-1786.355,-2256.666L-1786.355,-2250.666C-1786.355,-2249.009,-1787.698,-2247.666,-1789.355,-2247.666L-1795.355,-2247.666C-1797.012,-2247.666,-1798.355,-2249.009,-1798.355,-2250.666L-1798.355,-2256.666C-1798.355,-2258.323,-1797.012,-2259.666,-1795.355,-2259.666L-1789.355,-2259.666ZZM-1795.355,-2260.666C-1797.564,-2260.666,-1799.355,-2258.875,-1799.355,-2256.666L-1799.355,-2250.666C-1799.355,-2248.457,-1797.564,-2246.666,-1795.355,-2246.666L-1789.355,-2246.666C-1787.146,-2246.666,-1785.355,-2248.457,-1785.355,-2250.666L-1785.355,-2256.666C-1785.355,-2258.875,-1787.146,-2260.666,-1789.355,-2260.666L-1795.355,-2260.666ZZ" style="fill:#000000"></path>
+              </g>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</div>
+  </body>
+</html>
