@@ -8,6 +8,23 @@ It provides an editor usable on the web and as a desktop app.
 
 You need to install Rust, Node, and npm to have all the dependencies of this project. 
 
+#### Rust (via Chocolatey) : 
+
+```powershell
+choco install rust```
+
+
+```bash
+curl https://sh.rustup.rs -sSf | sh
+```
+
+#### Vite
+
+```
+npm install -D vite
+```
+
+
 ## How to run : 
 
 To launch the web front without the tauri app, go to src : 
