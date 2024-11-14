@@ -11,7 +11,8 @@ You need to install Rust, Node, and npm to have all the dependencies of this pro
 #### Rust (via Chocolatey) : 
 
 ```powershell
-choco install rust```
+choco install rust
+```
 
 
 ```bash
