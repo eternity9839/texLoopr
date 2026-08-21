@@ -1,0 +1,215 @@
+:root,
+.app-shell[data-theme="stone"] {
+  --stone-50: #f7f5f1;
+  --stone-100: #f0ebe3;
+  --stone-200: #e3ddd3;
+  --stone-300: #cfc7ba;
+  --stone-500: #8a8276;
+  --stone-700: #4a453e;
+  --stone-900: #2a2622;
+
+  --chrome: #f3f1ec;
+  --chrome-elevated: #faf8f5;
+  --chrome-inset: #f0ebe3;
+  --surface: #ffffff;
+  --surface-hover: #f7f5f2;
+  --border: #ddd6cb;
+  --border-strong: #c4bbb0;
+
+  /* Document page is always white (WYSIWYG), regardless of chrome theme */
+  --paper: #ffffff;
+  --paper-edge: #e8e0d4;
+  --board: #ebe6de;
+
+  --ink: #2a2622;
+  --ink-muted: #6b645a;
+  --ink-faint: #9a9288;
+
+  --accent: #0f6b63;
+  --accent-hover: #0c5852;
+  --accent-muted: #d8ebe8;
+  --accent-text: #ffffff;
+
+  --danger: #b42318;
+  --danger-muted: #f5e0de;
+  --focus: #0f6b63;
+
+  --scrim: rgba(42, 38, 34, 0.35);
+  --tour-scrim: rgba(28, 24, 20, 0.45);
+  --handle-contrast: #ffffff;
+
+  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent);
+  --shadow-md: 0 4px 16px color-mix(in srgb, var(--ink) 10%, transparent);
+  --shadow-page: 0 8px 28px color-mix(in srgb, var(--ink) 12%, transparent);
+
+  --grid-dot: color-mix(in srgb, var(--ink) 7%, transparent);
+  --ruler-tick: color-mix(in srgb, var(--ink) 12%, transparent);
+  --selection-glow: color-mix(in srgb, var(--accent) 18%, transparent);
+  --accent-wash: color-mix(in srgb, var(--accent) 8%, transparent);
+  --accent-ring: color-mix(in srgb, var(--accent) 35%, transparent);
+  --ink-wash: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+/* Cool gray chrome; teal accent; warm paper stays document-hero */
+.app-shell[data-theme="mist"] {
+  --chrome: #eef1f4;
+  --chrome-elevated: #f7f9fb;
+  --chrome-inset: #e4e9ef;
+  --surface: #ffffff;
+  --surface-hover: #eef2f6;
+  --border: #d3dae2;
+  --border-strong: #b8c2ce;
+
+  --paper: #ffffff;
+  --paper-edge: #e2e8ef;
+  --board: #e4e9ef;
+
+  --ink: #1e2936;
+  --ink-muted: #5b6b7c;
+  --ink-faint: #8a97a6;
+
+  --accent: #0f6b63;
+  --accent-hover: #0c5852;
+  --accent-muted: #d4ebe8;
+  --accent-text: #ffffff;
+
+  --danger: #b42318;
+  --danger-muted: #f5e0de;
+  --focus: #0f6b63;
+
+  --scrim: rgba(30, 41, 54, 0.38);
+  --tour-scrim: rgba(20, 28, 38, 0.48);
+  --handle-contrast: #ffffff;
+}
+
+/* Dark chrome around a light page — preview stays WYSIWYG */
+.app-shell[data-theme="dusk"] {
+  --chrome: #1c1f24;
+  --chrome-elevated: #252a31;
+  --chrome-inset: #14171c;
+  --surface: #2c323b;
+  --surface-hover: #353c47;
+  --border: #3a424e;
+  --border-strong: #525c6b;
+
+  --paper: #ffffff;
+  --paper-edge: #e8e0d4;
+  --board: #14171c;
+
+  --ink: #e8eaed;
+  --ink-muted: #a8b0bc;
+  --ink-faint: #7a8494;
+
+  --accent: #3db8ad;
+  --accent-hover: #52c9bf;
+  --accent-muted: #1e3f3c;
+  --accent-text: #0a1615;
+
+  --danger: #f07178;
+  --danger-muted: #3d2226;
+  --focus: #3db8ad;
+
+  --scrim: rgba(8, 10, 14, 0.55);
+  --tour-scrim: rgba(8, 10, 14, 0.62);
+  --handle-contrast: #ffffff;
+}
+
+/* Modern zinc studio — crisp cyan accent; paper stays light */
+.app-shell[data-theme="nova"] {
+  --chrome: #f4f4f5;
+  --chrome-elevated: #fafafa;
+  --chrome-inset: #e4e4e7;
+  --surface: #ffffff;
+  --surface-hover: #f4f4f5;
+  --border: #e4e4e7;
+  --border-strong: #a1a1aa;
+
+  --paper: #ffffff;
+  --paper-edge: #e4e4e7;
+  --board: #e4e4e7;
+
+  --ink: #18181b;
+  --ink-muted: #71717a;
+  --ink-faint: #a1a1aa;
+
+  --accent: #0891b2;
+  --accent-hover: #0e7490;
+  --accent-muted: #cffafe;
+  --accent-text: #ffffff;
+
+  --danger: #e11d48;
+  --danger-muted: #ffe4e6;
+  --focus: #0891b2;
+
+  --scrim: rgba(24, 24, 27, 0.4);
+  --tour-scrim: rgba(24, 24, 27, 0.5);
+  --handle-contrast: #ffffff;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--ink) 6%, transparent);
+  --shadow-md: 0 8px 24px color-mix(in srgb, var(--ink) 8%, transparent);
+  --shadow-page: 0 12px 32px color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+:root {
+  --font-ui: "Sora", "Segoe UI", sans-serif;
+  --font-doc: "Source Serif 4", "Georgia", serif;
+
+  /* Fluid type — adapts across viewport widths */
+  --text-xs: clamp(0.6875rem, 0.65rem + 0.15vw, 0.75rem);
+  --text-sm: clamp(0.8125rem, 0.78rem + 0.2vw, 0.875rem);
+  --text-md: clamp(0.9375rem, 0.9rem + 0.25vw, 1rem);
+  --text-lg: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+
+  --z-nav: 40;
+  --z-overlay: 60;
+  --z-menu: 70;
+
+  --motion-fast: 120ms;
+  --motion-mode: 180ms;
+  --motion-panel: 200ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Adaptive chrome — overridden by density + container queries */
+  --control-h: clamp(1.75rem, 1.5rem + 0.6vw, 2.125rem);
+  --btn-pad-x: clamp(0.5rem, 0.4rem + 0.4vw, 0.75rem);
+  --btn-pad-y: clamp(0.25rem, 0.2rem + 0.2vw, 0.4rem);
+  --tool-size: clamp(1.75rem, 1.5rem + 0.5vw, 2.125rem);
+  --bar-height: clamp(2.5rem, 2.25rem + 0.8vw, 3rem);
+  --nav-width: clamp(13.5rem, 12.5rem + 4vw, 17.5rem);
+  --tools-width: clamp(4.75rem, 4.25rem + 1.2vw, 5.75rem);
+  --inspector-width: clamp(14rem, 13rem + 4vw, 18rem);
+  --page-width: 720px;
+  --page-min-height: 960px;
+  --handle-size: 8px;
+}
+
+.app-shell[data-density="compact"] {
+  --control-h: clamp(1.5rem, 1.35rem + 0.4vw, 1.75rem);
+  --btn-pad-x: 0.45rem;
+  --btn-pad-y: 0.2rem;
+  --tool-size: 1.65rem;
+  --bar-height: 2.35rem;
+  --nav-width: clamp(11rem, 10rem + 3vw, 14rem);
+  --inspector-width: clamp(13rem, 12rem + 3vw, 15.5rem);
+  --text-sm: 0.8125rem;
+}
+
+.app-shell[data-density="comfortable"] {
+  --control-h: clamp(1.85rem, 1.6rem + 0.7vw, 2.25rem);
+  --tool-size: clamp(1.85rem, 1.6rem + 0.55vw, 2.25rem);
+}
