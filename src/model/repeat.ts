@@ -1,0 +1,22 @@
+/** @deprecated Import from `./groups` — kept for existing imports/tests. */
+export {
+  flattenBlocksForPreview,
+  getRepeatChildren,
+  setRepeatChildren,
+  repeatRowHeight,
+  mergeItemContext,
+  defaultRepeatChildren,
+  getChildBlocks,
+  isContainerBlock,
+  isRepeatingGroup,
+  makeGroupFromBlocks,
+  ungroupBlock,
+  customObjectFromGroup,
+  expandCustomObject,
+  boundsOf,
+  withChildBlocks,
+  findBlockDeep,
+  removeBlockDeep,
+  updateBlockDeep,
+  flattenOutline,
+} from "./groups";
