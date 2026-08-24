@@ -50,8 +50,13 @@ Build a debug APK entirely from the Nix-provided Android toolchain (JDK 17, SDK 
 
 ```fish
 nix develop .#android -c bash -c 'npm run tauri android init'   # once
-npm run android:debug            # arm64-only APK (~150 MB debug)
-npm run android:debug:universal  # all-ABI APK (~550 MB debug)
+npm run android:debug            # arm64-only debug APK (~150 MB)
+npm run android:release          # signed arm64 release APK (~15 MB)
+npm run android:debug:universal  # all-ABI debug APK (~550 MB)
+
+Release signing reads `src-tauri/gen/android/key.properties` (gitignored):
+generate a keystore once with the nix-provided keytool and point
+`storeFile`/`storePassword`/`keyAlias`/`keyPassword` at it.
 ```
 
 Output lands in `src-tauri/gen/android/app/build/outputs/apk/arm64/debug/app-arm64-debug.apk`. The shell hook injects the Nix-patched `aapt2` override into `gradle.properties`, so Gradle builds work on NixOS out of the box. Release builds additionally need a signing keystore.
