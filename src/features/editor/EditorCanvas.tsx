@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "preact/hooks";
+import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
   AppContextMenu,
   type ContextMenuEntry,
@@ -43,6 +43,7 @@ import { evaluateCondition } from "../../model/bindings";
 import { renderBlock } from "./blocks";
 import type { RuntimeContext } from "../../model/expr";
 import type { BlockType } from "../../model/document";
+import { normalizeMargins } from "../../model/document";
 import { BLOCK_TYPE_ICON } from "../../ui/icons";
 import { BLOCK_TOOLS } from "./Toolbox";
 
@@ -60,14 +61,14 @@ type CanvasMenu = {
 function pageCoordsFromEvent(
   pageEl: Element,
   e: MouseEvent,
-  snap: boolean,
+  step: number | null,
 ): { x: number; y: number } {
   const rect = pageEl.getBoundingClientRect();
   let x = Math.max(0, e.clientX - rect.left);
   let y = Math.max(0, e.clientY - rect.top);
-  if (snap) {
-    x = Math.round(x / 8) * 8;
-    y = Math.round(y / 8) * 8;
+  if (step != null && step > 1) {
+    x = Math.round(x / step) * step;
+    y = Math.round(y / step) * step;
   }
   return { x, y };
 }
@@ -82,7 +83,16 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   const showComments = prefs.value.showComments !== false;
   const output = activeOutputProfile();
   const comments = project.value.comments ?? [];
+  const gridSize = prefs.value.gridSize ?? 16;
+  const gridLock = prefs.value.gridLock === true;
+  const snapStep: number | null = prefs.value.snap
+    ? gridLock
+      ? gridSize
+      : 8
+    : null;
   const [menu, setMenu] = useState<CanvasMenu | null>(null);
+  /** Start positions of every selected block at drag begin (multi-drag) */
+  const dragOrigins = useRef<Map<string, { x: number; y: number }>>(new Map());
 
   const closeMenu = useCallback(() => setMenu(null), []);
 
@@ -95,14 +105,14 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   const openPageMenu = useCallback((e: MouseEvent, pageEl: Element) => {
     e.preventDefault();
     e.stopPropagation();
-    const placeAt = pageCoordsFromEvent(pageEl, e, Boolean(prefs.value.snap));
+    const placeAt = pageCoordsFromEvent(pageEl, e, snapStep);
     setMenu({
       x: e.clientX,
       y: e.clientY,
       scope: "page",
       placeAt,
     });
-  }, []);
+  }, [snapStep]);
 
   const runtime: RuntimeContext | undefined = useMemo(() => {
     if (!preview || !output) return undefined;
@@ -261,6 +271,24 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
           icon: "crosshair",
           action: () => updatePrefs({ snap: !prefs.value.snap }),
         },
+        {
+          id: "magnet",
+          label: gridLock ? "Unlock from grid" : "Lock to grid",
+          icon: "magnet",
+          action: () => updatePrefs({ gridLock: !gridLock }),
+        },
+        {
+          id: "guides",
+          label:
+            prefs.value.showMarginGuides === false
+              ? "Show margin guides"
+              : "Hide margin guides",
+          icon: "ruler",
+          action: () =>
+            updatePrefs({
+              showMarginGuides: prefs.value.showMarginGuides === false,
+            }),
+        },
       ];
     }
 
@@ -393,7 +421,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
       ".editor-page",
     );
     if (!pageEl) return;
-    const at = pageCoordsFromEvent(pageEl, e, Boolean(prefs.value.snap));
+    const at = pageCoordsFromEvent(pageEl, e, snapStep);
     if (tool) {
       insertBlock(tool, {
         x: Math.max(0, at.x - 40),
@@ -408,6 +436,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   const boardClass = [
     "editor-board",
     showGrid ? "editor-board--grid" : "",
+    showGrid && prefs.value.gridStyle === "dots" ? "editor-board--grid-dots" : "",
     showRulers ? "editor-board--rulers" : "",
   ]
     .filter(Boolean)
@@ -424,6 +453,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
         role="application"
         aria-label={preview ? "Document preview" : "Document editor"}
         data-tour="canvas"
+        style={{ "--board-grid-size": `${gridSize}px` } as Record<string, string>}
         onClick={onBoardClick}
         onContextMenu={(e) => {
           if (preview) return;
@@ -456,6 +486,57 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
             openPageMenu(e, e.currentTarget as HTMLElement);
           }}
         >
+          {(() => {
+            if (!page) return null;
+            const m = normalizeMargins(page.margins);
+            return (
+              <>
+                {page.background ? (
+                  <div
+                    class="page-bg"
+                    aria-hidden="true"
+                    style={{ background: page.background }}
+                  />
+                ) : null}
+                {page.watermark ? (
+                  <div
+                    class="page-watermark"
+                    aria-hidden="true"
+                    style={{
+                      transform: `rotate(${page.watermark.angle ?? -30}deg)`,
+                      opacity: String(page.watermark.opacity ?? 0.08),
+                      color: page.watermark.color ?? "#334155",
+                      fontSize: `${page.watermark.fontSize ?? 96}px`,
+                    }}
+                  >
+                    {page.watermark.kind && page.watermark.kind !== "text"
+                      ? page.watermark.kind.toUpperCase()
+                      : page.watermark.text || ""}
+                  </div>
+                ) : null}
+                {!preview && prefs.value.showMarginGuides !== false ? (
+                  <>
+                    <div
+                      class="page-margin-guide page-margin-guide--top"
+                      style={{ height: `${m.top}px` }}
+                    />
+                    <div
+                      class="page-margin-guide page-margin-guide--right"
+                      style={{ width: `${m.right}px` }}
+                    />
+                    <div
+                      class="page-margin-guide page-margin-guide--bottom"
+                      style={{ height: `${m.bottom}px` }}
+                    />
+                    <div
+                      class="page-margin-guide page-margin-guide--left"
+                      style={{ width: `${m.left}px` }}
+                    />
+                  </>
+                ) : null}
+              </>
+            );
+          })()}
           {empty && !preview && (
             <div class="editor-empty">
               <strong>Empty page</strong>
@@ -489,8 +570,34 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               onContextMenu: (_id, ev) => openBlockMenu(ev),
               onChangeContent: (id, content) => updateBlock(id, { content }),
               onGestureStart: pushHistoryCheckpoint,
-              snapStep: prefs.value.snap ? 8 : null,
-              onMoveResize: (id, patch) => updateBlock(id, patch),
+              snapStep,
+              onMoveResize: (id, patch, mode) => {
+                if (mode === "drag" && selectedIds.value.length > 1) {
+                  const ids = selectedIds.value;
+                  const origins = dragOrigins.current;
+                  if (!origins.has(id)) {
+                    origins.clear();
+                    for (const b of page?.blocks ?? []) {
+                      if (ids.includes(b.id)) origins.set(b.id, { x: b.x, y: b.y });
+                    }
+                  }
+                  const anchor = origins.get(id);
+                  if (anchor) {
+                    const dx = (patch.x ?? 0) - anchor.x;
+                    const dy = (patch.y ?? 0) - anchor.y;
+                    for (const [oid, o] of origins) {
+                      if (oid === id) continue;
+                      const ob = page?.blocks.find((b) => b.id === oid);
+                      if (ob && !ob.locked) {
+                        updateBlock(oid, { x: o.x + dx, y: o.y + dy });
+                      }
+                    }
+                  }
+                } else if (mode === "drag") {
+                  dragOrigins.current.clear();
+                }
+                updateBlock(id, patch);
+              },
             });
           })}
         </div>

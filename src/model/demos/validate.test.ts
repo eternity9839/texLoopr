@@ -25,7 +25,12 @@ describe("DEMO_LIBRARY preview validation", () => {
       expect(rows.length).toBeGreaterThan(0);
 
       const row = rows[0]!;
-      const ctx = enrichPreviewContext(project, row, 0);
+      const outputs = project.outputs ?? [];
+      const ctx = enrichPreviewContext(project, row, {
+        kind: "preview",
+        name: outputs[0]?.name ?? "preview",
+        id: outputs[0]?.id ?? "preview",
+      });
       expect(ctx).toBeTruthy();
 
       for (const page of project.pages) {

@@ -41,6 +41,7 @@ export type IconName =
   | "messages"
   | "grid"
   | "crosshair"
+  | "magnet"
   | "ruler"
   | "users"
   | "edit"
@@ -160,6 +161,11 @@ const PATHS: Record<IconName, string[]> = {
     "M2 12h5",
     "M17 12h5",
     "M12 12h.01",
+  ],
+  magnet: [
+    "M5 3h5v8a2 2 0 0 0 4 0V3h5v8a7 7 0 0 1-14 0V3z",
+    "M5 8h5",
+    "M14 8h5",
   ],
   ruler: [
     "M4 6h16v5H4z",

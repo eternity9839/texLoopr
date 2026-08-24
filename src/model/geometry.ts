@@ -70,6 +70,21 @@ export function applyResize(
 
 export type ResizeHandle = "n" | "ne" | "e" | "se" | "s" | "sw" | "w" | "nw";
 
+/** Snap every edge/corner of a rect exactly onto the grid. */
+export function snapRect(rect: Rect, step: number): Rect {
+  if (step <= 1) return rect;
+  const x = snapPx(rect.x, step);
+  const y = snapPx(rect.y, step);
+  const right = snapPx(rect.x + rect.w, step);
+  const bottom = snapPx(rect.y + rect.h, step);
+  return {
+    x,
+    y,
+    w: Math.max(MIN_BLOCK_W, px(right - x)),
+    h: Math.max(MIN_BLOCK_H, px(bottom - y)),
+  };
+}
+
 /** Resize from a fixed opposite edge/corner; integer CSS px for output fidelity. */
 export function resizeFromHandle(
   start: Rect,

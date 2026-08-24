@@ -559,9 +559,9 @@ function invoice(): Project {
         b("paragraph", {
           name: "Bill to",
           x: 40,
-          y: 100,
+          y: 126,
           w: 280,
-          h: 72,
+          h: 64,
           content: {
             text: "Bill to\n{{bill_name}}\n{{bill_company}}\n{{bill_address}}",
           },
@@ -570,9 +570,9 @@ function invoice(): Project {
         b("paragraph", {
           name: "Ship to",
           x: 360,
-          y: 100,
+          y: 126,
           w: 280,
-          h: 72,
+          h: 64,
           content: {
             text: "Ship to\n{{ship_name}}\n{{ship_address}}",
           },
@@ -992,7 +992,19 @@ function welcome(): Project {
           condition: "output.kind == 'print' && device.media == 'label'",
         }),
       ]),
-      page("Page 2", []),
+      page("Page 2", [
+        b("text", {
+          name: "Next steps",
+          x: 40,
+          y: 240,
+          w: 320,
+          h: 72,
+          content: {
+            text: "Next steps\n• Load your data in the Data view\n• Drag blocks from the toolbox\n• Pick a saved prebuild to start fast",
+          },
+          style: { fontSize: 12, color: "#3d4a5c" },
+        }),
+      ]),
     ],
     {
       comments: [

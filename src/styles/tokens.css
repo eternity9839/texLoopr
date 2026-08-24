@@ -38,11 +38,17 @@
   --tour-scrim: rgba(28, 24, 20, 0.45);
   --handle-contrast: #ffffff;
 
+  /* Native widget adaptation (selects, color pickers, scrollbars) */
+  color-scheme: light;
+
+  --shadow-xs: 0 1px 1px color-mix(in srgb, var(--ink) 6%, transparent);
   --shadow-sm: 0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent);
   --shadow-md: 0 4px 16px color-mix(in srgb, var(--ink) 10%, transparent);
+  --shadow-lg: 0 10px 30px color-mix(in srgb, var(--ink) 14%, transparent);
   --shadow-page: 0 8px 28px color-mix(in srgb, var(--ink) 12%, transparent);
 
   --grid-dot: color-mix(in srgb, var(--ink) 7%, transparent);
+  --grid-line: color-mix(in srgb, var(--ink) 5%, transparent);
   --ruler-tick: color-mix(in srgb, var(--ink) 12%, transparent);
   --selection-glow: color-mix(in srgb, var(--accent) 18%, transparent);
   --accent-wash: color-mix(in srgb, var(--accent) 8%, transparent);
@@ -76,6 +82,8 @@
   --danger: #b42318;
   --danger-muted: #f5e0de;
   --focus: #0f6b63;
+
+  --grid-line: color-mix(in srgb, var(--ink) 5%, transparent);
 
   --scrim: rgba(30, 41, 54, 0.38);
   --tour-scrim: rgba(20, 28, 38, 0.48);
@@ -112,6 +120,18 @@
   --scrim: rgba(8, 10, 14, 0.55);
   --tour-scrim: rgba(8, 10, 14, 0.62);
   --handle-contrast: #ffffff;
+
+  /* Native widgets follow the dark chrome */
+  color-scheme: dark;
+
+  --shadow-xs: 0 1px 1px rgba(0, 0, 0, 0.3);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow-page: 0 10px 32px rgba(0, 0, 0, 0.55);
+
+  --grid-dot: rgba(232, 234, 237, 0.09);
+  --grid-line: rgba(232, 234, 237, 0.06);
 }
 
 /* Modern zinc studio — crisp cyan accent; paper stays light */
@@ -140,6 +160,8 @@
   --danger: #e11d48;
   --danger-muted: #ffe4e6;
   --focus: #0891b2;
+
+  --grid-line: color-mix(in srgb, var(--ink) 5%, transparent);
 
   --scrim: rgba(24, 24, 27, 0.4);
   --tour-scrim: rgba(24, 24, 27, 0.5);

@@ -33,6 +33,109 @@ button {
   cursor: pointer;
 }
 
+/* ---- Unified form-control skin (dock, inspector, settings, ribbon) ----
+   Every text-ish control shares one surface/border/focus treatment so
+   panels feel like one product, and native widgets follow the theme via
+   `color-scheme` (see tokens.css). */
+::selection {
+  background: var(--accent-muted);
+  color: var(--ink);
+}
+
+input[type="text"],
+input[type="number"],
+input[type="search"],
+input[type="url"],
+input[type="email"],
+textarea,
+select {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  min-height: calc(var(--control-h) - 2px);
+  padding: 0.15rem var(--space-2);
+  transition:
+    border-color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out),
+    background var(--motion-fast) var(--ease-out);
+}
+
+input[type="text"]:hover,
+input[type="number"]:hover,
+input[type="search"]:hover,
+input[type="url"]:hover,
+input[type="email"]:hover,
+textarea:hover,
+select:hover {
+  border-color: var(--border-strong);
+}
+
+input[type="text"]:focus-visible,
+input[type="number"]:focus-visible,
+input[type="search"]:focus-visible,
+input[type="url"]:focus-visible,
+input[type="email"]:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
+}
+
+textarea {
+  padding: var(--space-2);
+  resize: vertical;
+}
+
+select {
+  padding-right: var(--space-4);
+}
+
+/* Color swatches: same chrome as other controls, rounded swatch inside */
+input[type="color"] {
+  appearance: none;
+  width: calc(var(--control-h) + 0.5rem);
+  height: calc(var(--control-h) - 2px);
+  padding: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--motion-fast) var(--ease-out);
+}
+
+input[type="color"]:hover {
+  border-color: var(--border-strong);
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: calc(var(--radius-sm) - 2px);
+}
+
+input[type="color"]::-moz-color-swatch {
+  border: none;
+  border-radius: calc(var(--radius-sm) - 2px);
+}
+
+/* Checkboxes/radii/sliders pick up the accent */
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: var(--accent);
+  width: 0.9rem;
+  height: 0.9rem;
+  flex-shrink: 0;
+}
+
+input[type="range"] {
+  accent-color: var(--accent);
+}
+
 img {
   display: block;
   max-width: 100%;
