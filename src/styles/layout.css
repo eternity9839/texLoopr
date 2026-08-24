@@ -12,6 +12,7 @@
   z-index: var(--z-nav);
   display: flex;
   align-items: center;
+  flex-wrap: nowrap;
   gap: var(--space-3);
   min-height: var(--bar-height);
   padding: 0 clamp(0.5rem, 0.4rem + 1vw, 1rem);
@@ -21,14 +22,19 @@
 
 .context-bar__brand {
   flex-shrink: 0;
+  max-width: 9rem;
+  overflow: hidden;
   color: var(--ink);
   font-weight: 600;
   font-size: var(--text-sm);
   letter-spacing: -0.02em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .context-bar__title {
-  min-width: 6rem;
+  flex-shrink: 1;
+  min-width: 3.5rem;
   max-width: min(18rem, 40vw);
   height: var(--control-h);
   padding: 0 var(--btn-pad-x);
@@ -47,8 +53,10 @@
 }
 
 .context-bar__meta {
+  overflow: hidden;
   color: var(--ink-faint);
   font-size: var(--text-xs);
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
@@ -238,10 +246,6 @@
   display: grid;
   flex: 1;
   min-height: 0;
-}
-
-.studio-layout--resizable {
-  /* columns set inline from prefs */
 }
 
 .overflow-menu__sep {
@@ -718,7 +722,7 @@ body.is-resizing-panes {
 .prop-dock__body {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .prop-dock__toggle {
@@ -892,7 +896,7 @@ body.is-resizing-panes .pane-resizer--north {
   font-size: var(--text-xs);
 }
 
-/* ── Responsive & touch layer ─────────────────────────────────────── */
+/* ── Touch foundations (harmless everywhere) ──────────────────────── */
 
 @supports (height: 100dvh) {
   html,
@@ -913,62 +917,75 @@ body {
   touch-action: none;
 }
 
-.studio-layout--narrow {
-  position: relative;
-}
-
-.studio-drawer {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  z-index: calc(var(--z-nav) + 4);
-  display: flex;
-  flex-direction: column;
-  width: min(85vw, 20rem);
-  background: var(--chrome);
-  box-shadow: var(--shadow-lg);
-}
-
-.studio-drawer--left {
-  left: 0;
-  border-right: 1px solid var(--border);
-}
-
-.studio-drawer--right {
-  right: 0;
-  border-left: 1px solid var(--border);
-}
-
-.drawer-tab {
-  position: absolute;
-  top: 0.75rem;
-  z-index: calc(var(--z-nav) + 3);
-  display: grid;
-  place-items: center;
-  width: 2rem;
-  height: 2rem;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--surface) 92%, transparent);
-  backdrop-filter: blur(8px);
-  color: var(--ink-faint);
-  cursor: pointer;
-}
-
-.drawer-tab:hover {
-  color: var(--ink);
-  border-color: var(--border-strong);
-}
-
-.drawer-tab--left {
-  left: 0.5rem;
-}
-
-.drawer-tab--right {
-  right: 0.5rem;
-}
+/* ── Narrow viewports only: rails become overlay drawers ────────────
+   Everything below is gated behind the media query so the desktop
+   layout can never see drawer/scrim/tab styles, even if the JS
+   narrow-branch renders. */
 
 @media (max-width: 880px) {
+  .studio-layout--narrow {
+    position: relative;
+    display: block;
+  }
+
+  .studio-drawer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: var(--z-rail-drawer);
+    display: flex;
+    flex-direction: column;
+    width: min(85vw, 20rem);
+    background: var(--chrome);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .studio-drawer--left {
+    left: 0;
+    border-right: 1px solid var(--border);
+  }
+
+  .studio-drawer--right {
+    right: 0;
+    border-left: 1px solid var(--border);
+  }
+
+  .drawer-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-rail-scrim);
+    background: var(--scrim);
+  }
+
+  .drawer-tab {
+    position: absolute;
+    top: 0.75rem;
+    z-index: var(--z-rail-scrim);
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--surface) 92%, transparent);
+    backdrop-filter: blur(8px);
+    color: var(--ink-faint);
+    cursor: pointer;
+  }
+
+  .drawer-tab:hover {
+    color: var(--ink);
+    border-color: var(--border-strong);
+  }
+
+  .drawer-tab--left {
+    left: 0.5rem;
+  }
+
+  .drawer-tab--right {
+    right: 0.5rem;
+  }
+
   .context-bar__meta,
   .context-bar .context-bar__brand span {
     display: none;
@@ -986,17 +1003,6 @@ body {
   .prop-dock:not(.prop-dock--collapsed) {
     max-height: 44dvh;
   }
-}
-
-.studio-drawer {
-  z-index: calc(var(--z-nav) + 4);
-}
-
-.drawer-scrim {
-  position: absolute;
-  inset: 0;
-  z-index: calc(var(--z-nav) + 3);
-  background: color-mix(in srgb, #000 32%, transparent);
 }
 
 @supports (padding: env(safe-area-inset-left)) {

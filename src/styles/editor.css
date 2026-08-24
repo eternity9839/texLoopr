@@ -25,7 +25,7 @@
   position: absolute;
   top: 0.75rem;
   left: 0.75rem;
-  z-index: 12;
+  z-index: var(--z-canvas-float);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -82,11 +82,13 @@
 .float-toolbox__sheet {
   min-width: 11rem;
   max-width: 16rem;
+  max-height: min(60vh, 26rem);
+  overflow-y: auto;
   padding: 0.55rem;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
-  box-shadow: var(--shadow-md, 0 8px 24px rgba(28, 25, 23, 0.12));
+  box-shadow: var(--shadow-md);
 }
 
 .float-toolbox__field {
@@ -245,7 +247,7 @@
   width: min(100%, var(--page-width));
   min-height: var(--page-min-height);
   margin: 0 auto;
-  background: #ffffff;
+  background: var(--paper);
   border: 1px solid var(--paper-edge);
   border-radius: 2px;
   box-shadow: var(--shadow-page);
@@ -279,7 +281,7 @@
   position: absolute;
   overflow: visible;
   border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
-  background: rgba(255, 255, 255, 0.92);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
   box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 4%, transparent);
   touch-action: none;
   user-select: none;
@@ -862,6 +864,7 @@
   flex-wrap: wrap;
   gap: var(--space-3);
   align-items: flex-start;
+  min-width: 0;
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border);
   background: var(--chrome-elevated);
