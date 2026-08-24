@@ -46,6 +46,26 @@ export type BlockType =
   /** @deprecated Prefer group + itemsPath; kept for demo documents */
   | "repeat";
 
+/** Marker/numbering outlook for list blocks */
+export type ListStyle =
+  | "disc"
+  | "circle"
+  | "square"
+  | "decimal"
+  | "upper-roman"
+  | "lower-alpha"
+  | "none";
+
+export const LIST_STYLES: { value: ListStyle; label: string }[] = [
+  { value: "disc", label: "Bullet •" },
+  { value: "circle", label: "Circle ◦" },
+  { value: "square", label: "Square ▪" },
+  { value: "decimal", label: "Numbered 1." },
+  { value: "upper-roman", label: "Roman I." },
+  { value: "lower-alpha", label: "Letters a." },
+  { value: "none", label: "Plain (no marker)" },
+];
+
 export interface BlockStyle {
   fontSize?: number;
   fontWeight?: number | string;
@@ -53,12 +73,18 @@ export interface BlockStyle {
   textDecoration?: "none" | "underline";
   color?: string;
   textAlign?: "left" | "center" | "right";
+  /** First-line indent in px */
+  textIndent?: number;
+  lineHeight?: number;
+  letterSpacing?: number;
   background?: string;
   borderRadius?: number;
   borderColor?: string;
   borderWidth?: number;
   opacity?: number;
   padding?: number;
+  /** Outlook of list blocks */
+  listStyle?: ListStyle;
 }
 
 export interface Block {
@@ -93,10 +119,45 @@ export interface CustomObject {
   itemVar?: string;
 }
 
+/** Page margins in px (logical units, same as block geometry) */
+export interface PageMargins {
+  top: number;
+  right: number;
+  bottom: number;
+  left: number;
+}
+
+export const DEFAULT_MARGINS: PageMargins = {
+  top: 64,
+  right: 56,
+  bottom: 72,
+  left: 56,
+};
+
+export type WatermarkKind = "text" | "draft" | "confidential";
+
+export interface Watermark {
+  /** Preset wording; plain custom text when omitted */
+  kind?: WatermarkKind;
+  text?: string;
+  /** Watermark font size in px */
+  fontSize?: number;
+  /** Rotation in degrees */
+  angle?: number;
+  opacity?: number;
+  color?: string;
+}
+
 export interface Page {
   id: string;
   name: string;
   blocks: Block[];
+  /** Print margins shown as guides; used by margin-aligned inserts */
+  margins?: PageMargins;
+  /** Page backdrop behind all blocks (subtle tint or brand paper) */
+  background?: string;
+  /** Draft/confidential watermark rendered under blocks */
+  watermark?: Watermark;
 }
 
 /** Word-style review note anchored to a block (ADR 0006) */
@@ -167,6 +228,18 @@ export interface EditorPrefs {
   inspectorCollapsed?: boolean;
   /** Floating toolbox orientation over the canvas */
   toolsOrientation?: "vertical" | "horizontal";
+  /** Height of the bottom properties dock (px) */
+  propsHeight?: number;
+  /** Bottom dock collapsed to a slim bar */
+  propsCollapsed?: boolean;
+  /** Canvas grid cell size (px) */
+  gridSize?: number;
+  /** Snap moves/resizes to the grid */
+  gridLock?: boolean;
+  /** Grid rendering style */
+  gridStyle?: "lines" | "dots";
+  /** Show dashed margin guides from page margins */
+  showMarginGuides?: boolean;
 }
 
 /** Logical page size used by align tools (matches CSS tokens) */
@@ -212,6 +285,8 @@ export const BLOCK_DEFAULTS: Record<
     w: 240,
     h: 96,
     content: {
+      header: true,
+      sourcePath: "",
       rows: 3,
       cols: 3,
       cells: [
@@ -296,5 +371,15 @@ export function createEmptyProject(): Project {
     workflow: defaultWorkflow(),
     scripts: defaultScripts(),
     comments: [],
+  };
+}
+
+/** Fill any missing margin side with the default */
+export function normalizeMargins(m?: Partial<PageMargins>): PageMargins {
+  return {
+    top: m?.top ?? DEFAULT_MARGINS.top,
+    right: m?.right ?? DEFAULT_MARGINS.right,
+    bottom: m?.bottom ?? DEFAULT_MARGINS.bottom,
+    left: m?.left ?? DEFAULT_MARGINS.left,
   };
 }

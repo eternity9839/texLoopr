@@ -1,5 +1,4 @@
 import { useState } from "preact/hooks";
-import type { ComponentChildren } from "preact";
 import {
   selectedBlock,
   selection,
@@ -16,9 +15,18 @@ import {
 } from "../../state/store";
 import { MIN_BLOCK_H, MIN_BLOCK_W, px } from "../../model/geometry";
 import { dataColumnNames } from "../../model/bindings";
-import type { Block } from "../../model/document";
+import { LIST_STYLES, type Block } from "../../model/document";
 import { defaultRepeatChildren } from "../../model/repeat";
 import { Icon } from "../../ui/icons";
+import {
+  CheckRow,
+  ColorField,
+  Field,
+  Grid2,
+  NumField,
+  Section,
+  SelectField,
+} from "../../ui/controls";
 import { INSPECTOR_TABS } from "../studio/inspectorTabs";
 
 function FieldPicker({
@@ -31,57 +39,20 @@ function FieldPicker({
   const cols = dataColumnNames(dataRows.value);
   if (cols.length === 0) {
     return (
-      <p class="muted" style={{ fontSize: "0.7rem" }}>
-        Load Data rows to pick merge fields.
-      </p>
+      <p class="muted prop-hint">Load Data rows to pick merge fields.</p>
     );
   }
   return (
-    <div class="field">
-      <label for={`field-pick-${block.id}`}>Insert field</label>
-      <select
-        id={`field-pick-${block.id}`}
-        value=""
-        onChange={(e) => {
-          const col = e.currentTarget.value;
-          if (col) onPick(col);
-          e.currentTarget.value = "";
-        }}
-      >
-        <option value="">Bind field…</option>
-        {cols.map((c) => (
-          <option key={c} value={c}>
-            {c}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-function Collapse({
-  title,
-  children,
-  defaultOpen = true,
-}: {
-  title: string;
-  children: ComponentChildren;
-  defaultOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(defaultOpen);
-  return (
-    <section class="insp-section">
-      <button
-        type="button"
-        class="insp-section__head"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span>{title}</span>
-        <Icon name={open ? "chevronDown" : "chevronRight"} size={12} />
-      </button>
-      {open && <div class="insp-section__body">{children}</div>}
-    </section>
+    <SelectField
+      id={`field-pick-${block.id}`}
+      label="Insert field"
+      value=""
+      options={[
+        { value: "", label: "Bind field…" },
+        ...cols.map((c) => ({ value: c, label: c })),
+      ]}
+      onChange={(col) => col && onPick(col)}
+    />
   );
 }
 
@@ -98,78 +69,62 @@ function GeometryFields({
   w: number;
   h: number;
 }) {
-  const setNum =
+  const num =
     (key: "x" | "y" | "w" | "h", min = 0) =>
-    (e: Event) => {
-      const raw = Number((e.currentTarget as HTMLInputElement).value);
-      if (!Number.isFinite(raw)) return;
+    (v: number) => {
       const value =
         key === "w"
-          ? Math.max(MIN_BLOCK_W, px(raw))
+          ? Math.max(MIN_BLOCK_W, px(v))
           : key === "h"
-            ? Math.max(MIN_BLOCK_H, px(raw))
-            : Math.max(min, px(raw));
+            ? Math.max(MIN_BLOCK_H, px(v))
+            : Math.max(min, px(v));
       updateBlock(blockId, { [key]: value });
     };
 
   return (
-    <Collapse title="Geometry (px)">
-      <div class="geo-grid">
-        <div class="field">
-          <label for="geo-x">X</label>
-          <input id="geo-x" type="number" step={1} value={x} onInput={setNum("x")} />
-        </div>
-        <div class="field">
-          <label for="geo-y">Y</label>
-          <input id="geo-y" type="number" step={1} value={y} onInput={setNum("y")} />
-        </div>
-      </div>
-      <div class="geo-grid">
-        <div class="field">
-          <label for="geo-w">W</label>
-          <input
-            id="geo-w"
-            type="number"
-            step={1}
-            min={MIN_BLOCK_W}
-            value={w}
-            onInput={setNum("w")}
-          />
-        </div>
-        <div class="field">
-          <label for="geo-h">H</label>
-          <input
-            id="geo-h"
-            type="number"
-            step={1}
-            min={MIN_BLOCK_H}
-            value={h}
-            onInput={setNum("h")}
-          />
-        </div>
-      </div>
-    </Collapse>
+    <Section title="Geometry (px)">
+      <Grid2>
+        <NumField id="geo-x" label="X" value={x} onValue={num("x")} />
+        <NumField id="geo-y" label="Y" value={y} onValue={num("y")} />
+      </Grid2>
+      <Grid2>
+        <NumField
+          id="geo-w"
+          label="W"
+          value={w}
+          min={MIN_BLOCK_W}
+          onValue={num("w")}
+        />
+        <NumField
+          id="geo-h"
+          label="H"
+          value={h}
+          min={MIN_BLOCK_H}
+          onValue={num("h")}
+        />
+      </Grid2>
+    </Section>
   );
 }
 
 export function MetadataPanel() {
   const proj = project.value;
   const page = activePage.value;
-  const meta = (key: keyof typeof proj) => (e: Event) => {
-    const el = e.currentTarget as HTMLInputElement | HTMLTextAreaElement;
-    const value =
-      el.type === "checkbox"
-        ? (el as HTMLInputElement).checked
-        : el.value;
-    updateProjectMeta({ [key]: value } as never);
-  };
+  const meta =
+    (key: keyof typeof proj) =>
+    (e: Event): void => {
+      const el = e.currentTarget as HTMLInputElement | HTMLTextAreaElement;
+      const value =
+        el.type === "checkbox" ? (el as HTMLInputElement).checked : el.value;
+      updateProjectMeta({ [key]: value } as never);
+    };
+  const textMeta = (key: keyof typeof proj) => meta(key);
 
   return (
     <div class="panel-pad" aria-label="Document metadata">
-      <Collapse title="Page">
+      <Section title="Page">
         {page && (
-          <div class="field">
-            <label for="page-name">Name</label>
+          <Field label="Name" forId="page-name">
             <input
               id="page-name"
               value={page.name}
@@ -177,107 +132,106 @@ export function MetadataPanel() {
                 updatePage(page.id, { name: e.currentTarget.value })
               }
             />
-          </div>
+          </Field>
         )}
-      </Collapse>
-      <Collapse title="Identity">
-        <div class="field">
-          <label for="meta-name">Document title</label>
+      </Section>
+
+      <Section title="Identity">
+        <Field label="Document title" forId="meta-name">
           <input
             id="meta-name"
             value={proj.name}
             onInput={(e) => updateProjectMeta({ name: e.currentTarget.value })}
           />
-        </div>
-        <div class="field">
-          <label for="meta-author">Author</label>
-          <input id="meta-author" value={proj.author} onInput={meta("author")} />
-        </div>
-        <div class="field">
-          <label for="meta-company">Company / org</label>
+        </Field>
+        <Field label="Author" forId="meta-author">
+          <input
+            id="meta-author"
+            value={proj.author}
+            onInput={textMeta("author")}
+          />
+        </Field>
+        <Field label="Company / org" forId="meta-company">
           <input
             id="meta-company"
             value={proj.company ?? ""}
             onInput={meta("company")}
           />
-        </div>
-        <div class="field">
-          <label for="meta-email">Contact email</label>
+        </Field>
+        <Field label="Contact email" forId="meta-email">
           <input
             id="meta-email"
             type="email"
             value={proj.contactEmail ?? ""}
             onInput={meta("contactEmail")}
           />
-        </div>
-      </Collapse>
-      <Collapse title="Classification">
-        <div class="field">
-          <label for="meta-subject">Subject</label>
+        </Field>
+      </Section>
+
+      <Section title="Classification">
+        <Field label="Subject" forId="meta-subject">
           <input
             id="meta-subject"
             value={proj.subject}
             onInput={meta("subject")}
           />
-        </div>
-        <div class="field">
-          <label for="meta-category">Category</label>
+        </Field>
+        <Field label="Category" forId="meta-category">
           <input
             id="meta-category"
             value={proj.category ?? ""}
             onInput={meta("category")}
             placeholder="Letter · Invoice · Legal…"
           />
-        </div>
-        <div class="field">
-          <label for="meta-keywords">Keywords</label>
-          <input
-            id="meta-keywords"
-            value={proj.keywords ?? ""}
-            onInput={meta("keywords")}
-            placeholder="comma,separated"
-          />
-        </div>
-        <div class="field">
-          <label for="meta-tags">Tags</label>
-          <input
-            id="meta-tags"
-            value={proj.tags ?? ""}
-            onInput={meta("tags")}
-            placeholder="draft, client-a"
-          />
-        </div>
-        <div class="field">
-          <label for="meta-lang">Language</label>
-          <input
-            id="meta-lang"
-            value={proj.language ?? ""}
-            onInput={meta("language")}
-            placeholder="en · fr · nl"
-          />
-        </div>
-        <div class="field">
-          <label for="meta-version">Version</label>
-          <input
-            id="meta-version"
-            value={proj.version ?? ""}
-            onInput={meta("version")}
-            placeholder="1.0"
-          />
-        </div>
-      </Collapse>
-      <Collapse title="Description & custom" defaultOpen={false}>
-        <div class="field">
-          <label for="meta-desc">Description</label>
+        </Field>
+        <Grid2>
+          <Field label="Keywords" forId="meta-keywords">
+            <input
+              id="meta-keywords"
+              value={proj.keywords ?? ""}
+              onInput={meta("keywords")}
+              placeholder="comma,separated"
+            />
+          </Field>
+          <Field label="Tags" forId="meta-tags">
+            <input
+              id="meta-tags"
+              value={proj.tags ?? ""}
+              onInput={meta("tags")}
+              placeholder="draft, client-a"
+            />
+          </Field>
+        </Grid2>
+        <Grid2>
+          <Field label="Language" forId="meta-lang">
+            <input
+              id="meta-lang"
+              value={proj.language ?? ""}
+              onInput={meta("language")}
+              placeholder="en · fr · nl"
+            />
+          </Field>
+          <Field label="Version" forId="meta-version">
+            <input
+              id="meta-version"
+              value={proj.version ?? ""}
+              onInput={meta("version")}
+              placeholder="1.0"
+            />
+          </Field>
+        </Grid2>
+      </Section>
+
+      <Section title="Description & custom" defaultOpen={false}>
+        <Field label="Description" forId="meta-desc">
           <textarea
             id="meta-desc"
             value={proj.description}
             onInput={meta("description")}
             rows={3}
           />
-        </div>
-        <div class="field">
-          <label for="meta-created">Created</label>
+        </Field>
+        <Field label="Created" forId="meta-created">
           <input
             id="meta-created"
             type="date"
@@ -286,9 +240,8 @@ export function MetadataPanel() {
               updateProjectMeta({ createdAt: e.currentTarget.value })
             }
           />
-        </div>
-        <div class="field">
-          <label for="meta-custom">Custom fields</label>
+        </Field>
+        <Field label="Custom fields" forId="meta-custom" hint="One key=value per line.">
           <textarea
             id="meta-custom"
             value={proj.customMeta ?? ""}
@@ -296,25 +249,15 @@ export function MetadataPanel() {
             rows={4}
             placeholder={"client_id=ACME\npo_number=4412"}
           />
-          <p class="muted" style={{ fontSize: "0.7rem", margin: "0.25rem 0 0" }}>
-            One key=value per line.
-          </p>
-        </div>
-        <div class="field">
-          <label for="meta-published">
-            <input
-              id="meta-published"
-              type="checkbox"
-              checked={proj.published}
-              onChange={meta("published")}
-            />{" "}
-            Published
-          </label>
-        </div>
-        <p class="muted" style={{ fontSize: "0.75rem" }}>
-          Last saved: {proj.lastSaved ?? "Never"}
-        </p>
-      </Collapse>
+        </Field>
+        <CheckRow
+          checked={proj.published}
+          onChange={(v) => updateProjectMeta({ published: v })}
+        >
+          Published
+        </CheckRow>
+        <p class="muted prop-hint">Last saved: {proj.lastSaved ?? "Never"}</p>
+      </Section>
     </div>
   );
 }
@@ -354,11 +297,19 @@ export function PropertiesPanel() {
   }
 
   if (sel?.kind === "block" && block) {
+    const styleNum =
+      (key: keyof Block["style"], min?: number, max?: number) =>
+      (v: number) =>
+        updateBlock(block.id, {
+          style: {
+            [key]: Math.min(max ?? Infinity, Math.max(min ?? -Infinity, v)),
+          },
+        });
+
     return (
       <div class="panel-pad" aria-label="Block properties">
-        <Collapse title="Block">
-          <div class="field">
-            <label for="block-name">Name</label>
+        <Section title="Block">
+          <Field label="Name" forId="block-name">
             <input
               id="block-name"
               value={block.name}
@@ -366,9 +317,12 @@ export function PropertiesPanel() {
                 updateBlock(block.id, { name: e.currentTarget.value })
               }
             />
-          </div>
-          <div class="field">
-            <label for="block-condition">Condition</label>
+          </Field>
+          <Field
+            label="Condition"
+            forId="block-condition"
+            hint={"Examples: role, !empty, output.kind == 'print'"}
+          >
             <input
               id="block-condition"
               placeholder="data.role · output.kind == 'print'"
@@ -377,11 +331,7 @@ export function PropertiesPanel() {
                 updateBlock(block.id, { condition: e.currentTarget.value })
               }
             />
-            <p class="muted" style={{ fontSize: "0.7rem", margin: "0.25rem 0 0" }}>
-              Examples: <code>role</code>, <code>!empty</code>,{" "}
-              <code>output.kind == 'print'</code>
-            </p>
-          </div>
+          </Field>
           <FieldPicker
             block={block}
             onPick={(col) => {
@@ -398,8 +348,7 @@ export function PropertiesPanel() {
             }}
           />
           {"text" in block.content && (
-            <div class="field">
-              <label for="block-text">Text</label>
+            <Field label="Text" forId="block-text">
               <textarea
                 id="block-text"
                 value={String(block.content.text ?? "")}
@@ -409,12 +358,11 @@ export function PropertiesPanel() {
                   })
                 }
               />
-            </div>
+            </Field>
           )}
           {block.type === "picture" && (
             <>
-              <div class="field">
-                <label for="pic-src">Image URL</label>
+              <Field label="Image URL" forId="pic-src">
                 <input
                   id="pic-src"
                   value={String(block.content.src ?? "")}
@@ -424,9 +372,8 @@ export function PropertiesPanel() {
                     })
                   }
                 />
-              </div>
-              <div class="field">
-                <label for="pic-alt">Alt text</label>
+              </Field>
+              <Field label="Alt text" forId="pic-alt">
                 <input
                   id="pic-alt"
                   value={String(block.content.alt ?? "")}
@@ -436,12 +383,11 @@ export function PropertiesPanel() {
                     })
                   }
                 />
-              </div>
+              </Field>
             </>
           )}
           {block.type === "list" && (
-            <div class="field">
-              <label for="list-items">List items (one per line)</label>
+            <Field label="List items (one per line)" forId="list-items">
               <textarea
                 id="list-items"
                 value={((block.content.items as string[]) ?? []).join("\n")}
@@ -451,12 +397,11 @@ export function PropertiesPanel() {
                   })
                 }
               />
-            </div>
+            </Field>
           )}
-          {block.type === "repeat" || block.type === "group" ? (
+          {(block.type === "repeat" || block.type === "group") && (
             <>
-              <div class="field">
-                <label for="group-save-name">Save as custom object</label>
+              <Field label="Save as custom object" forId="group-save-name">
                 <div class="field-row">
                   <input
                     id="group-save-name"
@@ -476,22 +421,24 @@ export function PropertiesPanel() {
                     Save
                   </button>
                 </div>
-              </div>
-              <div class="field">
-                <label for="repeat-path">Repeat items path (optional)</label>
+              </Field>
+              <Field
+                label="Repeat items path (optional)"
+                forId="repeat-path"
+                hint="Leave empty for a plain group."
+              >
                 <input
                   id="repeat-path"
                   value={String(block.content.itemsPath ?? "")}
-                  placeholder="line_items — leave empty for a plain group"
+                  placeholder="line_items"
                   onInput={(e) =>
                     updateBlock(block.id, {
                       content: { itemsPath: e.currentTarget.value },
                     })
                   }
                 />
-              </div>
-              <div class="field">
-                <label for="repeat-var">Item variable</label>
+              </Field>
+              <Field label="Item variable" forId="repeat-var">
                 <input
                   id="repeat-var"
                   value={String(block.content.itemVar ?? "item")}
@@ -501,7 +448,7 @@ export function PropertiesPanel() {
                     })
                   }
                 />
-              </div>
+              </Field>
               <button
                 type="button"
                 class="btn btn--ghost btn--small"
@@ -514,8 +461,9 @@ export function PropertiesPanel() {
                 Seed child prototype
               </button>
             </>
-          ) : null}
-        </Collapse>
+          )}
+        </Section>
+
         <GeometryFields
           blockId={block.id}
           x={block.x}
@@ -523,144 +471,114 @@ export function PropertiesPanel() {
           w={block.w}
           h={block.h}
         />
-        <Collapse title="Style" defaultOpen={false}>
-          <div class="field">
-            <label for="font-size">Font size</label>
-            <input
+
+        <Section title="Style" defaultOpen={false}>
+          <Grid2>
+            <NumField
               id="font-size"
-              type="number"
+              label="Font size"
+              value={block.style.fontSize ?? 14}
               min={10}
               max={72}
-              value={block.style.fontSize ?? 14}
-              onInput={(e) =>
-                updateBlock(block.id, {
-                  style: { fontSize: Number(e.currentTarget.value) },
-                })
-              }
+              onValue={styleNum("fontSize", 10, 72)}
             />
-          </div>
-          <div class="field">
-            <label for="font-color">Color</label>
-            <input
+            <ColorField
               id="font-color"
-              type="color"
-              value={String(block.style.color ?? "#2a2622")}
-              onInput={(e) =>
+              label="Color"
+              value={block.style.color}
+              fallback="#2a2622"
+              onValue={(v) =>
+                updateBlock(block.id, { style: { color: v } })
+              }
+            />
+          </Grid2>
+          <SelectField
+            id="text-align"
+            label="Alignment"
+            value={block.style.textAlign ?? "left"}
+            options={[
+              { value: "left", label: "Left" },
+              { value: "center", label: "Center" },
+              { value: "right", label: "Right" },
+            ]}
+            onChange={(v) =>
+              updateBlock(block.id, {
+                style: { textAlign: v as "left" | "center" | "right" },
+              })
+            }
+          />
+          {block.type === "list" && (
+            <SelectField
+              id="list-style"
+              label="List markers"
+              value={block.style.listStyle ?? "disc"}
+              options={LIST_STYLES.map((s) => ({
+                value: s.value,
+                label: s.label,
+              }))}
+              onChange={(v) =>
                 updateBlock(block.id, {
-                  style: { color: e.currentTarget.value },
+                  style: { listStyle: v as Block["style"]["listStyle"] },
                 })
               }
             />
-          </div>
-          <div class="field">
-            <label for="text-align">Alignment</label>
-            <select
-              id="text-align"
-              value={block.style.textAlign ?? "left"}
-              onChange={(e) =>
-                updateBlock(block.id, {
-                  style: {
-                    textAlign: e.currentTarget.value as
-                      | "left"
-                      | "center"
-                      | "right",
-                  },
-                })
-              }
-            >
-              <option value="left">Left</option>
-              <option value="center">Center</option>
-              <option value="right">Right</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="bg-color">Background</label>
-            <input
-              id="bg-color"
-              type="color"
-              value={String(block.style.background ?? "#ffffff")}
-              onInput={(e) =>
-                updateBlock(block.id, {
-                  style: { background: e.currentTarget.value },
-                })
-              }
-            />
-          </div>
-          <div class="field">
-            <label for="opacity">Opacity</label>
-            <input
+          )}
+          <Grid2>
+            <NumField
               id="opacity"
-              type="number"
+              label="Opacity"
+              value={block.style.opacity ?? 1}
               min={0}
               max={1}
               step={0.05}
-              value={block.style.opacity ?? 1}
-              onInput={(e) =>
-                updateBlock(block.id, {
-                  style: { opacity: Number(e.currentTarget.value) },
-                })
-              }
+              onValue={styleNum("opacity", 0, 1)}
             />
-          </div>
-          <div class="field">
-            <label for="padding">Padding</label>
-            <input
+            <NumField
               id="padding"
-              type="number"
+              label="Padding"
+              value={block.style.padding ?? 0}
               min={0}
               max={48}
-              value={block.style.padding ?? 0}
-              onInput={(e) =>
-                updateBlock(block.id, {
-                  style: { padding: Number(e.currentTarget.value) },
-                })
-              }
+              onValue={styleNum("padding", 0, 48)}
             />
-          </div>
-          <div class="field">
-            <label for="border-w">Border width</label>
-            <input
+          </Grid2>
+          <Grid2>
+            <NumField
               id="border-w"
-              type="number"
+              label="Border width"
+              value={block.style.borderWidth ?? 0}
               min={0}
               max={12}
-              value={block.style.borderWidth ?? 0}
-              onInput={(e) =>
-                updateBlock(block.id, {
-                  style: { borderWidth: Number(e.currentTarget.value) },
-                })
-              }
+              onValue={styleNum("borderWidth", 0, 12)}
             />
-          </div>
-          <div class="field">
-            <label for="border-c">Border color</label>
-            <input
-              id="border-c"
-              type="color"
-              value={String(block.style.borderColor ?? "#2a2622")}
-              onInput={(e) =>
-                updateBlock(block.id, {
-                  style: { borderColor: e.currentTarget.value },
-                })
-              }
-            />
-          </div>
-          <div class="field">
-            <label for="radius">Corner radius</label>
-            <input
+            <NumField
               id="radius"
-              type="number"
+              label="Corner radius"
+              value={block.style.borderRadius ?? 0}
               min={0}
               max={48}
-              value={block.style.borderRadius ?? 0}
-              onInput={(e) =>
-                updateBlock(block.id, {
-                  style: { borderRadius: Number(e.currentTarget.value) },
-                })
-              }
+              onValue={styleNum("borderRadius", 0, 48)}
             />
-          </div>
-        </Collapse>
+          </Grid2>
+          <ColorField
+            id="bg-color"
+            label="Background"
+            value={block.style.background}
+            fallback="#ffffff"
+            onValue={(v) =>
+              updateBlock(block.id, { style: { background: v } })
+            }
+          />
+          <ColorField
+            id="border-c"
+            label="Border color"
+            value={block.style.borderColor}
+            fallback="#2a2622"
+            onValue={(v) =>
+              updateBlock(block.id, { style: { borderColor: v } })
+            }
+          />
+        </Section>
       </div>
     );
   }

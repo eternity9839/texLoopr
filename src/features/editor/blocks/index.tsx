@@ -1,9 +1,10 @@
 import type { ComponentChildren, VNode } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
-import type { Block, BlockType } from "../../../model/document";
+import type { Block, BlockType, ListStyle } from "../../../model/document";
 import {
   resolveTemplate,
   evaluateCondition,
+  resolveItemsPath,
   type DataRow,
 } from "../../../model/bindings";
 import type { RuntimeContext } from "../../../model/expr";
@@ -11,6 +12,7 @@ import {
   applyMove,
   px,
   resizeFromHandle,
+  snapRect,
   type ResizeHandle,
 } from "../../../model/geometry";
 
@@ -29,6 +31,7 @@ export interface BlockViewProps {
   onMoveResize?: (
     id: string,
     patch: Partial<Pick<Block, "x" | "y" | "w" | "h">>,
+    mode?: "drag" | "resize",
   ) => void;
 }
 
@@ -36,23 +39,30 @@ const HANDLES: ResizeHandle[] = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
 const DRAG_THRESHOLD = 3;
 
 function styleFromBlock(block: Block): Record<string, string | number> {
+  const s = block.style;
   return {
-    fontSize: block.style.fontSize ?? 14,
-    fontWeight: block.style.fontWeight ?? 400,
-    fontStyle: block.style.fontStyle ?? "normal",
-    textDecoration: block.style.textDecoration ?? "none",
-    color: block.style.color ?? "#2a2622",
-    textAlign: block.style.textAlign ?? "left",
-    background: block.style.background ?? "transparent",
-    borderRadius: block.style.borderRadius ?? 0,
-    opacity: block.style.opacity ?? 1,
-    padding: block.style.padding ?? 0,
+    fontSize: s.fontSize ?? 14,
+    fontWeight: s.fontWeight ?? 400,
+    fontStyle: s.fontStyle ?? "normal",
+    textDecoration: s.textDecoration ?? "none",
+    color: s.color ?? "#2a2622",
+    textAlign: s.textAlign ?? "left",
+    textIndent: `${s.textIndent ?? 0}px`,
+    lineHeight: s.lineHeight && s.lineHeight > 0 ? String(s.lineHeight) : "1.4",
+    letterSpacing: `${s.letterSpacing ?? 0}px`,
+    background: s.background ?? "transparent",
+    borderRadius: s.borderRadius ?? 0,
+    opacity: s.opacity ?? 1,
+    padding: s.padding ?? 0,
+    listStyleType: s.listStyle && s.listStyle !== "none" ? s.listStyle : "none",
     border:
-      block.style.borderWidth && block.style.borderWidth > 0
-        ? `${block.style.borderWidth}px solid ${block.style.borderColor ?? "#2a2622"}`
+      s.borderWidth && s.borderWidth > 0
+        ? `${s.borderWidth}px solid ${s.borderColor ?? "#2a2622"}`
         : "none",
   };
 }
+
+const ORDERED: ListStyle[] = ["decimal", "upper-roman", "lower-alpha"];
 
 function textValue(
   block: Block,
@@ -115,14 +125,17 @@ export function BlockFrame(
       e.preventDefault();
 
       if (g.mode === "resize" && g.handle) {
-        const next = resizeFromHandle(
+        let next = resizeFromHandle(
           { x: g.x, y: g.y, w: g.w, h: g.h },
           g.handle,
           dx,
           dy,
         );
+        if (snapStep != null && snapStep > 1) {
+          next = snapRect(next, snapStep);
+        }
         setLiveSize({ w: next.w, h: next.h });
-        onMoveResize(blockRef.current.id, next);
+        onMoveResize(blockRef.current.id, next, "resize");
         return;
       }
 
@@ -130,6 +143,7 @@ export function BlockFrame(
       onMoveResize(
         blockRef.current.id,
         applyMove({ x: g.x, y: g.y }, dx, dy, step),
+        "drag",
       );
     };
 
@@ -325,9 +339,15 @@ export function TextBlock(props: BlockViewProps) {
 export function ListBlock(props: BlockViewProps) {
   const { block, preview, row, runtime } = props;
   const items = (block.content.items as string[]) ?? [];
+  const style = ORDERED.includes(
+    (block.style.listStyle ?? "disc") as ListStyle,
+  )
+    ? "ol"
+    : "ul";
+  const Tag = style as "ol" | "ul";
   return (
     <BlockFrame {...props}>
-      <ul class="block-list">
+      <Tag class="block-list">
         {items.map((item, i) => (
           <li key={i}>
             {resolveTemplate(item, row, {
@@ -336,7 +356,7 @@ export function ListBlock(props: BlockViewProps) {
             })}
           </li>
         ))}
-      </ul>
+      </Tag>
     </BlockFrame>
   );
 }
@@ -373,15 +393,50 @@ export function ShapeBlock(props: BlockViewProps) {
 export function TableBlock(props: BlockViewProps) {
   const { block, preview, row, runtime } = props;
   const cells = (block.content.cells as string[][]) ?? [];
+  const header = Boolean(block.content.header);
+  const sourcePath = String(block.content.sourcePath ?? "").trim();
+
+  let dataRows: Record<string, unknown>[] = [];
+  if (sourcePath) {
+    try {
+      dataRows = resolveItemsPath(sourcePath, row, runtime).flatMap((it) =>
+        it && typeof it === "object" && !Array.isArray(it)
+          ? [it as Record<string, unknown>]
+          : [],
+      );
+    } catch {
+      dataRows = [];
+    }
+  }
+
   return (
     <BlockFrame {...props}>
       <table class="block-table">
+        {header && (
+          <thead>
+            <tr>
+              {(cells[0] ?? []).map((cell, ci) => (
+                <th key={ci}>
+                  {resolveTemplate(cell, row, {
+                    missingAsEmpty: preview,
+                    ctx: runtime,
+                  })}
+                </th>
+              ))}
+            </tr>
+          </thead>
+        )}
         <tbody>
-          {cells.map((r, ri) => (
+          {(sourcePath && dataRows.length
+            ? dataRows.map((r) =>
+                (cells[0] ?? []).map((_, ci) => String(r[Object.keys(r)[ci] ?? ci] ?? "")),
+              )
+            : cells.slice(header ? 1 : 0)
+          ).map((r, ri) => (
             <tr key={ri}>
               {r.map((cell, ci) => (
                 <td key={ci}>
-                  {resolveTemplate(cell, row, {
+                  {resolveTemplate(String(cell), row, {
                     missingAsEmpty: preview,
                     ctx: runtime,
                   })}

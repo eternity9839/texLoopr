@@ -35,3 +35,23 @@ Labeled toolbox + edit ribbon (clipboard, arrange, type, review, view). Comments
 ### Templating & automation
 
 Projects include **outputs** (preview / PDF / print device / API), an ordered **workflow**, and named **scripts** (sandboxed expressions or templates). Block conditions and step `when` clauses can use `data.*`, `output.*`, `device.*`, `vars.*`, and `env.*`. Templates support filters like `{{name|upper}}` and `{{x|default:n/a}}`. Open **··· → Automation** to edit and dry-run; Preview’s toolbar selects the active output profile.
+
+### Mobile
+
+The studio UI is responsive: below 880 px the navigator and inspector become overlay drawers with edge tabs, and all drag handles are touch-enabled.
+
+Share the dev server on your tailnet/LAN:
+
+```fish
+npm run dev:share     # vite --host → http://<your-host>:1420
+```
+
+Build a debug APK entirely from the Nix-provided Android toolchain (JDK 17, SDK + NDK, Rust std for all ABIs — no system SDK required):
+
+```fish
+nix develop .#android -c bash -c 'npm run tauri android init'   # once
+npm run android:debug            # arm64-only APK (~150 MB debug)
+npm run android:debug:universal  # all-ABI APK (~550 MB debug)
+```
+
+Output lands in `src-tauri/gen/android/app/build/outputs/apk/arm64/debug/app-arm64-debug.apk`. The shell hook injects the Nix-patched `aapt2` override into `gradle.properties`, so Gradle builds work on NixOS out of the box. Release builds additionally need a signing keystore.
