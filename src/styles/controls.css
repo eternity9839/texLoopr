@@ -1,0 +1,149 @@
+/* ══════════════════════════════════════════════════════════════════
+   controls.css — the single home for reusable interactive controls.
+
+   Layers (import after base.css, before layout/editor):
+     1. Bare-button safety net — no <button> can ever look native
+     2. .btn family — the app-wide button system
+     3. Menu-item primitive — shared by every dropdown/ctx menu
+   Panels and views compose these; they never redefine them.
+   ══════════════════════════════════════════════════════════════════ */
+
+/* 1 ─ Safety net: any unclassed button still looks intentional */
+button:not([class]) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--text-sm);
+  text-align: left;
+  transition:
+    border-color var(--motion-fast) var(--ease-out),
+    background var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+
+button:not([class]):hover {
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+}
+
+button:not([class]):disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* 2 ─ The .btn system */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-h);
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+
+.btn:hover {
+  background: var(--accent-hover);
+}
+
+.btn--ghost {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.btn--ghost:hover {
+  border-color: var(--border-strong);
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+
+/* Low-emphasis sibling for dense toolbars — borderless until hovered */
+.btn--quiet {
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink-muted);
+}
+
+.btn--quiet:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.btn--danger {
+  background: var(--danger);
+  color: #fff;
+}
+
+.btn--danger:hover {
+  background: color-mix(in srgb, var(--danger) 85%, #000);
+}
+
+.btn--small {
+  min-height: calc(var(--control-h) * 0.85);
+  padding: calc(var(--btn-pad-y) * 0.75) var(--btn-pad-x);
+  font-size: var(--text-xs);
+}
+
+.btn--icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+/* 3 ─ Menu items shared by overflow / nav-add / context menus.
+   File-specific rules below only add what differs. */
+.overflow-menu button,
+.nav-add__menu button,
+.app-ctx-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: var(--control-h);
+  padding: var(--btn-pad-y) var(--btn-pad-x);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-xs);
+  text-align: left;
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
+}
+
+.overflow-menu button:hover,
+.nav-add__menu button:hover,
+.app-ctx-menu__item:hover:not(:disabled) {
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+
+.overflow-menu button:disabled,
+.nav-add__menu button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

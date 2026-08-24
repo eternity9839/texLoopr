@@ -124,12 +124,6 @@
   box-shadow: var(--shadow-sm);
 }
 
-.btn--icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-}
 
 .context-bar__overflow {
   position: relative;
@@ -158,23 +152,6 @@
   border-radius: var(--radius-md);
   background: var(--surface);
   box-shadow: var(--shadow-md);
-}
-
-.overflow-menu button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-  min-height: var(--control-h);
-  padding: var(--btn-pad-y) var(--btn-pad-x);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  text-align: left;
-}
-
-.overflow-menu button:hover {
-  background: var(--accent-muted);
 }
 
 .app-ctx-menu {
@@ -298,42 +275,73 @@ body.is-resizing-panes {
   overflow: hidden;
 }
 
+/* Discreet collapse affordance: a quiet chevron on the canvas-facing
+   edge; the text label stays in the DOM for assistive tech only. */
 .rail-chrome {
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--border);
-  background: var(--chrome-elevated);
+  position: absolute;
+  top: 4px;
+  z-index: 7;
+  display: flex;
+  justify-content: flex-end;
+  width: 1.75rem;
+  border: 0;
+  background: transparent;
+}
+
+.studio-nav .rail-chrome {
+  right: 6px;
+}
+
+.studio-inspector .rail-chrome {
+  right: auto;
+  left: 6px;
+  justify-content: flex-start;
 }
 
 .rail-toggle {
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  width: 100%;
-  height: 1.75rem;
-  padding: 0 0.4rem;
-  border: 0;
-  background: transparent;
-  color: var(--ink-muted);
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  cursor: pointer;
-}
-
-.rail-toggle:hover {
-  color: var(--accent);
-  background: var(--accent-muted);
-}
-
-.studio-rail--collapsed .rail-toggle {
-  justify-content: center;
-  height: 1.75rem;
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
   padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-faint);
+  opacity: 0.55;
+  cursor: pointer;
+  transition:
+    opacity var(--motion-fast) var(--ease-out),
+    background var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
 }
 
-.rail-toggle--collapsed {
-  justify-content: center;
+.rail-toggle:hover,
+.rail-toggle:focus-visible {
+  opacity: 1;
+  border-color: var(--border);
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.rail-toggle__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+
+/* rails need headroom for the floating toggle */
+.studio-rail__body {
+  padding-top: 1.9rem;
+}
+
+.studio-rail--collapsed .studio-rail__body {
+  padding-top: 1.9rem;
 }
 
 .pane-resizer {
@@ -508,40 +516,6 @@ body.is-resizing-panes {
   resize: vertical;
 }
 
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  min-height: var(--control-h);
-  padding: var(--btn-pad-y) var(--btn-pad-x);
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--accent);
-  color: var(--accent-text);
-  font-weight: 600;
-  font-size: var(--text-sm);
-}
-
-.btn:hover {
-  background: var(--accent-hover);
-}
-
-.btn--ghost {
-  background: var(--surface);
-  color: var(--ink);
-  border: 1px solid var(--border);
-}
-
-.btn--ghost:hover {
-  background: var(--accent-muted);
-}
-
-.btn--small {
-  min-height: calc(var(--control-h) * 0.85);
-  padding: calc(var(--btn-pad-y) * 0.75) var(--btn-pad-x);
-  font-size: var(--text-xs);
-}
 
 .muted {
   color: var(--ink-muted);
@@ -697,6 +671,110 @@ body.is-resizing-panes {
   padding: clamp(0.75rem, 0.5rem + 1vw, 1rem);
 }
 
+/* ---- Properties dock header + segmented micro-controls ---- */
+.prop-bar__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2rem;
+  flex-shrink: 0;
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--chrome-elevated);
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+}
+
+.prop-bar__head--btn {
+  width: 100%;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
+}
+
+.prop-bar__head--btn:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.prop-bar__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.prop-bar__fold {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-left: auto;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-faint);
+  opacity: 0.55;
+  transition:
+    opacity var(--motion-fast) var(--ease-out),
+    background var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
+}
+
+.prop-bar__fold:hover,
+.prop-bar__fold:focus-visible {
+  opacity: 1;
+  background: var(--surface-hover);
+  border-color: var(--border);
+  color: var(--ink);
+}
+
+.prop-seg {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--chrome-inset);
+}
+
+.prop-seg__btn {
+  display: grid;
+  place-items: center;
+  min-width: 1.7rem;
+  height: calc(var(--control-h) - 6px);
+  padding: 0 0.45rem;
+  border: 0;
+  border-radius: calc(var(--radius-sm) - 1px);
+  background: transparent;
+  color: var(--ink-muted);
+  font-size: var(--text-xs);
+  cursor: pointer;
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out),
+    box-shadow var(--motion-fast) var(--ease-out);
+}
+
+.prop-seg__btn:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.prop-seg__btn[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
 /* ---- Main column split: content + bottom properties dock ---- */
 .studio-main__content {
   display: flex;
@@ -732,16 +810,23 @@ body.is-resizing-panes {
   z-index: 2;
   display: grid;
   place-items: center;
-  width: 1.4rem;
-  height: 1.4rem;
+  width: 1.5rem;
+  height: 1.5rem;
   padding: 0;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--ink-faint);
+  opacity: 0.55;
+  transition:
+    opacity var(--motion-fast) var(--ease-out),
+    background var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
 }
 
-.prop-dock__toggle:hover {
+.prop-dock__toggle:hover,
+.prop-dock__toggle:focus-visible {
+  opacity: 1;
   background: var(--surface-hover);
   border-color: var(--border);
   color: var(--ink);
