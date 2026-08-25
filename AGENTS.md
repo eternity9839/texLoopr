@@ -46,3 +46,5 @@ Rules:
    (`tauri.android.versionCode/Name` derive from `src-tauri/tauri.conf.json`).
 4. APK artifacts: debug builds may ride on untagged heads; release builds
    must match a `v*` tag.
+5. Distributed APK filenames must carry the version:
+   `texloopr-v<version>-arm64-{debug,release}.apk`.
