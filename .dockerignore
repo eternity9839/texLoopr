@@ -1,0 +1,10 @@
+node_modules
+dist
+.git
+src-tauri/target
+src-tauri/gen
+*.apk
+.direnv
+.result
+coverage
+deploy/orangepi/.env

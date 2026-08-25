@@ -1,0 +1,130 @@
+# texLooper on orangepi5 — local Traefik + CrowdSec, published via Pangolin Newt
+# (no Tailscale Serve / no public :443 — Pangolin VPS terminates TLS)
+name: texlooper
+
+networks:
+  texlooper:
+    driver: bridge
+
+volumes:
+  texlooper-pg:
+  crowdsec-config:
+  crowdsec-data:
+  traefik-logs:
+  traefik-plugins:
+
+services:
+  crowdsec:
+    image: docker.io/crowdsecurity/crowdsec:v1.6.9
+    container_name: texlooper-crowdsec
+    environment:
+      COLLECTIONS: "crowdsecurity/linux crowdsecurity/traefik crowdsecurity/http-cve"
+      BOUNCER_KEY_traefik: ${CROWDSEC_BOUNCER_KEY}
+      CUSTOM_HOSTNAME: texlooper-orangepi5
+    volumes:
+      - ./crowdsec/acquis.d:/etc/crowdsec/acquis.d:ro
+      - crowdsec-config:/etc/crowdsec
+      - crowdsec-data:/var/lib/crowdsec/data
+      - traefik-logs:/var/log/traefik:ro
+    restart: unless-stopped
+    networks:
+      - texlooper
+    healthcheck:
+      test: ["CMD", "cscli", "lapi", "status"]
+      interval: 30s
+      timeout: 10s
+      retries: 8
+      start_period: 60s
+
+  traefik:
+    image: docker.io/library/traefik:v3.3
+    container_name: texlooper-traefik
+    command:
+      - --providers.file.filename=/etc/traefik/dynamic.yml
+      - --providers.file.watch=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.forwardedHeaders.insecure=true
+      - --api.dashboard=false
+      - --log.level=INFO
+      - --accesslog=true
+      - --accesslog.filepath=/var/log/traefik/access.log
+      - --accesslog.format=json
+      - --serversTransport.forwardingTimeouts.dialTimeout=10s
+      - --experimental.plugins.bouncer.moduleName=github.com/maxlerebourg/crowdsec-bouncer-traefik-plugin
+      - --experimental.plugins.bouncer.version=v1.4.4
+    ports:
+      # Newt (host network) and local smoke tests only
+      - "127.0.0.1:8788:80"
+    volumes:
+      - ./traefik/dynamic.yml:/etc/traefik/dynamic.yml:ro
+      - ./traefik/crowdsec-bouncer.key:/etc/traefik/crowdsec-bouncer.key:ro
+      - traefik-logs:/var/log/traefik
+      - traefik-plugins:/plugins-storage
+    depends_on:
+      crowdsec:
+        condition: service_healthy
+      auth:
+        condition: service_started
+      app:
+        condition: service_started
+    restart: unless-stopped
+    networks:
+      - texlooper
+
+  auth:
+    build:
+      context: ./auth
+    container_name: texlooper-auth
+    environment:
+      DEMO_USER: ${DEMO_USER}
+      DEMO_PASSWORD: ${DEMO_PASSWORD}
+      SESSION_SECRET: ${SESSION_SECRET}
+      SESSION_TTL_SEC: ${SESSION_TTL_SEC:-604800}
+      COOKIE_SECURE: ${COOKIE_SECURE:-true}
+      PORT: "3000"
+    restart: unless-stopped
+    networks:
+      - texlooper
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  app:
+    build:
+      context: ../..
+      dockerfile: deploy/orangepi/app/Dockerfile
+    container_name: texlooper-app
+    volumes:
+      # CI rsyncs Vite dist (+ config.js) here — no npm build on the Pi
+      - ./app/html:/usr/share/nginx/html:ro
+    restart: unless-stopped
+    networks:
+      - texlooper
+
+  db:
+    image: docker.io/library/postgres:16-alpine
+    container_name: texlooper-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-texlooper}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-texlooper}
+    volumes:
+      - texlooper-pg:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - texlooper
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
