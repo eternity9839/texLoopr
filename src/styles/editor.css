@@ -1246,11 +1246,53 @@
   z-index: 2;
 }
 
+/* ---- Block parameter v2 (fonts/valign/shape variants/table/list) ---- */
+.block-body--valign-middle {
+  display: flex;
+  align-items: center;
+}
+
+.block-body--valign-bottom {
+  display: flex;
+  align-items: flex-end;
+}
+
+.block-body--valign-middle > *,
+.block-body--valign-bottom > * {
+  width: 100%;
+}
+
+.block-shape--ellipse .block-shape__rect {
+  border-radius: 50%;
+}
+
+.block-shape--line {
+  background: transparent;
+}
+
+.block-shape__rule {
+  width: 100%;
+  border-top-style: solid;
+}
+
+.block-list li::marker {
+  color: var(--marker-color, inherit);
+}
+
 /* ---- Table header row (content.header = true renders <thead><th>) ---- */
+.block-table td,
 .block-table th {
-  background: #f1efea;
+  padding: var(--cell-pad, 0.25rem);
+}
+
+.block-table th {
+  background: var(--table-header-bg, var(--chrome-inset));
   font-weight: 600;
   text-align: inherit;
+}
+
+.block-table--zebra tbody tr:nth-child(even) td {
+  background: color-mix(in srgb, var(--ink-muted) 8%, transparent);
 }
 
 .block-table--source td {
