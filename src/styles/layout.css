@@ -1,8 +1,7 @@
 .app-shell {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 100%;
+  min-height: 100dvh;
   background: var(--chrome);
   container-type: inline-size;
   container-name: studio;
@@ -222,7 +221,7 @@
 .studio-layout {
   display: grid;
   flex: 1;
-  min-height: 0;
+  align-items: start;
 }
 
 .overflow-menu__sep {
@@ -246,9 +245,7 @@ body.is-resizing-panes {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 0;
   min-width: 0;
-  overflow: hidden;
 }
 
 .studio-nav {
@@ -263,10 +260,7 @@ body.is-resizing-panes {
 }
 
 .studio-rail__body {
-  flex: 1;
-  min-height: 0;
   min-width: 0;
-  overflow: auto;
   display: flex;
   flex-direction: column;
 }
@@ -455,8 +449,8 @@ body.is-resizing-panes {
 .studio-main {
   display: flex;
   flex-direction: column;
-  min-height: 0;
   min-width: 0;
+  min-height: max(24rem, 62dvh);
   animation: mode-fade var(--motion-mode) var(--ease-out);
 }
 
@@ -531,6 +525,7 @@ body.is-resizing-panes {
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay);
+  overflow-y: auto;
   display: grid;
   place-items: center;
   padding: var(--space-4);
@@ -578,8 +573,7 @@ body.is-resizing-panes {
 
 .overlay-dialog {
   width: min(28rem, 100%);
-  max-height: min(88vh, 40rem);
-  overflow: auto;
+    overflow: auto;
   padding: var(--space-4) var(--space-5);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -591,8 +585,7 @@ body.is-resizing-panes {
 
 .overlay-dialog--wide {
   width: min(48rem, 100%);
-  max-height: min(88vh, 52rem);
-}
+  }
 
 .automation-panel .studio-switch {
   margin-left: 0;
@@ -624,8 +617,6 @@ body.is-resizing-panes {
   border: 1px solid var(--border);
   font-size: 0.8rem;
   white-space: pre-wrap;
-  max-height: 16rem;
-  overflow: auto;
 }
 
 .overlay-dialog__header {
@@ -666,8 +657,6 @@ body.is-resizing-panes {
 
 .view-body {
   flex: 1;
-  min-height: 0;
-  overflow: auto;
   padding: clamp(0.75rem, 0.5rem + 1vw, 1rem);
 }
 
@@ -798,9 +787,7 @@ body.is-resizing-panes {
 }
 
 .prop-dock__body {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
+  min-width: 0;
 }
 
 .prop-dock__toggle {
@@ -905,8 +892,6 @@ body.is-resizing-panes .pane-resizer--north {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 15rem;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1009,73 +994,14 @@ body {
   touch-action: none;
 }
 
-/* ── Narrow viewports only: rails become overlay drawers ────────────
-   Everything below is gated behind the media query so the desktop
-   layout can never see drawer/scrim/tab styles, even if the JS
-   narrow-branch renders. */
+/* ── Narrow viewports: same flow, stacked full-width sections ───────
+   No drawers, scrims or floating containers: the grid collapses to a
+   single column and every rail grows with its content. The page
+   scrolls as one document. */
 
 @media (max-width: 880px) {
-  .studio-layout--narrow {
-    position: relative;
-    display: block;
-  }
-
-  .studio-drawer {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    z-index: var(--z-rail-drawer);
-    display: flex;
-    flex-direction: column;
-    width: min(85vw, 20rem);
-    background: var(--chrome);
-    box-shadow: var(--shadow-lg);
-  }
-
-  .studio-drawer--left {
-    left: 0;
-    border-right: 1px solid var(--border);
-  }
-
-  .studio-drawer--right {
-    right: 0;
-    border-left: 1px solid var(--border);
-  }
-
-  .drawer-scrim {
-    position: absolute;
-    inset: 0;
-    z-index: var(--z-rail-scrim);
-    background: var(--scrim);
-  }
-
-  .drawer-tab {
-    position: absolute;
-    top: 0.75rem;
-    z-index: var(--z-rail-scrim);
-    display: grid;
-    place-items: center;
-    width: 2rem;
-    height: 2rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
-    backdrop-filter: blur(8px);
-    color: var(--ink-faint);
-    cursor: pointer;
-  }
-
-  .drawer-tab:hover {
-    color: var(--ink);
-    border-color: var(--border-strong);
-  }
-
-  .drawer-tab--left {
-    left: 0.5rem;
-  }
-
-  .drawer-tab--right {
-    right: 0.5rem;
+  .studio-layout {
+    grid-template-columns: 1fr !important;
   }
 
   .context-bar__meta,
@@ -1085,15 +1011,6 @@ body {
 
   .overlay-dialog {
     max-width: min(94vw, 40rem);
-    max-height: min(86dvh, 52rem);
-  }
-
-  .settings-panel {
-    padding: var(--space-4);
-  }
-
-  .prop-dock:not(.prop-dock--collapsed) {
-    max-height: 44dvh;
   }
 }
 
@@ -1104,12 +1021,5 @@ body {
       padding-right: max(0.5rem, env(safe-area-inset-right));
     }
 
-    .drawer-tab--left {
-      left: max(0.5rem, env(safe-area-inset-left));
-    }
-
-    .drawer-tab--right {
-      right: max(0.5rem, env(safe-area-inset-right));
-    }
   }
 }

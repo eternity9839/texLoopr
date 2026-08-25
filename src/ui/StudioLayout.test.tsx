@@ -62,67 +62,77 @@ describe("StudioLayout — desktop grid", () => {
     expect(container.querySelector(".studio-inspector")).toBeTruthy();
   });
 
+  it("collapse toggles mark their rail via data state", () => {
+    stubMatchMedia(false);
+    updatePrefs({ navCollapsed: true });
+    const { getByLabelText, container } = render(
+      <StudioLayout {...ui} variant="edit" />,
+    );
+    const nav = container.querySelector(".studio-nav");
+    expect(nav?.getAttribute("data-collapsed")).toBe("true");
+    fireEvent.click(getByLabelText("Expand Outline"));
+    expect(prefs.value.navCollapsed).toBe(false);
+    expect(nav?.getAttribute("data-collapsed")).toBeNull();
+  });
+
   it("reacts to viewport changes without remount", () => {
     stubMatchMedia(false);
     const { container } = render(<StudioLayout {...ui} variant="edit" />);
     expect(container.querySelector(".studio-nav")).toBeTruthy();
+    const layout = container.querySelector(".studio-layout") as HTMLElement;
+    const inlineStyle = () => layout.getAttribute("style") ?? "";
+    expect(inlineStyle()).toContain("grid-template-columns");
     act(() => resizeViewport(true));
-    expect(container.querySelector(".studio-layout--narrow")).toBeTruthy();
+    // Narrow mode drops the inline template so CSS stacks the grid
+    expect(inlineStyle()).not.toContain("grid-template-columns");
     act(() => resizeViewport(false));
-    expect(container.querySelector(".studio-layout--narrow")).toBeNull();
+    expect(inlineStyle()).toContain("grid-template-columns");
   });
 });
 
-describe("StudioLayout — narrow drawers", () => {
+describe("StudioLayout — narrow stacked flow", () => {
   beforeEach(() => stubMatchMedia(true));
 
-  it("replaces rails with overlay drawers plus edge tabs", () => {
-    const { getByLabelText, queryByLabelText, container } = render(
-      <StudioLayout {...ui} variant="edit" />,
-    );
-    expect(container.querySelector(".studio-layout--narrow")).toBeTruthy();
-    expect(container.querySelector(".studio-nav")).toBeNull();
-    expect(container.querySelector(".studio-drawer--left")).toBeTruthy();
-    expect(container.querySelector(".drawer-scrim")).toBeTruthy();
-    // drawers are open so the reopen tabs stay hidden
-    expect(queryByLabelText("Open outline")).toBeNull();
-    void getByLabelText;
+  it("keeps every section in the flow; no drawers, scrims or tabs exist", () => {
+    const { container } = render(<StudioLayout {...ui} variant="edit" />);
+    // All three sections stay mounted and in normal flow
+    expect(container.querySelector(".studio-nav")).toBeTruthy();
+    expect(container.querySelector(".test-main")).toBeTruthy();
+    expect(container.querySelector(".studio-inspector")).toBeTruthy();
+    // Overlay chrome is gone for good
+    expect(container.querySelector(".drawer-scrim")).toBeNull();
+    expect(container.querySelector(".studio-drawer--left")).toBeNull();
+    expect(container.querySelector(".drawer-tab--left")).toBeNull();
+    // No inline column template — the media query stacks the grid
+    const layout = container.querySelector(".studio-layout") as HTMLElement;
+    expect(layout.getAttribute("style")).toBeNull();
   });
 
-  it("collapses a drawer into its edge tab and back", () => {
+  it("collapse toggles mark their section collapsed", () => {
     const { getByLabelText, container } = render(
       <StudioLayout {...ui} variant="edit" />,
     );
     fireEvent.click(getByLabelText("Collapse Outline"));
     expect(prefs.value.navCollapsed).toBe(true);
-    expect(container.querySelector(".studio-drawer--left")).toBeNull();
-    fireEvent.click(getByLabelText("Open outline"));
-    expect(prefs.value.navCollapsed).toBe(false);
-    expect(container.querySelector(".studio-drawer--left")).toBeTruthy();
+    expect(
+      container
+        .querySelector(".studio-nav")
+        ?.getAttribute("data-collapsed"),
+    ).toBe("true");
   });
 
-  it("tap on the scrim closes every open drawer", () => {
-    const { container } = render(<StudioLayout {...ui} variant="edit" />);
-    const scrim = container.querySelector(".drawer-scrim")!;
-    expect(scrim).toBeTruthy();
-    fireEvent.click(scrim);
-    expect(prefs.value.navCollapsed).toBe(true);
-    expect(prefs.value.inspectorCollapsed).toBe(true);
-    expect(container.querySelector(".studio-drawer--left")).toBeNull();
-    expect(container.querySelector(".studio-drawer--right")).toBeNull();
-    // edge tabs appear for reopening
-    expect(container.querySelector(".drawer-tab--left")).toBeTruthy();
-    expect(container.querySelector(".drawer-tab--right")).toBeTruthy();
-  });
-
-  it("edge tabs reopen their drawers", () => {
-    updatePrefs({ navCollapsed: true, inspectorCollapsed: true });
-    const { getByLabelText, container } = render(
-      <StudioLayout {...ui} variant="edit" />,
+  it("prop dock grows with its content instead of a fixed height", () => {
+    const asideBottom = (
+      <div class="appearance-bar" style={{ height: "333px" }}>
+        controls
+      </div>
     );
-    expect(container.querySelector(".drawer-scrim")).toBeNull();
-    fireEvent.click(getByLabelText("Open inspector"));
-    expect(prefs.value.inspectorCollapsed).toBe(false);
-    expect(container.querySelector(".studio-drawer--right")).toBeTruthy();
+    const { container } = render(
+      <StudioLayout {...ui} variant="edit" asideBottom={asideBottom} />,
+    );
+    const dock = container.querySelector(".prop-dock") as HTMLElement;
+    expect(dock).toBeTruthy();
+    expect(dock.style.height).toBe("");
+    expect(container.querySelector(".pane-resizer--north")).toBeNull();
   });
 });
