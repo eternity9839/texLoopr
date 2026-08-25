@@ -200,6 +200,24 @@ export interface Page {
   background?: string;
   /** Draft/confidential watermark rendered under blocks */
   watermark?: Watermark;
+  /** Page numbering display rule */
+  pageNumber?: PageNumber;
+}
+
+/** Configures automatic page numbering in preview / print */
+export interface PageNumber {
+  /** "all" – every page, "odd" – O pages only, "even" – E pages only */
+  mode?: "all" | "odd" | "even";
+  /** Skip page number on the very first physical page */
+  skipFirst?: boolean;
+  /** Physical pages (1-based) that must never show a number */
+  skipPages?: number[];
+  /**
+   * Template for the printed number.
+   * Tokens: {n} current number, {total} total eligible pages.
+   * Example: "Page {n} of {total}"
+   */
+  format?: string;
 }
 
 /** Word-style review note anchored to a block (ADR 0006) */

@@ -64,7 +64,6 @@ export function styleFromBlock(
     borderRadius: s.borderRadius ?? 0,
     opacity: s.opacity ?? 1,
     padding: s.padding ?? 0,
-    margin: s.margin ? `${s.margin}px` : undefined,
     boxShadow: s.shadow ? "var(--shadow-page)" : undefined,
     listStyleType: s.listStyle && s.listStyle !== "none" ? s.listStyle : "none",
     "--marker-color": (block.content?.markerColor as string) || undefined,
@@ -284,6 +283,7 @@ export function BlockFrame(
         top: `${px(block.y)}px`,
         width: `${px(block.w)}px`,
         height: `${px(block.h)}px`,
+        margin: block.style.margin ? `${block.style.margin}px` : undefined,
         zIndex: selected ? Math.max(block.zIndex ?? 1, 20) : (block.zIndex ?? 1),
       }}
       onPointerDown={beginDrag}

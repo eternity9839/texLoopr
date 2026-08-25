@@ -655,6 +655,23 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               },
             });
             })}
+            {preview && activePage.value?.pageNumber && (() => {
+              const pn = activePage.value.pageNumber!;
+              const pages = project.value.pages;
+              const idx = pages.findIndex((p) => p.id === activePage.value!.id);
+              const n = idx + 1;
+              if (pn.mode === "odd" && n % 2 === 0) return null;
+              if (pn.mode === "even" && n % 2 !== 0) return null;
+              if (pn.skipFirst && idx === 0) return null;
+              if (pn.skipPages?.includes(n)) return null;
+              const total = pages.length;
+              const fmt = (pn.format || "{n}")
+                .replace(/\{n\}/g, String(n))
+                .replace(/\{total\}/g, String(total));
+              return (
+                <div class="page-number" aria-hidden="true">{fmt}</div>
+              );
+            })()}
             </div>
           </div>
         </div>

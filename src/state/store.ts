@@ -497,15 +497,17 @@ export function updatePage(
   patch: Partial<Pick<Page, "name" | "background">> & {
     margins?: Partial<PageMargins>;
     watermark?: Watermark | null;
+    pageNumber?: Page["pageNumber"] | null;
   },
 ): void {
   updateProject((draft) => {
     const page = draft.pages.find((p) => p.id === pageId);
     if (!page) return draft;
-    const { margins, watermark, ...rest } = patch;
+    const { margins, watermark, pageNumber, ...rest } = patch;
     Object.assign(page, rest);
     if (margins) page.margins = normalizeMargins({ ...normalizeMargins(page.margins), ...margins });
     if (watermark !== undefined) page.watermark = watermark ?? undefined;
+    if (pageNumber !== undefined) page.pageNumber = pageNumber ?? undefined;
     return draft;
   }, { history: true });
 }

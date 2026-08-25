@@ -296,9 +296,20 @@
 .editor-empty strong {
   display: block;
   margin-bottom: var(--space-1);
-  color: var(--ink);
-  font-size: var(--text-lg);
-  letter-spacing: -0.02em;
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+}
+
+.page-number {
+  position: absolute;
+  bottom: 48px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 9px;
+  color: var(--ink-faint);
+  pointer-events: none;
 }
 
 .block-frame {

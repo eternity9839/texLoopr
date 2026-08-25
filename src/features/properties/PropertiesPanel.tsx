@@ -15,7 +15,7 @@ import {
 } from "../../state/store";
 import { MIN_BLOCK_H, MIN_BLOCK_W, px } from "../../model/geometry";
 import { dataColumnNames } from "../../model/bindings";
-import { LIST_STYLES, FONT_OPTIONS, type Block, type BlockStyle } from "../../model/document";
+import { LIST_STYLES, FONT_OPTIONS, type Block, type BlockStyle, type PageNumber } from "../../model/document";
 import { defaultRepeatChildren } from "../../model/repeat";
 import { Icon } from "../../ui/icons";
 import {
@@ -134,6 +134,70 @@ export function MetadataPanel() {
               }
             />
           </Field>
+        )}
+        {page && (
+          <>
+            <SelectField
+              id="pn-mode"
+              label="Page number"
+              value={page.pageNumber?.mode ?? "all"}
+              options={[
+                { value: "off", label: "Off" },
+                { value: "all", label: "All pages" },
+                { value: "odd", label: "Odd pages only" },
+                { value: "even", label: "Even pages only" },
+              ]}
+              onChange={(v) =>
+                v === "off"
+                  ? updatePage(page.id, { pageNumber: undefined })
+                  : updatePage(page.id, {
+                      pageNumber: { ...(page.pageNumber ?? {}), mode: v as PageNumber["mode"] },
+                    })
+              }
+            />
+            {page.pageNumber?.mode && (
+              <>
+                <CheckRow
+                  checked={Boolean(page.pageNumber?.skipFirst)}
+                  onChange={(skipFirst) =>
+                    updatePage(page.id, {
+                      pageNumber: { ...(page.pageNumber ?? {}), skipFirst },
+                    })
+                  }
+                >
+                  Skip first page
+                </CheckRow>
+                <Field label="Skip pages (comma list)" forId="pn-skip">
+                  <input
+                    id="pn-skip"
+                    value={(page.pageNumber?.skipPages ?? []).join(", ")}
+                    onInput={(e) => {
+                      const skipPages = e.currentTarget.value
+                        .split(",")
+                        .map((s) => Number(s.trim()))
+                        .filter((n) => n > 0 && Number.isFinite(n));
+                      updatePage(page.id, {
+                        pageNumber: { ...(page.pageNumber ?? {}), skipPages },
+                      });
+                    }}
+                  />
+                </Field>
+                <Field label="Format" forId="pn-format">
+                  <input
+                    id="pn-format"
+                    value={page.pageNumber?.format ?? ""}
+                    placeholder="Page {n} of {total}"
+                    onInput={(e) => {
+                      const format = e.currentTarget.value || undefined;
+                      updatePage(page.id, {
+                        pageNumber: { ...(page.pageNumber ?? {}), format },
+                      });
+                    }}
+                  />
+                </Field>
+              </>
+            )}
+          </>
         )}
       </Section>
 
