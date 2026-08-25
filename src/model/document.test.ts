@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   createEmptyProject,
+  cssTransformFromStyle,
   LIST_STYLES,
   normalizeMargins,
   PAGE_HEIGHT,
@@ -80,5 +81,26 @@ describe("feature: fresh documents", () => {
     expect(p.activePageId).toBe(p.pages[0]!.id);
     expect(p.pages[0]!.blocks).toEqual([]);
     expect(p.comments ?? []).toEqual([]);
+  });
+
+  it("owns a document artboard and an empty primary dataset", () => {
+    const p = createEmptyProject();
+    expect(p.artboard).toBe("document");
+    expect(p.datasets).toHaveLength(1);
+    expect(p.datasets![0]!.rows).toEqual([]);
+    expect(p.primaryDatasetId).toBe(p.datasets![0]!.id);
+  });
+});
+
+describe("feature: cssTransformFromStyle", () => {
+  it("returns empty for identity", () => {
+    expect(cssTransformFromStyle({})).toBe("");
+  });
+
+  it("composes rotate and mirrors", () => {
+    expect(cssTransformFromStyle({ rotate: -12, mirrorX: true })).toBe(
+      "rotate(-12deg) scaleX(-1)",
+    );
+    expect(cssTransformFromStyle({ mirrorY: true })).toBe("scaleY(-1)");
   });
 });

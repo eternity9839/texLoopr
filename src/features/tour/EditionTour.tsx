@@ -1,12 +1,14 @@
 import { useEffect, useLayoutEffect, useState } from "preact/hooks";
-import { TOUR_STEPS } from "../../model/tour";
+import { getTourSteps } from "../../model/tour";
 import {
   nextTourStep,
+  prefs,
   prevTourStep,
   skipTour,
   tourActive,
   tourStepIndex,
 } from "../../state/store";
+import { t } from "../../i18n";
 
 interface Rect {
   top: number;
@@ -18,7 +20,9 @@ interface Rect {
 export function EditionTour() {
   const active = tourActive.value;
   const index = tourStepIndex.value;
-  const step = TOUR_STEPS[index];
+  const locale = prefs.value.locale === "en" ? "en" : "fr";
+  const steps = getTourSteps(locale);
+  const step = steps[index];
   const [spot, setSpot] = useState<Rect | null>(null);
 
   useLayoutEffect(() => {
@@ -66,15 +70,17 @@ export function EditionTour() {
           window.innerHeight - 220,
           Math.max(12, spot.top + spot.height + 12),
         ),
-        left: Math.min(
-          window.innerWidth - 360,
-          Math.max(12, spot.left),
-        ),
+        left: Math.min(window.innerWidth - 360, Math.max(12, spot.left)),
       }
     : { top: "30%", left: "50%", transform: "translateX(-50%)" };
 
   return (
-    <div class="tour-root" role="dialog" aria-modal="true" aria-labelledby="tour-title">
+    <div
+      class="tour-root"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="tour-title"
+    >
       <div class="tour-scrim" />
       {spot && (
         <div
@@ -87,15 +93,22 @@ export function EditionTour() {
           }}
         />
       )}
-      <div class="tour-card" style={cardStyle as Record<string, string | number>}>
+      <div
+        class="tour-card"
+        style={cardStyle as Record<string, string | number>}
+      >
         <p class="tour-card__step">
-          Step {index + 1} of {TOUR_STEPS.length}
+          {t("tourStepOf", { current: index + 1, total: steps.length })}
         </p>
         <h2 id="tour-title">{step.title}</h2>
         <p>{step.body}</p>
         <div class="tour-card__actions">
-          <button type="button" class="btn btn--ghost btn--small" onClick={skipTour}>
-            Skip tour
+          <button
+            type="button"
+            class="btn btn--ghost btn--small"
+            onClick={skipTour}
+          >
+            {t("tourSkip")}
           </button>
           <div class="field-row">
             <button
@@ -104,10 +117,14 @@ export function EditionTour() {
               disabled={index === 0}
               onClick={prevTourStep}
             >
-              Back
+              {t("tourBack")}
             </button>
-            <button type="button" class="btn btn--small" onClick={nextTourStep}>
-              {index === TOUR_STEPS.length - 1 ? "Finish" : "Next"}
+            <button
+              type="button"
+              class="btn btn--small"
+              onClick={nextTourStep}
+            >
+              {index === steps.length - 1 ? t("tourFinish") : t("tourNext")}
             </button>
           </div>
         </div>

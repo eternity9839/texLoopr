@@ -18,10 +18,8 @@ import type {
   WorkflowStep,
   WorkflowStepType,
 } from "../../model/workflow";
-import { outputToCtx } from "../../model/workflow";
+import { OUTPUT_KINDS, outputToCtx } from "../../model/workflow";
 import { Icon, type IconName } from "../../ui/icons";
-
-const OUTPUT_KINDS: OutputKind[] = ["preview", "pdf", "print", "api", "image"];
 const STEP_TYPES: WorkflowStepType[] = [
   "bind",
   "filter",

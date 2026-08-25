@@ -1,10 +1,11 @@
-import type { Block, BlockStyle, BlockType, Project } from "../document";
+import type { Block, BlockStyle, BlockType, Page, Project } from "../document";
 import { createId } from "../document";
 import {
   defaultOutputs,
   defaultScripts,
   defaultWorkflow,
 } from "../workflow";
+import { spreadDemoBlocks } from "./spread";
 
 export function id(): string {
   return createId();
@@ -21,6 +22,7 @@ export function b(
     content?: Record<string, unknown>;
     style?: BlockStyle;
     condition?: string;
+    pin?: Block["pin"];
   },
 ): Block {
   return {
@@ -36,6 +38,7 @@ export function b(
     condition: partial.condition,
     locked: partial.locked,
     zIndex: partial.zIndex,
+    pin: partial.pin,
   };
 }
 
@@ -47,7 +50,18 @@ export function shell(
     description: string;
   },
   pages: Project["pages"],
-  extras?: Partial<Pick<Project, "comments" | "scripts" | "workflow" | "outputs">>,
+  extras?: Partial<
+    Pick<
+      Project,
+      | "comments"
+      | "scripts"
+      | "workflow"
+      | "outputs"
+      | "artboard"
+      | "datasets"
+      | "primaryDatasetId"
+    >
+  >,
 ): Project {
   const outputs = extras?.outputs ?? defaultOutputs();
   return {
@@ -64,9 +78,29 @@ export function shell(
     workflow: extras?.workflow ?? defaultWorkflow(),
     scripts: extras?.scripts ?? defaultScripts(),
     comments: extras?.comments ?? [],
+    artboard: extras?.artboard ?? "document",
+    datasets: extras?.datasets,
+    primaryDatasetId: extras?.primaryDatasetId,
   };
 }
 
-export function page(name: string, blocks: Block[]) {
-  return { id: id(), name, blocks };
+export function page(
+  name: string,
+  blocks: Block[],
+  extras?: Partial<
+    Pick<
+      Page,
+      | "background"
+      | "margins"
+      | "watermark"
+      | "pageNumber"
+      | "rotate"
+      | "mirrorX"
+      | "mirrorY"
+    >
+  > & { spread?: boolean },
+) {
+  const { spread = true, ...pageExtras } = extras ?? {};
+  const nextBlocks = spread ? spreadDemoBlocks(blocks) : blocks;
+  return { id: id(), name, blocks: nextBlocks, ...pageExtras };
 }

@@ -3515,7 +3515,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "texloopr"
+name = "texlooper"
 version = "0.1.0"
 dependencies = [
  "regex",

@@ -1,5 +1,8 @@
 /** Document geometry uses integer CSS pixels so export/preview match the model. */
 
+import type { Block, BlockPin, PageMargins } from "./document";
+import { PAGE_HEIGHT, PAGE_WIDTH, normalizeMargins } from "./document";
+
 export const MIN_BLOCK_W = 24;
 export const MIN_BLOCK_H = 24;
 
@@ -31,6 +34,16 @@ export function normalizeRect(rect: Partial<Rect>, defaults: Rect): Rect {
     w: clampPx(rect.w ?? defaults.w, MIN_BLOCK_W),
     h: clampPx(rect.h ?? defaults.h, MIN_BLOCK_H),
   };
+}
+
+/** True when two axis-aligned rects overlap (touching edges counts). */
+export function rectsIntersect(a: Rect, b: Rect): boolean {
+  return (
+    a.x < b.x + b.w &&
+    a.x + a.w > b.x &&
+    a.y < b.y + b.h &&
+    a.y + a.h > b.y
+  );
 }
 
 /** Apply move: snap only position when enabled; never fractional pixels. */
@@ -120,4 +133,69 @@ export function resizeFromHandle(
   }
 
   return { x: px(x), y: px(y), w: px(w), h: px(h) };
+}
+
+/** Apply edge pins so headers/footers/sidebars stay glued to the surface. */
+export function resolvePinnedRect(
+  block: Pick<Block, "x" | "y" | "w" | "h" | "pin">,
+  margins?: Partial<PageMargins> | null,
+  pageW = PAGE_WIDTH,
+  pageH = PAGE_HEIGHT,
+): Rect {
+  const pin = block.pin;
+  if (!pin || (!pin.top && !pin.bottom && !pin.left && !pin.right)) {
+    return {
+      x: px(block.x),
+      y: px(block.y),
+      w: px(block.w),
+      h: px(block.h),
+    };
+  }
+  const base = normalizeMargins(margins ?? undefined);
+  /** Origin/bottom chrome ignores content margins on the pinned edges. */
+  const m = {
+    top: pin.top && block.y <= 0 ? 0 : base.top,
+    right: pin.right && block.x <= 0 && pin.left ? 0 : base.right,
+    bottom:
+      pin.bottom && block.y + block.h >= pageH - 16 ? 0 : base.bottom,
+    left: pin.left && block.x <= 0 ? 0 : base.left,
+  };
+  let { x, y, w, h } = {
+    x: px(block.x),
+    y: px(block.y),
+    w: px(block.w),
+    h: px(block.h),
+  };
+
+  if (pin.left && pin.right) {
+    x = m.left;
+    w = Math.max(MIN_BLOCK_W, pageW - m.left - m.right);
+  } else if (pin.left) {
+    x = m.left;
+  } else if (pin.right) {
+    x = Math.max(0, pageW - m.right - w);
+  }
+
+  if (pin.top && pin.bottom) {
+    y = m.top;
+    h = Math.max(MIN_BLOCK_H, pageH - m.top - m.bottom);
+  } else if (pin.top) {
+    y = m.top;
+  } else if (pin.bottom) {
+    y = Math.max(0, pageH - m.bottom - h);
+  }
+
+  return { x: px(x), y: px(y), w: px(w), h: px(h) };
+}
+
+export function pinIsActive(pin?: BlockPin | null): boolean {
+  return Boolean(pin && (pin.top || pin.bottom || pin.left || pin.right));
+}
+
+export function headerPin(): BlockPin {
+  return { top: true, left: true, right: true };
+}
+
+export function footerPin(): BlockPin {
+  return { bottom: true, left: true, right: true };
 }

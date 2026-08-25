@@ -2,147 +2,163 @@ import { useState } from "preact/hooks";
 import { Icon, BLOCK_TYPE_ICON } from "../../ui/icons";
 import type { BlockType } from "../../model/document";
 import {
-  insertBlock,
-  openPrebuildPicker,
+  TOOL_GROUPS,
+  WORD_HELPER_TOOLS,
+  type PlaceToolDef,
+} from "../../model/placeTools";
+import {
+  activeTool,
+  activeToolPreset,
+  armPlaceTool,
+  armSelectTool,
   placeCustomObject,
-  prefs,
   project,
   setStudioView,
-  updatePrefs,
 } from "../../state/store";
 
-const TOOLS: { type: BlockType; label: string }[] = [
-  { type: "paragraph", label: "Paragraph" },
-  { type: "text", label: "Text" },
-  { type: "list", label: "List" },
-  { type: "picture", label: "Picture" },
-  { type: "shape", label: "Shape" },
-  { type: "table", label: "Table" },
-  { type: "files", label: "Files" },
-  { type: "prebuild", label: "Prebuild" },
-];
+export const BLOCK_TOOLS: { type: BlockType; label: string }[] =
+  TOOL_GROUPS.flatMap((g) => g.tools.map((t) => ({ type: t.type, label: t.label })));
 
-export { TOOLS as BLOCK_TOOLS };
+function toolKey(t: PlaceToolDef): string {
+  return t.preset ? `${t.type}:${t.preset}` : t.type;
+}
 
+function isArmed(t: PlaceToolDef): boolean {
+  return (
+    activeTool.value === t.type &&
+    (activeToolPreset.value ?? null) === (t.preset ?? null)
+  );
+}
+
+/** Fixed left tool palette — arm place tools; click the page to configure. */
 export function Toolbox() {
-  const collapsed = Boolean(prefs.value.toolsCollapsed);
-  const vertical = prefs.value.toolsOrientation === "vertical";
   const customs = project.value.customObjects ?? [];
-  const [flash, setFlash] = useState<string | null>(null);
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [sheet, setSheet] = useState<"none" | "word" | "customs">("none");
 
-  const place = (type: BlockType) => {
+  const arm = (t: PlaceToolDef) => {
     setStudioView("edit");
-    if (type === "prebuild") {
-      // Show the saved-recipe chooser instead of inserting blindly
-      openPrebuildPicker();
-      setFlash(type);
-      window.setTimeout(() => setFlash((f) => (f === type ? null : f)), 280);
+    if (isArmed(t)) {
+      armSelectTool();
       return;
     }
-    insertBlock(type);
-    setFlash(type);
-    window.setTimeout(() => setFlash((f) => (f === type ? null : f)), 280);
+    armPlaceTool(t.type, t.preset ?? null);
+    setSheet("none");
   };
 
-  if (collapsed) {
-    return (
-      <div
-        class="float-toolbox float-toolbox--peek"
-        data-tour="toolbox"
-        aria-label="Toolbox"
-      >
-        <button
-          type="button"
-          class="float-toolbox__peek"
-          title="Show blocks toolbox"
-          aria-label="Show blocks toolbox"
-          onClick={() => updatePrefs({ toolsCollapsed: false })}
-        >
-          <Icon name="layout" size={16} />
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div
-      class={
-        vertical
-          ? "float-toolbox float-toolbox--vertical"
-          : "float-toolbox float-toolbox--horizontal"
-      }
-      aria-label="Blocks toolbox"
-      data-tour="toolbox"
-    >
-      <div class="float-toolbox__bar" role="toolbar" aria-label="Insert blocks">
-        {TOOLS.map((tool) => (
-          <button
-            type="button"
-            class={flash === tool.type ? "tool tool--flash" : "tool"}
-            key={tool.type}
-            title={`Add ${tool.label}`}
-            aria-label={`Add ${tool.label}`}
-            onClick={() => place(tool.type)}
-          >
-            <Icon name={BLOCK_TYPE_ICON[tool.type]} size={15} />
-          </button>
-        ))}
+    <div class="tool-palette" aria-label="Blocks toolbox" data-tour="toolbox">
+      <div class="tool-palette__bar" role="toolbar" aria-label="Insert blocks">
         <button
           type="button"
-          class={moreOpen ? "tool tool--on" : "tool"}
-          title="Recipes & custom objects"
-          aria-label="Recipes and custom objects"
-          aria-expanded={moreOpen}
-          onClick={() => setMoreOpen((v) => !v)}
+          class={!activeTool.value ? "tool tool--on" : "tool"}
+          title="Select (V) — click or drag to select blocks"
+          aria-label="Select tool. Click or drag on the page to select blocks."
+          aria-pressed={!activeTool.value}
+          onClick={() => {
+            setStudioView("edit");
+            armSelectTool();
+            setSheet("none");
+          }}
+        >
+          <Icon name="pointer" size={15} />
+        </button>
+        <span class="tool-palette__sep" aria-hidden="true" />
+        {TOOL_GROUPS.map((group, gi) => (
+          <div class="tool-palette__group" key={group.id} role="group">
+            {gi > 0 && <span class="tool-palette__sep" aria-hidden="true" />}
+            {group.tools.map((tool) => (
+              <button
+                type="button"
+                class={isArmed(tool) ? "tool tool--on" : "tool"}
+                key={toolKey(tool)}
+                title={`${tool.label} — ${tool.hint}. Click the page to place.`}
+                aria-label={`${tool.label}. ${tool.hint}. Click the page to place.`}
+                aria-pressed={isArmed(tool)}
+                onClick={() => arm(tool)}
+              >
+                <Icon name={BLOCK_TYPE_ICON[tool.type]} size={15} />
+              </button>
+            ))}
+          </div>
+        ))}
+        <span class="tool-palette__sep" aria-hidden="true" />
+        <button
+          type="button"
+          class={sheet === "word" ? "tool tool--on" : "tool"}
+          title="Word-style helpers — headings, line, text box, lists"
+          aria-label="Word-style helpers"
+          aria-expanded={sheet === "word"}
+          onClick={() =>
+            setSheet((s) => (s === "word" ? "none" : "word"))
+          }
+        >
+          <Icon name="book" size={15} />
+        </button>
+        <button
+          type="button"
+          class={sheet === "customs" ? "tool tool--on" : "tool"}
+          title="Custom objects — place a saved group"
+          aria-label="Custom objects"
+          aria-expanded={sheet === "customs"}
+          onClick={() =>
+            setSheet((s) => (s === "customs" ? "none" : "customs"))
+          }
         >
           <Icon name="object" size={15} />
         </button>
-        <button
-          type="button"
-          class="tool tool--ghost"
-          title="Hide toolbox"
-          aria-label="Hide toolbox"
-          onClick={() => {
-            setMoreOpen(false);
-            updatePrefs({ toolsCollapsed: true });
-          }}
-        >
-          <Icon name="chevronLeft" size={12} />
-        </button>
       </div>
-      {moreOpen && (
-        <div class="float-toolbox__sheet">
-          <button
-            type="button"
-            class="btn btn--ghost btn--small toolbox__browse"
-            onClick={() => {
-              setMoreOpen(false);
-              openPrebuildPicker();
-            }}
-          >
-            Browse prebuilds…
-          </button>
+
+      {sheet === "word" && (
+        <div
+          class="tool-palette__sheet"
+          role="dialog"
+          aria-label="Word-style helpers"
+        >
+          <p class="tool-palette__sheet-title">Word helpers</p>
+          <p class="tool-palette__hint muted">
+            Arm a helper, then click the page — a small window collects options
+            before the block is added.
+          </p>
+          <div class="tool-palette__customs" aria-label="Helpers">
+            {WORD_HELPER_TOOLS.map((tool) => (
+              <button
+                type="button"
+                key={toolKey(tool)}
+                class={
+                  isArmed(tool)
+                    ? "toolbox__custom toolbox__custom--flash"
+                    : "toolbox__custom"
+                }
+                title={tool.hint}
+                onClick={() => arm(tool)}
+              >
+                <Icon name={BLOCK_TYPE_ICON[tool.type]} size={12} />
+                <span>{tool.label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {sheet === "customs" && (
+        <div
+          class="tool-palette__sheet"
+          role="dialog"
+          aria-label="Custom objects"
+        >
+          <p class="tool-palette__sheet-title">Custom objects</p>
           {customs.length > 0 ? (
-            <div class="float-toolbox__customs" aria-label="Custom objects">
+            <div class="tool-palette__customs" aria-label="Saved customs">
               {customs.map((c) => (
                 <button
                   type="button"
                   key={c.id}
-                  class={
-                    flash === c.id
-                      ? "toolbox__custom toolbox__custom--flash"
-                      : "toolbox__custom"
-                  }
+                  class="toolbox__custom"
                   title={`Place “${c.name}”`}
                   onClick={() => {
                     setStudioView("edit");
                     placeCustomObject(c.id);
-                    setFlash(c.id);
-                    window.setTimeout(
-                      () => setFlash((f) => (f === c.id ? null : f)),
-                      280,
-                    );
+                    setSheet("none");
                   }}
                 >
                   <Icon name="object" size={12} />
@@ -151,11 +167,17 @@ export function Toolbox() {
               ))}
             </div>
           ) : (
-            <p class="float-toolbox__hint muted">
-              Save a group as a custom object to list it here.
+            <p class="tool-palette__hint muted">
+              Save a selected group as a custom object to reuse it here.
             </p>
           )}
         </div>
+      )}
+
+      {activeTool.value && (
+        <p class="tool-palette__armed muted" role="status">
+          Click the page to place · Esc to cancel
+        </p>
       )}
     </div>
   );

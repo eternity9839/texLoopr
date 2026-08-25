@@ -6,8 +6,9 @@ import type {
   VariableRow,
 } from "./types";
 import { createId } from "../model/document";
+import { isEphemeral } from "../runtimeConfig";
 
-const KEY = "texloopr.catalog.v1";
+const KEY = "texlooper.catalog.v1";
 
 interface WebCatalog {
   filesystems: FilesystemRow[];
@@ -29,7 +30,9 @@ function empty(): WebCatalog {
 
 function load(): WebCatalog {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw =
+      localStorage.getItem(KEY) ??
+      localStorage.getItem("texloopr.catalog.v1");
     if (!raw) return empty();
     return { ...empty(), ...(JSON.parse(raw) as WebCatalog) };
   } catch {
@@ -38,6 +41,7 @@ function load(): WebCatalog {
 }
 
 function save(data: WebCatalog): void {
+  if (isEphemeral()) return;
   localStorage.setItem(KEY, JSON.stringify(data));
 }
 
@@ -53,7 +57,7 @@ export function createWebCatalog(): CatalogApi {
   return {
     backend: "web",
     async dbPath() {
-      return "localStorage:texloopr.catalog.v1";
+      return "localStorage:texlooper.catalog.v1";
     },
     async listFilesystems() {
       return load().filesystems;

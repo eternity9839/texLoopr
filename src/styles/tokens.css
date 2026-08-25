@@ -213,15 +213,16 @@
   --motion-panel: 200ms;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* Adaptive chrome — small components; density presets retune these */
-  --control-h: clamp(1.625rem, 1.45rem + 0.55vw, 1.9375rem);
-  --btn-pad-x: clamp(0.4rem, 0.34rem + 0.3vw, 0.6rem);
-  --btn-pad-y: clamp(0.2rem, 0.16rem + 0.2vw, 0.32rem);
-  --tool-size: clamp(1.625rem, 1.45rem + 0.45vw, 2rem);
-  --bar-height: clamp(2.25rem, 2.05rem + 0.7vw, 2.75rem);
-  --nav-width: clamp(12.5rem, 11.5rem + 4vw, 16rem);
-  --tools-width: clamp(4.25rem, 3.9rem + 1.2vw, 5.25rem);
-  --inspector-width: clamp(13rem, 12.25rem + 4vw, 17rem);
+  /* Adaptive chrome — compact pro defaults */
+  --control-h: 1.75rem;
+  --btn-pad-x: 0.4rem;
+  --btn-pad-y: 0.18rem;
+  --tool-size: 2rem;
+  --bar-height: 2.25rem;
+  --status-bar-h: 1.65rem;
+  --nav-width: clamp(10.5rem, 9.5rem + 3vw, 13.5rem);
+  --tools-width: 3rem;
+  --inspector-width: clamp(14rem, 13rem + 3vw, 17.5rem);
   --page-width: 720px;
   --page-height: 960px;
   --handle-size: 7px;

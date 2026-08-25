@@ -1,14 +1,16 @@
 import { useEffect, useRef } from "preact/hooks";
 import { Icon } from "../../ui/icons";
-import { overlay, setOverlay } from "../../state/store";
+import { overlay, prefs, setOverlay } from "../../state/store";
 import { SettingsMode } from "../modes/SettingsMode";
 import { AboutMode } from "../modes/AboutMode";
 import { CatalogPanel } from "../catalog/CatalogPanel";
 import { AutomationPanel } from "../automation/AutomationPanel";
 import { SamplesPanel } from "../samples/SamplesPanel";
+import { t } from "../../i18n";
 
 export function StudioOverlay() {
   const current = overlay.value;
+  void prefs.value.locale;
   const dialogRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -54,14 +56,14 @@ export function StudioOverlay() {
 
   const title =
     current === "settings"
-      ? "Settings"
+      ? t("settings")
       : current === "about"
-        ? "About"
+        ? t("about")
         : current === "automation"
-          ? "Automation"
+          ? t("automation")
           : current === "samples"
-            ? "Sample documents"
-            : "Catalog";
+            ? t("sampleDocuments")
+            : t("catalog");
 
   const wide =
     current === "automation" ||
@@ -88,8 +90,8 @@ export function StudioOverlay() {
           <button
             type="button"
             class="btn btn--ghost btn--small btn--icon"
-            title="Close"
-            aria-label="Close"
+            title={t("close")}
+            aria-label={t("close")}
             onClick={() => setOverlay(null)}
           >
             <Icon name="close" size={15} />

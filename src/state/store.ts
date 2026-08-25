@@ -1,6 +1,8 @@
 import { signal, computed, effect } from "@preact/signals";
+import { canvasSizeForSession } from "../model/canvasView";
 import {
   Block,
+  BlockStyle,
   BlockType,
   BLOCK_DEFAULTS,
   Comment,
@@ -12,17 +14,21 @@ import {
   normalizeMargins,
   Page,
   PageMargins,
-  PAGE_HEIGHT,
-  PAGE_WIDTH,
   Project,
   Selection,
   StudioView,
   UiOverlay,
   Watermark,
+  type CanvasPresetId,
 } from "../model/document";
 import { createDemoProject, getDemo } from "../model/demos/library";
 import { DataRow, parseDataInput, SAMPLE_CSV } from "../model/bindings";
 import { normalizeRect, px } from "../model/geometry";
+import {
+  buildPlaceDraft,
+  type PlaceDraft,
+  type PlacePresetId,
+} from "../model/placeTools";
 import { expandPrebuild, getPrebuildRecipe } from "../model/prebuild/library";
 import { defaultRepeatChildren } from "../model/repeat";
 import {
@@ -34,20 +40,30 @@ import {
   ungroupBlock,
   updateBlockDeep,
 } from "../model/groups";
+import {
+  nudgeBlockZOrder,
+  type ZOrderDirection,
+} from "../model/layerStack";
 import type {
   OutputProfile,
   ProjectScript,
   WorkflowStep,
 } from "../model/workflow";
-import { EditHistory } from "../model/history";
+import { EditHistory, isEditHistorySnapshot, type EditHistorySnapshot } from "../model/history";
+import type { InspectorTabId } from "../features/studio/inspectorTabs";
+import {
+  clampZoom,
+  stepZoom,
+} from "../features/editor/canvasScale";
 import {
   isTourCompleted,
   markTourCompleted,
-  TOUR_STEPS,
+  getTourSteps,
   type TourStepId,
 } from "../model/tour";
+import { isEphemeral } from "../runtimeConfig";
 
-const TEMP_KEY = "texloopr.temp.active.v1";
+const TEMP_KEY = "texlooper.temp.active.v1";
 
 export interface AppStateSnapshot {
   catalogProjectId: string | null;
@@ -61,6 +77,7 @@ export interface AppStateSnapshot {
   prefs: EditorPrefs;
   activeTool: BlockType | null;
   placeCascade: number;
+  editHistory?: EditHistorySnapshot | null;
   /** Legacy field migrated on load */
   mode?: LegacyAppMode | StudioView | "preview";
 }
@@ -98,10 +115,48 @@ function migrateOverlay(saved: Partial<AppStateSnapshot> | null): UiOverlay {
   return null;
 }
 
+function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
+  const base: EditorPrefs = saved?.prefs ?? {
+    showGrid: true,
+    snap: true,
+    density: "compact",
+    theme: "nova",
+    showRulers: true,
+    showComments: true,
+    showToolsRail: true,
+    showInspectorRail: true,
+    showStatusBar: true,
+    navWidth: 220,
+    toolsWidth: 44,
+    inspectorWidth: 280,
+    navCollapsed: false,
+    toolsCollapsed: false,
+    inspectorCollapsed: false,
+    toolsOrientation: "vertical",
+    propsHeight: 240,
+    propsCollapsed: true,
+    gridSize: 16,
+    gridLock: false,
+    gridStyle: "lines",
+    showMarginGuides: true,
+    locale: "fr",
+    canvasZoomMode: "fit",
+    canvasZoom: 1,
+  };
+  const artboard = saved?.project?.artboard;
+  if (artboard && base.canvasPreset !== artboard) {
+    return { ...base, canvasPreset: artboard };
+  }
+  return base;
+}
+
 function loadSnapshot(): Partial<AppStateSnapshot> | null {
+  if (isEphemeral()) return null;
   try {
     const raw =
       localStorage.getItem(TEMP_KEY) ??
+      localStorage.getItem("texloopr.temp.active.v1") ??
+      localStorage.getItem("texlooper.draft.v1") ??
       localStorage.getItem("texloopr.draft.v1");
     if (!raw) return null;
     return JSON.parse(raw) as Partial<AppStateSnapshot>;
@@ -110,7 +165,10 @@ function loadSnapshot(): Partial<AppStateSnapshot> | null {
   }
 }
 
-const saved = typeof localStorage !== "undefined" ? loadSnapshot() : null;
+const saved =
+  typeof localStorage !== "undefined" && !isEphemeral()
+    ? loadSnapshot()
+    : null;
 
 export const catalogProjectId = signal<string | null>(
   saved?.catalogProjectId ?? null,
@@ -126,30 +184,19 @@ export const dataRows = signal<DataRow[]>(
   saved?.dataRows ?? parseDataInput(SAMPLE_CSV),
 );
 export const previewRowIndex = signal<number>(saved?.previewRowIndex ?? 0);
-export const prefs = signal<EditorPrefs>(
-  saved?.prefs ?? {
-    showGrid: true,
-    snap: true,
-    density: "comfortable",
-    theme: "stone",
-    showRulers: true,
-    showComments: true,
-    navWidth: 240,
-    toolsWidth: 96,
-    inspectorWidth: 280,
-    navCollapsed: false,
-    toolsCollapsed: false,
-    inspectorCollapsed: false,
-    toolsOrientation: "horizontal",
-    propsHeight: 240,
-    propsCollapsed: false,
-    gridSize: 16,
-    gridLock: false,
-    gridStyle: "lines",
-    showMarginGuides: true,
-  },
-);
+export const prefs = signal<EditorPrefs>(migratePrefs(saved));
+
+function localizedTourSteps() {
+  return getTourSteps(prefs.value.locale === "en" ? "en" : "fr");
+}
+
 export const activeTool = signal<BlockType | null>(null);
+/** Word-helper / insert preset while a place tool is armed. */
+export const activeToolPreset = signal<PlacePresetId | null>(null);
+/** Pre-commit params dialog after clicking the surface with a tool armed. */
+export const placeDraft = signal<PlaceDraft | null>(null);
+/** Live canvas render scale (fit or manual) — for zoom chrome. */
+export const canvasViewScale = signal(1);
 export const activePrebuildId = signal<string>("header");
 export const placeCascade = signal(saved?.placeCascade ?? 0);
 
@@ -166,7 +213,7 @@ export const prebuildPickerOpen = signal(false);
 
 export function openPrebuildPicker(): void {
   prebuildPickerOpen.value = true;
-  activeTool.value = null;
+  clearPlaceTool();
 }
 
 export function closePrebuildPicker(): void {
@@ -176,15 +223,18 @@ export const catalogReady = signal(false);
 export const catalogBackend = signal<"tauri" | "web" | null>(null);
 
 const editHistory = new EditHistory();
+if (saved?.editHistory && isEditHistorySnapshot(saved.editHistory)) {
+  editHistory.loadSnapshot(saved.editHistory);
+}
 export const historyEpoch = signal(0);
-export const clipboardBlock = signal<Block | null>(null);
-export const inspectorTab = signal<"props" | "comments" | "meta">(
-  "props",
-);
+export const clipboardBlocks = signal<Block[]>([]);
+export const inspectorTab = signal<InspectorTabId>("design");
 export const tourActive = signal(false);
 export const tourStepIndex = signal(0);
 export const tourStepId = computed(
-  () => TOUR_STEPS[tourStepIndex.value]?.id ?? ("welcome" as TourStepId),
+  () =>
+    localizedTourSteps()[tourStepIndex.value]?.id ??
+    ("welcome" as TourStepId),
 );
 
 export const activePage = computed(() => {
@@ -225,7 +275,7 @@ export const previewRow = computed(() => {
   return rows[idx];
 });
 
-if (typeof localStorage !== "undefined") {
+if (typeof localStorage !== "undefined" && !isEphemeral()) {
   effect(() => {
     // Temp working copy of the *active* project + UI session only.
     const snapshot: AppStateSnapshot = {
@@ -240,24 +290,38 @@ if (typeof localStorage !== "undefined") {
       prefs: prefs.value,
       activeTool: activeTool.value,
       placeCascade: placeCascade.value,
+      editHistory: editHistory.toSnapshot(),
     };
-    localStorage.setItem(TEMP_KEY, JSON.stringify(snapshot));
+    void historyEpoch.value;
+    try {
+      localStorage.setItem(TEMP_KEY, JSON.stringify(snapshot));
+    } catch {
+      // Quota exceeded — drop history from autosave and retry once.
+      try {
+        localStorage.setItem(
+          TEMP_KEY,
+          JSON.stringify({ ...snapshot, editHistory: null }),
+        );
+      } catch {
+        /* ignore */
+      }
+    }
   });
 }
 
-function updateProject(
+export function updateProject(
   mutator: (draft: Project) => Project,
-  options: { history?: boolean } = {},
+  options: { history?: boolean; label?: string } = {},
 ): void {
   if (options.history) {
-    editHistory.push(project.value);
+    editHistory.push(project.value, options.label ?? "Edit document");
     historyEpoch.value += 1;
   }
   project.value = mutator(structuredClone(project.value));
 }
 
-export function pushHistoryCheckpoint(): void {
-  editHistory.push(project.value);
+export function pushHistoryCheckpoint(label = "Move or resize"): void {
+  editHistory.push(project.value, label);
   historyEpoch.value += 1;
 }
 
@@ -287,6 +351,21 @@ export function canRedo(): boolean {
   return editHistory.canRedo();
 }
 
+export function historyActionLog() {
+  void historyEpoch.value;
+  return editHistory.actionLog();
+}
+
+function restoreEditHistoryFromMeta(meta: Record<string, unknown> | undefined): void {
+  const raw = meta?.editHistory;
+  if (isEditHistorySnapshot(raw)) {
+    editHistory.loadSnapshot(raw);
+  } else {
+    editHistory.clear();
+  }
+  historyEpoch.value += 1;
+}
+
 export function setStudioView(next: StudioView): void {
   studioView.value = next;
   overlay.value = null;
@@ -299,7 +378,7 @@ export function setPreviewMode(on: boolean): void {
   previewMode.value = on;
   if (on) {
     studioView.value = "edit";
-    activeTool.value = null;
+    clearPlaceTool();
   }
 }
 
@@ -311,6 +390,14 @@ export function setOverlay(next: UiOverlay): void {
   overlay.value = next;
 }
 
+export type SettingsSection = "general" | "appearance" | "page" | "editor";
+export const settingsSection = signal<SettingsSection>("general");
+
+export function openSettings(section: SettingsSection = "general"): void {
+  settingsSection.value = section;
+  overlay.value = "settings";
+}
+
 export function select(next: Selection): void {
   selection.value = next;
   if (next?.kind === "block") {
@@ -320,7 +407,18 @@ export function select(next: Selection): void {
   }
 }
 
-/** Shift+click: toggle id in multi-selection. */
+/** Replace the current multi-selection (primary = last id). */
+export function selectBlocks(ids: string[]): void {
+  const unique = [...new Set(ids)];
+  if (!unique.length) {
+    select(null);
+    return;
+  }
+  selectedIds.value = unique;
+  selection.value = { kind: "block", id: unique[unique.length - 1]! };
+}
+
+/** Shift/Ctrl+click: toggle id in multi-selection. */
 export function selectBlockToggle(id: string): void {
   const set = new Set(selectedIds.value);
   if (set.has(id)) set.delete(id);
@@ -331,8 +429,84 @@ export function selectBlockToggle(id: string): void {
     : null;
 }
 
+/** Select every unlocked top-level block on the active page. */
+export function selectAllOnPage(): void {
+  const page = activePage.value;
+  if (!page) return;
+  selectBlocks(page.blocks.filter((b) => !b.locked).map((b) => b.id));
+}
+
+function clearPlaceTool(): void {
+  activeTool.value = null;
+  activeToolPreset.value = null;
+  placeDraft.value = null;
+}
+
+/** Pointer/select mode — cancel place tools and return to selection. */
+export function armSelectTool(): void {
+  clearPlaceTool();
+}
+
 export function setActiveTool(tool: BlockType | null): void {
-  activeTool.value = tool;
+  if (!tool) {
+    clearPlaceTool();
+    return;
+  }
+  armPlaceTool(tool, null);
+}
+
+/** Arm a place tool: crosshair + options strip. Does not insert until canvas click. */
+export function armPlaceTool(
+  type: BlockType | null,
+  preset: PlacePresetId | null = null,
+): void {
+  if (!type) {
+    clearPlaceTool();
+    return;
+  }
+  activeTool.value = type;
+  activeToolPreset.value = preset;
+  // Options live while armed; click position is applied at commit time.
+  placeDraft.value = buildPlaceDraft(type, preset, { x: 0, y: 0 });
+}
+
+export function updatePlaceDraft(
+  patch: Partial<Omit<PlaceDraft, "type">> & {
+    content?: Record<string, unknown>;
+    style?: BlockStyle;
+  },
+): void {
+  const cur = placeDraft.value;
+  if (!cur) return;
+  placeDraft.value = {
+    ...cur,
+    ...patch,
+    content: patch.content ? { ...cur.content, ...patch.content } : cur.content,
+    style: patch.style ? { ...cur.style, ...patch.style } : cur.style,
+    at: patch.at ?? cur.at,
+  };
+}
+
+/** Place the armed tool at a page point using current options. Tool stays armed. */
+export function commitPlaceAt(at: { x: number; y: number }): string {
+  const type = activeTool.value;
+  const opts = placeDraft.value;
+  if (!type || !opts) return "";
+  const placedAt = {
+    x: Math.max(0, at.x - opts.w / 2),
+    y: Math.max(0, at.y - opts.h / 2),
+  };
+  return insertBlock(type, placedAt, {
+    content: opts.content,
+    style: opts.style,
+    name: opts.name,
+    w: opts.w,
+    h: opts.h,
+  });
+}
+
+export function cancelPlaceDraft(): void {
+  clearPlaceTool();
 }
 
 export function createProject(): void {
@@ -344,6 +518,9 @@ export function createProject(): void {
   placeCascade.value = 0;
   studioView.value = "edit";
   previewMode.value = false;
+  dataRows.value = [];
+  previewRowIndex.value = 0;
+  updatePrefs({ canvasPreset: project.value.artboard ?? "document" });
 }
 
 export function loadDemoProject(): void {
@@ -355,19 +532,67 @@ export function loadDemoSample(id: string): void {
   if (!entry) return;
   editHistory.clear();
   historyEpoch.value += 1;
-  project.value = ensureProjectAutomation(entry.build());
+  const built = ensureProjectAutomation(entry.build());
+  const artboard = (entry.artboard ?? built.artboard ?? "document") as CanvasPresetId;
+  built.artboard = artboard;
+  project.value = built;
   catalogProjectId.value = null;
   selection.value = null;
   placeCascade.value = 0;
   studioView.value = "edit";
   previewMode.value = false;
   setOverlay(null);
+  updatePrefs({ canvasPreset: artboard });
+  let parsed: DataRow[] = [];
   try {
-    dataRows.value = parseDataInput(entry.sampleCsv);
-    previewRowIndex.value = 0;
+    parsed = parseDataInput(entry.sampleCsv);
   } catch {
-    dataRows.value = parseDataInput(SAMPLE_CSV);
-    previewRowIndex.value = 0;
+    parsed = parseDataInput(SAMPLE_CSV);
+  }
+  previewRowIndex.value = 0;
+
+  if (!built.datasets?.length) {
+    const dsId = createId();
+    updateProject((draft) => ({
+      ...draft,
+      datasets: [
+        {
+          id: dsId,
+          name: "primary",
+          rows: [...parsed] as Record<string, unknown>[],
+        },
+      ],
+      primaryDatasetId: dsId,
+    }));
+    dataRows.value = parsed;
+  } else {
+    updateProject((draft) => {
+      const list = [...(draft.datasets ?? [])];
+      let primary =
+        list.find((d) => d.id === draft.primaryDatasetId) ??
+        list.find((d) => d.name === "primary");
+      if (!primary) {
+        const dsId = createId();
+        primary = {
+          id: dsId,
+          name: "primary",
+          rows: [...parsed] as Record<string, unknown>[],
+        };
+        list.unshift(primary);
+        draft.primaryDatasetId = dsId;
+      } else if (!primary.rows?.length && parsed.length) {
+        primary.rows = [...parsed] as Record<string, unknown>[];
+      }
+      draft.datasets = list;
+      return draft;
+    });
+    const primary =
+      project.value.datasets?.find((d) => d.id === project.value.primaryDatasetId) ??
+      project.value.datasets?.find((d) => d.name === "primary") ??
+      project.value.datasets?.[0];
+    dataRows.value = (primary?.rows?.length
+      ? (primary.rows as DataRow[])
+      : parsed);
   }
 }
 
@@ -389,6 +614,7 @@ export function updateProjectMeta(
       | "company"
       | "contactEmail"
       | "customMeta"
+      | "artboard"
     >
   >,
 ): void {
@@ -417,12 +643,17 @@ export function setActiveOutputId(id: string): void {
   );
 }
 
+export function setGroupIsolation(id: string | null): void {
+  updatePrefs({ groupIsolationId: id ?? undefined });
+}
+
 export function activeOutputProfile(): OutputProfile | undefined {
   const p = ensureProjectAutomation(project.value);
   return p.outputs?.find((o) => o.id === p.activeOutputId) ?? p.outputs?.[0];
 }
 
 export function stampSaved(): void {
+  if (isEphemeral()) return;
   updateProject((draft) => ({
     ...draft,
     lastSaved: new Date().toISOString(),
@@ -431,6 +662,7 @@ export function stampSaved(): void {
 }
 
 export async function persistActiveToCatalog(): Promise<void> {
+  if (isEphemeral()) return;
   const { persistActiveProject } = await import("../storage/catalog");
   const p = project.value;
   const record = await persistActiveProject({
@@ -442,6 +674,7 @@ export async function persistActiveToCatalog(): Promise<void> {
       subject: p.subject,
       description: p.description,
       published: p.published,
+      editHistory: editHistory.toSnapshot(),
     },
   });
   catalogProjectId.value = record.summary.id;
@@ -451,21 +684,32 @@ export async function hydrateFromCatalog(): Promise<void> {
   const { getCatalog } = await import("../storage/catalog");
   const catalog = await getCatalog();
   catalogBackend.value = catalog.backend;
-  const active = await catalog.getActiveProject();
-  if (active && active.document && typeof active.document === "object") {
-    catalogProjectId.value = active.summary.id;
-    project.value = ensureProjectAutomation(active.document as Project);
+  if (!isEphemeral()) {
+    const active = await catalog.getActiveProject();
+    if (active && active.document && typeof active.document === "object") {
+      catalogProjectId.value = active.summary.id;
+      project.value = ensureProjectAutomation(active.document as Project);
+      restoreEditHistoryFromMeta(active.summary.meta);
+      if (project.value.artboard) {
+        updatePrefs({ canvasPreset: project.value.artboard });
+      }
+    }
   }
   catalogReady.value = true;
 }
 
 export async function openCatalogProject(id: string): Promise<void> {
+  if (isEphemeral()) return;
   const { getCatalog } = await import("../storage/catalog");
   const catalog = await getCatalog();
   const record = await catalog.setActiveProject(id);
   catalogProjectId.value = record.summary.id;
   if (record.document && typeof record.document === "object") {
     project.value = ensureProjectAutomation(record.document as Project);
+    restoreEditHistoryFromMeta(record.summary.meta);
+    if (project.value.artboard) {
+      updatePrefs({ canvasPreset: project.value.artboard });
+    }
   }
   selection.value = null;
   previewMode.value = false;
@@ -482,19 +726,21 @@ export function addPage(name?: string): void {
   updateProject((draft) => {
     const page: Page = {
       id,
-      name: name ?? `Page ${draft.pages.length + 1}`,
+      name: name ?? `Surface ${draft.pages.length + 1}`,
       blocks: [],
     };
     draft.pages.push(page);
     draft.activePageId = id;
     return draft;
-  });
+  }, { history: true, label: "Add page" });
   selection.value = { kind: "page", id };
 }
 
 export function updatePage(
   pageId: string,
-  patch: Partial<Pick<Page, "name" | "background">> & {
+  patch: Partial<
+    Pick<Page, "name" | "background" | "rotate" | "mirrorX" | "mirrorY">
+  > & {
     margins?: Partial<PageMargins>;
     watermark?: Watermark | null;
     pageNumber?: Page["pageNumber"] | null;
@@ -509,34 +755,27 @@ export function updatePage(
     if (watermark !== undefined) page.watermark = watermark ?? undefined;
     if (pageNumber !== undefined) page.pageNumber = pageNumber ?? undefined;
     return draft;
-  }, { history: true });
+  }, { history: true, label: "Update page" });
 }
 
 export function insertBlock(
   type: BlockType,
   at?: { x: number; y: number },
+  opts?: {
+    content?: Record<string, unknown>;
+    style?: BlockStyle;
+    name?: string;
+    w?: number;
+    h?: number;
+  },
 ): string {
   const cascade = placeCascade.value;
   const x = px(at?.x ?? 48 + (cascade % 5) * 24);
   const y = px(at?.y ?? 48 + (cascade % 5) * 24);
 
   if (type === "prebuild") {
-    const pieces = expandPrebuild(activePrebuildId.value, { x, y });
-    let lastId = "";
-    updateProject((draft) => {
-      const page = draft.pages.find((p) => p.id === draft.activePageId);
-      if (!page) return draft;
-      for (const piece of pieces) {
-        piece.zIndex = (piece.zIndex ?? 1) + cascade;
-        page.blocks.push(piece);
-        lastId = piece.id;
-      }
-      return draft;
-    }, { history: true });
-    placeCascade.value = cascade + pieces.length;
-    if (lastId) selection.value = { kind: "block", id: lastId };
-    activeTool.value = null;
-    return lastId;
+    clearPlaceTool();
+    return "";
   }
 
   const defaults = BLOCK_DEFAULTS[type];
@@ -547,31 +786,43 @@ export function insertBlock(
           itemsPath: "line_items",
           itemVar: "item",
           blocks: defaultRepeatChildren(),
+          ...(opts?.content ?? {}),
         }
       : type === "group"
-        ? { blocks: [] }
-        : { ...defaults.content };
+        ? { blocks: [], ...(opts?.content ?? {}) }
+        : { ...defaults.content, ...(opts?.content ?? {}) };
+
+  const defaultStyle: BlockStyle =
+    type === "shape"
+      ? {
+          background: "transparent",
+          borderWidth: 1.5,
+          borderColor: "#2a2622",
+          opacity: 1,
+          color: "#2a2622",
+        }
+      : { fontSize: 14, color: "#2a2622", textAlign: "left" };
 
   const block: Block = {
     id,
     type,
-    name: defaults.name,
+    name: opts?.name ?? defaults.name,
     x,
     y,
-    w: px(defaults.w),
-    h: px(type === "repeat" || type === "group" ? defaults.h : defaults.h),
+    w: px(opts?.w ?? defaults.w),
+    h: px(opts?.h ?? defaults.h),
     content,
-    style: { fontSize: 14, color: "#2a2622", textAlign: "left" },
+    style: { ...defaultStyle, ...(opts?.style ?? {}) },
     zIndex: cascade + 1,
   };
   updateProject((draft) => {
     const page = draft.pages.find((p) => p.id === draft.activePageId);
     if (page) page.blocks.push(block);
     return draft;
-  }, { history: true });
+  }, { history: true, label: `Insert ${type}` });
   placeCascade.value = cascade + 1;
   selection.value = { kind: "block", id };
-  activeTool.value = null;
+  clearPlaceTool();
   return id;
 }
 
@@ -582,9 +833,13 @@ function originForPlacement(
   hPx: number,
 ): { x: number; y: number } {
   if (placement === "center") {
+    const { w: pageW, h: pageH } = canvasSizeForSession(
+      project.value,
+      prefs.value,
+    );
     return {
-      x: Math.round((PAGE_WIDTH - wPx) / 2),
-      y: Math.round((PAGE_HEIGHT - hPx) / 2),
+      x: Math.round((pageW - wPx) / 2),
+      y: Math.round((pageH - hPx) / 2),
     };
   }
   if (placement === "margins") {
@@ -600,8 +855,7 @@ export function insertBlockPlaced(
   placement: InsertPlacement = insertPlacement.value,
 ): void {
   if (type === "prebuild") {
-    // Never insert blindly — let the user pick a recipe first.
-    openPrebuildPicker();
+    // Prebuild UI removed — no blind insert and no picker.
     return;
   }
   const defaults = BLOCK_DEFAULTS[type];
@@ -633,32 +887,63 @@ export function insertPrebuildRecipe(recipeId: string): void {
       lastId = piece.id;
     }
     return draft;
-  }, { history: true });
+  }, { history: true, label: "Insert prebuild" });
   placeCascade.value = cascade + pieces.length;
   activePrebuildId.value = recipeId;
   if (lastId) selection.value = { kind: "block", id: lastId };
   closePrebuildPicker();
 }
 
+/** Create a named dataset and optionally bind a table block to it. */
+export function addNamedDataset(
+  opts: { name?: string; keyField?: string; bindTableId?: string } = {},
+): string {
+  const id = createId();
+  const name =
+    opts.name?.trim() ||
+    `dataset_${(project.value.datasets?.length ?? 0) + 1}`;
+  updateProject((draft) => {
+    const list = [...(draft.datasets ?? [])];
+    list.push({
+      id,
+      name,
+      keyField: opts.keyField ?? "",
+      rows: [],
+    });
+    draft.datasets = list;
+    if (!draft.primaryDatasetId) draft.primaryDatasetId = id;
+    return draft;
+  });
+  if (opts.bindTableId) {
+    updateBlock(opts.bindTableId, {
+      content: { datasetName: name, sourcePath: "" },
+    });
+  }
+  return id;
+}
+
 export function updateBlock(
   blockId: string,
-  patch: Partial<
-    Pick<
-      Block,
-      | "name"
-      | "x"
-      | "y"
-      | "w"
-      | "h"
-      | "content"
-      | "style"
-      | "condition"
-      | "bindings"
-      | "locked"
-      | "zIndex"
-    >
-  >,
-  options: { history?: boolean } = {},
+  patch: Omit<
+    Partial<
+      Pick<
+        Block,
+        | "name"
+        | "x"
+        | "y"
+        | "w"
+        | "h"
+        | "content"
+        | "style"
+        | "condition"
+        | "bindings"
+        | "locked"
+        | "zIndex"
+      >
+    >,
+    never
+  > & { pin?: Block["pin"] | null },
+  options: { history?: boolean; label?: string } = {},
 ): void {
   updateProject((draft) => {
     for (const page of draft.pages) {
@@ -670,7 +955,12 @@ export function updateBlock(
         if (patch.style) next.style = { ...next.style, ...patch.style };
         if (patch.bindings)
           next.bindings = { ...next.bindings, ...patch.bindings };
-        const { content: _c, style: _s, bindings: _b, ...rest } = patch;
+        if (patch.pin === null) {
+          delete next.pin;
+        } else if (patch.pin !== undefined) {
+          next.pin = patch.pin;
+        }
+        const { content: _c, style: _s, bindings: _b, pin: _p, ...rest } = patch;
         if (!(next.locked && moving && patch.locked !== false)) {
           Object.assign(next, rest);
         } else {
@@ -717,7 +1007,7 @@ export function deleteSelection(): void {
         (c) => !ids.has(c.blockId),
       );
       return draft;
-    }, { history: true });
+    }, { history: true, label: "Delete selection" });
     selection.value = null;
     selectedIds.value = [];
     return;
@@ -729,7 +1019,7 @@ export function deleteSelection(): void {
       draft.activePageId = draft.pages[0].id;
     }
     return draft;
-  }, { history: true });
+  }, { history: true, label: "Delete page" });
   selection.value = { kind: "page", id: project.value.activePageId };
 }
 
@@ -737,21 +1027,17 @@ export function nudgeSelection(dx: number, dy: number): void {
   const sel = selection.value;
   if (!sel || sel.kind !== "block") return;
   const ids = selectedIds.value.length ? selectedIds.value : [sel.id];
-  const page = activePage.value;
-  const targets = (page?.blocks ?? []).filter(
-    (b) => ids.includes(b.id) && !b.locked,
-  );
-  if (!targets.length) return;
   updateProject((draft) => {
     const draftPage = draft.pages.find((p) => p.id === draft.activePageId);
     if (!draftPage) return draft;
-    for (const b of draftPage.blocks) {
-      if (!ids.includes(b.id) || b.locked) continue;
-      b.x += dx;
-      b.y += dy;
+    for (const id of ids) {
+      draftPage.blocks = updateBlockDeep(draftPage.blocks, id, (b) => {
+        if (b.locked) return b;
+        return { ...b, x: b.x + dx, y: b.y + dy };
+      });
     }
     return draft;
-  }, { history: true });
+  }, { history: true, label: "Nudge selection" });
 }
 
 export type AlignMode =
@@ -796,50 +1082,52 @@ export function alignSelected(mode: AlignMode): void {
         }
       }
       return draft;
-    }, { history: true });
+    }, { history: true, label: "Align selection" });
     return;
   }
 
   // Single selection: align to the page
   const block = selectedBlock.value;
   if (!block || block.locked) return;
+  const { w: pageW, h: pageH } = canvasSizeForSession(
+    project.value,
+    prefs.value,
+  );
   let patch: Partial<Pick<Block, "x" | "y">> = {};
   switch (mode) {
     case "left":
       patch = { x: 0 };
       break;
     case "center-x":
-      patch = { x: Math.round((PAGE_WIDTH - block.w) / 2) };
+      patch = { x: Math.round((pageW - block.w) / 2) };
       break;
     case "right":
-      patch = { x: Math.max(0, PAGE_WIDTH - block.w) };
+      patch = { x: Math.max(0, pageW - block.w) };
       break;
     case "top":
       patch = { y: 0 };
       break;
     case "middle":
-      patch = { y: Math.round((PAGE_HEIGHT - block.h) / 2) };
+      patch = { y: Math.round((pageH - block.h) / 2) };
       break;
     case "bottom":
-      patch = { y: Math.max(0, PAGE_HEIGHT - block.h) };
+      patch = { y: Math.max(0, pageH - block.h) };
       break;
   }
-  updateBlock(block.id, patch, { history: true });
+  updateBlock(block.id, patch, { history: true, label: "Align selection" });
 }
 
-export function nudgeZOrder(direction: "front" | "forward" | "backward" | "back"): void {
+export function nudgeZOrder(direction: ZOrderDirection): void {
   const block = selectedBlock.value;
   const page = activePage.value;
   if (!block || !page) return;
-  const zs = page.blocks.map((b) => b.zIndex ?? 0);
-  const max = Math.max(0, ...zs);
-  const min = Math.min(0, ...zs);
-  let next = block.zIndex ?? 0;
-  if (direction === "front") next = max + 1;
-  else if (direction === "back") next = min - 1;
-  else if (direction === "forward") next += 1;
-  else next -= 1;
-  updateBlock(block.id, { zIndex: next }, { history: true });
+  updateProject((draft) => {
+    const draftPage = draft.pages.find((p) => p.id === page.id);
+    if (!draftPage) return draft;
+    const next = nudgeBlockZOrder(draftPage.blocks, block.id, direction);
+    if (next) draftPage.blocks = next;
+    return draft;
+  }, { history: true, label: "Change layer order" });
 }
 
 export function duplicateSelected(): void {
@@ -859,14 +1147,14 @@ export function duplicateSelected(): void {
     const page = draft.pages.find((p) => p.id === draft.activePageId);
     if (page) page.blocks.push(copy);
     return draft;
-  }, { history: true });
+  }, { history: true, label: "Duplicate" });
   selection.value = { kind: "block", id };
 }
 
 export function copySelected(): void {
-  const block = selectedBlock.value;
-  if (!block) return;
-  clipboardBlock.value = structuredClone(block);
+  const blocks = selectedBlocks.value;
+  if (!blocks.length) return;
+  clipboardBlocks.value = blocks.map((b) => structuredClone(b));
 }
 
 export function cutSelected(): void {
@@ -875,29 +1163,36 @@ export function cutSelected(): void {
 }
 
 export function pasteClipboard(): void {
-  const src = clipboardBlock.value;
-  if (!src) return;
-  const id = createId();
-  const copy: Block = {
-    ...structuredClone(src),
-    id,
-    x: src.x + 24,
-    y: src.y + 24,
-    zIndex: (src.zIndex ?? 0) + 1,
-    locked: false,
-  };
+  const src = clipboardBlocks.value;
+  if (!src.length) return;
+  const newIds: string[] = [];
   updateProject((draft) => {
     const page = draft.pages.find((p) => p.id === draft.activePageId);
-    if (page) page.blocks.push(copy);
+    if (!page) return draft;
+    for (const block of src) {
+      const id = createId();
+      newIds.push(id);
+      page.blocks.push({
+        ...structuredClone(block),
+        id,
+        x: block.x + 24,
+        y: block.y + 24,
+        zIndex: (block.zIndex ?? 0) + 1,
+        locked: false,
+      });
+    }
     return draft;
-  }, { history: true });
-  selection.value = { kind: "block", id };
+  }, {
+    history: true,
+    label: src.length > 1 ? `Paste ${src.length} blocks` : "Paste",
+  });
+  if (newIds.length) selectBlocks(newIds);
 }
 
 export function toggleLockSelected(): void {
   const block = selectedBlock.value;
   if (!block) return;
-  updateBlock(block.id, { locked: !block.locked }, { history: true });
+  updateBlock(block.id, { locked: !block.locked }, { history: true, label: "Toggle lock" });
 }
 
 export function addComment(body: string, blockId?: string): void {
@@ -913,7 +1208,7 @@ export function addComment(body: string, blockId?: string): void {
   updateProject((draft) => {
     draft.comments = [...(draft.comments ?? []), comment];
     return draft;
-  }, { history: true });
+  }, { history: true, label: "Add comment" });
   inspectorTab.value = "comments";
 }
 
@@ -922,14 +1217,14 @@ export function resolveComment(id: string, resolved = true): void {
     const c = (draft.comments ?? []).find((x) => x.id === id);
     if (c) c.resolved = resolved;
     return draft;
-  }, { history: true });
+  }, { history: true, label: resolved ? "Resolve comment" : "Reopen comment" });
 }
 
 export function deleteComment(id: string): void {
   updateProject((draft) => {
     draft.comments = (draft.comments ?? []).filter((c) => c.id !== id);
     return draft;
-  }, { history: true });
+  }, { history: true, label: "Delete comment" });
 }
 
 export function commentsForBlock(blockId: string): Comment[] {
@@ -953,7 +1248,7 @@ export function skipTour(): void {
 
 export function nextTourStep(): void {
   const next = tourStepIndex.value + 1;
-  if (next >= TOUR_STEPS.length) {
+  if (next >= localizedTourSteps().length) {
     skipTour();
     return;
   }
@@ -967,14 +1262,14 @@ export function prevTourStep(): void {
 
 function applyTourStep(index: number): void {
   tourStepIndex.value = index;
-  const step = TOUR_STEPS[index];
+  const step = localizedTourSteps()[index];
   if (!step) return;
   if (step.view) setStudioView(step.view);
   if (typeof step.preview === "boolean") setPreviewMode(step.preview);
   if (step.overlay === "automation") setOverlay("automation");
   else if (step.overlay === null) setOverlay(null);
   if (step.id === "comments") inspectorTab.value = "comments";
-  if (step.id === "inspector") inspectorTab.value = "props";
+  if (step.id === "inspector") inspectorTab.value = "design";
 }
 
 export function maybeAutoStartTour(): void {
@@ -985,14 +1280,62 @@ export async function setDataFromText(raw: string): Promise<void> {
   const { parseDataInputBackend } = await import("../model/backend");
   dataRows.value = await parseDataInputBackend(raw);
   previewRowIndex.value = 0;
+  updateProject((draft) => {
+    if (!draft.datasets?.length) {
+      const id = createId();
+      draft.datasets = [{ id, name: "primary", rows: [] }];
+      draft.primaryDatasetId = id;
+    }
+    const primary =
+      draft.datasets.find((d) => d.id === draft.primaryDatasetId) ??
+      draft.datasets[0]!;
+    primary.rows = [...dataRows.value] as Record<string, unknown>[];
+    return draft;
+  });
 }
 
 export function setPreviewRowIndex(index: number): void {
   previewRowIndex.value = Math.max(0, index);
 }
 
+/** Step the preview data row (wraps). No-op when there are no rows. */
+export function cyclePreviewRow(delta: 1 | -1): void {
+  const n = dataRows.value.length;
+  if (n === 0) return;
+  const cur = Math.min(previewRowIndex.value, n - 1);
+  previewRowIndex.value = (cur + delta + n) % n;
+}
+
+/** Step the active output profile (wraps through project.outputs). */
+export function cycleActiveOutput(delta: 1 | -1): void {
+  const outputs = project.value.outputs ?? [];
+  if (outputs.length === 0) return;
+  const ids = outputs.map((o) => o.id);
+  const curId = project.value.activeOutputId ?? ids[0]!;
+  let i = ids.indexOf(curId);
+  if (i < 0) i = 0;
+  const next = ids[(i + delta + ids.length) % ids.length]!;
+  setActiveOutputId(next);
+}
+
 export function updatePrefs(patch: Partial<EditorPrefs>): void {
   prefs.value = { ...prefs.value, ...patch };
+}
+
+export function setCanvasZoomFit(): void {
+  updatePrefs({ canvasZoomMode: "fit" });
+}
+
+export function setCanvasZoomManual(zoom: number): void {
+  updatePrefs({ canvasZoomMode: "manual", canvasZoom: clampZoom(zoom) });
+}
+
+export function nudgeCanvasZoom(direction: 1 | -1, fromScale?: number): void {
+  const current = clampZoom(fromScale ?? prefs.value.canvasZoom ?? 1);
+  updatePrefs({
+    canvasZoomMode: "manual",
+    canvasZoom: stepZoom(current, direction),
+  });
 }
 
 /** Group currently multi-selected (or single) top-level page blocks. */
@@ -1017,7 +1360,7 @@ export function groupSelection(): void {
     if (!pg) return draft;
     pg.blocks = [...pg.blocks.filter((b) => !remove.has(b.id)), group];
     return draft;
-  }, { history: true });
+  }, { history: true, label: "Group selection" });
   select({ kind: "block", id: group.id });
 }
 
@@ -1033,7 +1376,7 @@ export function ungroupSelection(): void {
       ...pieces,
     ];
     return draft;
-  }, { history: true });
+  }, { history: true, label: "Ungroup selection" });
   if (pieces[0]) select({ kind: "block", id: pieces[0].id });
   else select(null);
 }
@@ -1061,7 +1404,7 @@ export function placeCustomObject(objectId: string): void {
     const page = draft.pages.find((p) => p.id === draft.activePageId);
     if (page) page.blocks.push(group);
     return draft;
-  }, { history: true });
+  }, { history: true, label: "Place custom object" });
   placeCascade.value = cascade + 1;
   select({ kind: "block", id: group.id });
 }

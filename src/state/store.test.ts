@@ -2,21 +2,35 @@ import { beforeEach, describe, expect, it } from "vitest";
 import {
   activePage,
   addComment,
+  addNamedDataset,
   alignSelected,
+  canRedo,
+  canUndo,
+  copySelected,
   createProject,
+  cycleActiveOutput,
+  cyclePreviewRow,
+  dataRows,
   deleteSelection,
+  historyActionLog,
   insertBlockPlaced,
-  closePrebuildPicker,
   insertPrebuildRecipe,
+  loadDemoSample,
   nudgeSelection,
   placeCascade,
+  prefs,
   prebuildPickerOpen,
+  pasteClipboard,
+  previewRowIndex,
   project,
+  redoEdit,
   select,
   selectBlockToggle,
+  selectBlocks,
   selection,
   selectedIds,
   setInsertPlacement,
+  undoEdit,
   updateBlock,
 } from "../state/store";
 import { PREBUILD_RECIPES } from "../model/prebuild/library";
@@ -45,16 +59,14 @@ beforeEach(() => {
   setInsertPlacement("cascade");
 });
 
-describe("feature: prebuild picker flow", () => {
-  it("never inserts blindly — the prebuild tool only opens the picker", () => {
+describe("feature: prebuild insert (soft-compat)", () => {
+  it("does not insert or open a picker when placing prebuild from tools", () => {
     insertBlockPlaced("prebuild");
-    expect(prebuildPickerOpen.value).toBe(true);
-    expect(blocks()).toHaveLength(0);
-    closePrebuildPicker();
     expect(prebuildPickerOpen.value).toBe(false);
+    expect(blocks()).toHaveLength(0);
   });
 
-  it("expands every recipe piece onto the page and selects the last", () => {
+  it("still expands recipes via insertPrebuildRecipe for legacy callers", () => {
     const recipe = PREBUILD_RECIPES[0]!;
     insertPrebuildRecipe(recipe.id);
     const expected = recipe.build({ x: 0, y: 0 });
@@ -65,7 +77,7 @@ describe("feature: prebuild picker flow", () => {
     expect(prebuildPickerOpen.value).toBe(false);
   });
 
-  it("cascades consecutive inserts so they never overlap", () => {
+  it("cascades consecutive recipe inserts so they never overlap", () => {
     const recipe = PREBUILD_RECIPES[0]!;
     insertPrebuildRecipe(recipe.id);
     const firstX = blocks()[0]!.x;
@@ -86,12 +98,11 @@ describe("feature: prebuild picker flow", () => {
     insertPrebuildRecipe(PREBUILD_RECIPES[0]!.id);
     const recipe = PREBUILD_RECIPES[0]!;
     const piece = blocks()[0]!;
-    // pieces sit relative to the recipe origin, which is centered on the page
     expect(piece.x).toBe(Math.round((PAGE_WIDTH - recipe.w) / 2));
     expect(piece.y).toBe(Math.round((PAGE_HEIGHT - recipe.h) / 2));
   });
 
-  it("honors the margins placement using normalized page margins", () => {
+  it("honors the margins placement using normalized surface margins", () => {
     setInsertPlacement("margins");
     const m = normalizeMargins(activePage.value?.margins);
     insertPrebuildRecipe(PREBUILD_RECIPES[0]!.id);
@@ -190,5 +201,137 @@ describe("feature: delete selection cleans up comments", () => {
     expect(project.value.comments).toHaveLength(0);
     expect(selection.value).toBeNull();
     expect(selectedIds.value).toEqual([]);
+  });
+});
+
+describe("feature: project artboard + empty data", () => {
+  it("createProject clears rows and syncs document artboard prefs", () => {
+    createProject();
+    expect(dataRows.value).toEqual([]);
+    expect(project.value.artboard).toBe("document");
+    expect(prefs.value.canvasPreset).toBe("document");
+    expect(project.value.datasets?.[0]?.rows).toEqual([]);
+  });
+
+  it("loadDemoSample applies landscape artboard from the catalog entry", () => {
+    loadDemoSample("landscape-slide");
+    expect(project.value.artboard).toBe("landscape");
+    expect(prefs.value.canvasPreset).toBe("landscape");
+  });
+});
+
+describe("feature: named datasets", () => {
+  it("addNamedDataset appends a table and can bind a table block", () => {
+    createProject();
+    const known = new Set(
+      (activePage.value?.blocks ?? []).map((b) => b.id),
+    );
+    insertBlockPlaced("table");
+    const table = (activePage.value?.blocks ?? []).find((b) => !known.has(b.id));
+    expect(table?.type).toBe("table");
+
+    const before = project.value.datasets?.length ?? 0;
+    const id = addNamedDataset({
+      name: "line_items",
+      keyField: "invoice_no",
+      bindTableId: table!.id,
+    });
+    expect(project.value.datasets?.some((d) => d.id === id)).toBe(true);
+    expect(project.value.datasets?.length).toBe(before + 1);
+
+    const bound = activePage.value?.blocks.find((b) => b.id === table!.id);
+    expect(bound?.content.datasetName).toBe("line_items");
+    expect(bound?.content.sourcePath).toBe("");
+  });
+
+  it("loadDemoSample invoice fills primary rows and keeps the bank dataset", () => {
+    loadDemoSample("invoice");
+    expect(dataRows.value.length).toBeGreaterThan(0);
+    expect(dataRows.value[0]).toHaveProperty("line_items");
+    const bank = project.value.datasets?.find((d) => d.name === "bank");
+    expect(bank?.keyField).toBe("currency");
+    expect(bank?.rows.length).toBeGreaterThan(0);
+    const primary =
+      project.value.datasets?.find(
+        (d) => d.id === project.value.primaryDatasetId,
+      ) ?? project.value.datasets?.find((d) => d.name === "primary");
+    expect(primary?.rows.length).toBe(dataRows.value.length);
+  });
+
+  it("loadDemoSample memo parses agenda arrays on each row", () => {
+    loadDemoSample("memo");
+    const agenda = dataRows.value[0]?.agenda;
+    expect(Array.isArray(agenda)).toBe(true);
+    expect((agenda as unknown[]).length).toBeGreaterThan(0);
+  });
+});
+
+describe("feature: preview navigation", () => {
+  it("cyclePreviewRow wraps through data rows", () => {
+    loadDemoSample("advertisement");
+    const n = dataRows.value.length;
+    expect(n).toBeGreaterThan(1);
+    previewRowIndex.value = 0;
+    cyclePreviewRow(1);
+    expect(previewRowIndex.value).toBe(1);
+    previewRowIndex.value = n - 1;
+    cyclePreviewRow(1);
+    expect(previewRowIndex.value).toBe(0);
+    cyclePreviewRow(-1);
+    expect(previewRowIndex.value).toBe(n - 1);
+  });
+
+  it("cycleActiveOutput wraps through project outputs", () => {
+    loadDemoSample("advertisement");
+    const ids = (project.value.outputs ?? []).map((o) => o.id);
+    expect(ids.length).toBeGreaterThan(1);
+    const first = ids[0]!;
+    project.value = { ...project.value, activeOutputId: first };
+    cycleActiveOutput(1);
+    expect(project.value.activeOutputId).toBe(ids[1]);
+    project.value = {
+      ...project.value,
+      activeOutputId: ids[ids.length - 1]!,
+    };
+    cycleActiveOutput(1);
+    expect(project.value.activeOutputId).toBe(first);
+  });
+});
+
+describe("feature: selection clipboard", () => {
+  it("copies and pastes multiple selected blocks", () => {
+    const a = insertText();
+    const b = insertText();
+    selectBlocks([a, b]);
+    copySelected();
+    const countBefore = blocks().length;
+    pasteClipboard();
+    expect(blocks().length).toBe(countBefore + 2);
+    expect(selectedIds.value).toHaveLength(2);
+  });
+});
+
+describe("feature: edit history", () => {
+  it("records labeled actions and supports undo/redo", () => {
+    insertText();
+    expect(canUndo()).toBe(true);
+    expect(historyActionLog().some((row) => row.label === "Insert text")).toBe(
+      true,
+    );
+    const nameBefore = project.value.name;
+    undoEdit();
+    expect(canRedo()).toBe(true);
+    redoEdit();
+    expect(project.value.name).toBe(nameBefore);
+  });
+
+  it("clears history when starting a blank project", () => {
+    insertText();
+    expect(canUndo()).toBe(true);
+    createProject();
+    expect(canUndo()).toBe(false);
+    expect(historyActionLog()).toEqual([
+      { label: "Current state", kind: "current" },
+    ]);
   });
 });
