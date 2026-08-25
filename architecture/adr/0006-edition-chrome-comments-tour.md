@@ -1,25 +1,28 @@
-# ADR 0006: Edition chrome — ribbon, comments, guided tour
+# ADR 0006: Edition chrome — contextual bar, comments, guided tour
 
-- **Status:** accepted
+- **Status:** accepted (amended 2026-08-25)
 - **Date:** 2026-08-21
 - **Deciders:** project maintainers
 - **Related:** [ADR 0001](0001-lightweight-project-model.md), [ADR 0002](0002-studio-information-architecture.md)
 
 ## Context
 
-Page editing was powerful but opaque: mixed text/icon chrome, no Word-style review, and no Designer-like align/layer actions. New users had no path through the full edition surface.
+Page editing was powerful but opaque: mixed text/icon chrome, no Word-style review, and no Designer-like align/layer actions. Later iterations stacked a full ribbon, floating toolbox, bottom appearance dock, and inspector — starving the canvas.
 
 ## Decision
 
-1. **Edit ribbon** — icon-first action groups above the canvas (clipboard, arrange, typography, review, view). Prefer icons with `title` / `aria-label` for primary chrome; keep visible text for menus, forms, and destructive actions.
-2. **Comments** — first-class on the project document (`comments[]` anchored to a block). Markers on the page; list in the inspector. Resolve/reopen like a lightweight Word review lane.
-3. **Block edit affordances** — `locked`, `zIndex`; align-to-page; bring forward/send backward; duplicate/cut/copy/paste; undo/redo history for discrete edits.
-4. **Edition tour** — skippable, step-through coach marks covering toolbox → place → inspect → data → preview → automation → comments → ribbon. Completion stored in `localStorage` (`texloopr.tour.done.v1`); restart from ··· menu.
-
-Ephemeral UI (tour step, clipboard, history) stays out of the serialized project except comments/locks/z-order which travel with the document.
+1. **Pro stack (Canva / Photoshop style)** — Edit layout is `tools (44px) | canvas | inspector`. No bottom property dock. Layers live in the inspector, not a second left rail.
+2. **Left tool palette** — icon-only insert tools in quiet groups; custom objects open as a side sheet. Prebuild recipes are out of chrome (custom objects / future custom forms). Insert is not duplicated on the ribbon.
+3. **Contextual selection bar** — appears only when there is a selection or clipboard: clipboard, group, align, z-order, lock, comments. No insert dropdowns or typography row.
+4. **Inspector tabs** — Layers · Design · Data · Comments · Meta. Design owns appearance + geometry + typography; Data owns merge fields and conditions.
+5. **Status strip + Appearance menu** — thin bottom bar for grid/snap/rulers; header Appearance (sliders) toggles tools/inspector/status/grid/rulers/comments/margins.
+6. **Comments** — first-class on the project (`comments[]` anchored to a block). Markers on the surface; list in the inspector.
+7. **Preview kinds** — all output kinds listed; only kinds present on `project.outputs` are enabled.
+8. **Edition tour** — skippable coach marks covering palette → place → contextual bar → inspector → data → preview → automation. Completion in `localStorage` (`texlooper.tour.done.v1`).
+9. **Terminology** — user-facing chrome says **surface** (print page, email, SMS, push); model may still use `Page`.
 
 ## Consequences
 
-- Positive: dense calm chrome; review workflow; onboarding without docs
-- Trade-offs: icons rely on tooltips for first-time discoverability; history is session-local and capped
-- Follow-ups: multi-select, threaded replies, collaborative presence
+- Positive: canvas-first chrome; one home per concern; denser pro UI
+- Trade-offs: icons rely on tooltips for discoverability; history is session-local and capped
+- Follow-ups: threaded replies, collaborative presence

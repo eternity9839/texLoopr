@@ -7,7 +7,7 @@
 
 ## Context
 
-texLoopr must run as a desktop (Tauri), and later mobile / hosted surfaces, with one durable engine for catalog, datasets, templates, and workflows. Keeping heavy logic only in the Preact bundle would fork behaviour per platform and slow batch/CLI paths.
+texLooper must run as a desktop (Tauri), and later mobile / hosted surfaces, with one durable engine for catalog, datasets, templates, and workflows. Keeping heavy logic only in the Preact bundle would fork behaviour per platform and slow batch/CLI paths.
 
 ## Decision
 

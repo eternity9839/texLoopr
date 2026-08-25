@@ -7,7 +7,7 @@
 
 ## Context
 
-texLoopr needs durable management of many projects, attached files, filesystem roots, and configuration (global and per-project). Keeping every project in memory (or only in `localStorage`) does not scale and mixes ephemeral UI state with durable catalog data.
+texLooper needs durable management of many projects, attached files, filesystem roots, and configuration (global and per-project). Keeping every project in memory (or only in `localStorage`) does not scale and mixes ephemeral UI state with durable catalog data.
 
 We need flexible storage for:
 - Project documents (ADR 0001 JSON)
@@ -19,7 +19,7 @@ Only the **active** project should live in memory (optionally mirrored to a temp
 
 ## Decision
 
-Use **SQLite** as the local catalog database (bundled via `rusqlite`), stored under the app data directory (`texloopr.db`).
+Use **SQLite** as the local catalog database (bundled via `rusqlite`), stored under the app data directory (`texlooper.db`).
 
 - **Schema domains:** `filesystems`, `projects`, `files`, `variables`, `app_state`
 - **Active project:** at most one `projects.is_active = 1`; its document JSON is loaded into the Preact store; inactive projects remain in SQLite only
@@ -33,4 +33,4 @@ The project **document model** remains ADR 0001 JSON; SQLite indexes and stores 
 
 - Positive: durable multi-project workspace; queryable config; clear active/inactive split; works for future CLI/API against the same DB file
 - Negative / trade-offs: schema migrations required; web IndexedDB is a subset (no real FS roots)
-- Follow-ups: CLI open/list against `texloopr.db`; optional export of a project folder via a filesystem root
+- Follow-ups: CLI open/list against `texlooper.db`; optional export of a project folder via a filesystem root

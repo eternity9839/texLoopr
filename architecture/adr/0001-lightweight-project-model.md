@@ -6,7 +6,7 @@
 
 ## Context
 
-texLoopr spans multiple surfaces (UI, and later API and CLI). Without a shared project representation, each surface tends to invent its own shapes, which makes persistence, import/export, and feature work inconsistent and hard to evolve.
+texLooper spans multiple surfaces (UI, and later API and CLI). Without a shared project representation, each surface tends to invent its own shapes, which makes persistence, import/export, and feature work inconsistent and hard to evolve.
 
 We need one lightweight model that everything builds on so a project is always saved and manageable the same way, regardless of how the user interacts with it.
 
