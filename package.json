@@ -16,6 +16,7 @@
     "tauri:build": "tauri build",
     "android:init": "nix develop .#android -c bash -c 'npm run tauri android init'",
     "android:debug": "nix develop .#android -c bash -c 'npm run tauri android build -- --debug --apk --target aarch64'",
+    "android:release": "nix develop .#android -c bash -c 'npm run tauri android build -- --apk --target aarch64'",
     "android:debug:universal": "nix develop .#android -c bash -c 'npm run tauri android build -- --debug --apk'"
   },
   "dependencies": {
