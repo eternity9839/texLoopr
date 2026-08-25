@@ -1,0 +1,2 @@
+# Copy to .envrc.local (gitignored) for git push to eternity9839/texLoopr.
+export GITHUB_TOKEN=
