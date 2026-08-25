@@ -12,7 +12,7 @@ export function AppShell({ children }: AppShellProps) {
     <div
       class="app-shell"
       data-density={p.density}
-      data-theme={p.theme ?? "stone"}
+      data-theme={p.theme ?? "nova"}
     >
       <ContextBar />
       {children}

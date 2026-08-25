@@ -4,21 +4,58 @@ import type { Block, BlockType, ListStyle } from "../../../model/document";
 import { computeFlexRects } from "../../../model/flex";
 import {
   FONT_STACKS,
+  cssTransformFromStyle,
 } from "../../../model/document";
 import {
   resolveTemplate,
   evaluateCondition,
-  resolveItemsPath,
   type DataRow,
 } from "../../../model/bindings";
 import type { RuntimeContext } from "../../../model/expr";
 import {
+  dataFieldLabel,
+  normalizeDataFieldPath,
+  resolveDataField,
+} from "../../../model/dataField";
+import {
+  mapTableItemToCells,
+  resolveTableSourceRows,
+  tableColumnTemplates,
+} from "../../../model/tableData";
+import {
   applyMove,
   px,
   resizeFromHandle,
+  resolvePinnedRect,
+  pinIsActive,
   snapRect,
   type ResizeHandle,
 } from "../../../model/geometry";
+import { effectiveZ } from "../../../model/layerStack";
+import {
+  bindingPreviewLabel,
+  hasMergeBinding,
+  resolveBindingPreview,
+} from "../../../model/bindingPreview";
+import {
+  linkEditLabel,
+  parseLinkHook,
+  resolveLinkTarget,
+  LINK_HOOK_LABEL,
+} from "../../../model/linkHook";
+import { BindingPreview } from "../BindingPreview";
+import { RichText } from "../../../model/richText";
+import { onTextExpansionKeyDown } from "../textExpansionField";
+import {
+  activePage,
+  dataRows,
+  prefs,
+  project,
+  selection,
+  setGroupIsolation,
+} from "../../../state/store";
+import { findBlockAncestors } from "../../../model/outlineTree";
+import { canvasSizeForSession } from "../../../model/canvasView";
 
 export interface BlockViewProps {
   block: Block;
@@ -48,6 +85,11 @@ export function styleFromBlock(
   block: Block,
 ): Record<string, string | number | undefined> {
   const s = block.style;
+  // Flex groups use padding as layout inset in computeFlexRects — skip CSS
+  // padding on the body to avoid double inset.
+  const cssPadding =
+    s.layout === "flex" ? 0 : (s.padding ?? 0);
+  const radius = s.borderRadius ?? 0;
   return {
     fontSize: s.fontSize ?? 14,
     fontWeight: s.fontWeight ?? 400,
@@ -61,9 +103,11 @@ export function styleFromBlock(
     letterSpacing: `${s.letterSpacing ?? 0}px`,
     textTransform: s.textTransform ?? "none",
     background: s.background ?? "transparent",
-    borderRadius: s.borderRadius ?? 0,
+    borderRadius: radius,
+    // Clip fills to rounded / circular corners (badges, pills, …)
+    overflow: radius > 0 ? "hidden" : undefined,
     opacity: s.opacity ?? 1,
-    padding: s.padding ?? 0,
+    padding: cssPadding,
     boxShadow: s.shadow ? "var(--shadow-page)" : undefined,
     listStyleType: s.listStyle && s.listStyle !== "none" ? s.listStyle : "none",
     "--marker-color": (block.content?.markerColor as string) || undefined,
@@ -213,15 +257,20 @@ export function BlockFrame(
   }
 
   const beginDrag = (e: PointerEvent) => {
-    if (preview || block.locked || !onMoveResize) return;
+    if (preview) return;
+    e.stopPropagation();
+    if (block.locked || !onMoveResize) return;
+    // Edge-pinned blocks stay glued — unpin in Design to drag freely
+    if (pinIsActive(block.pin)) return;
     if ((e.target as HTMLElement).closest(".resize-handle")) return;
     // Allow text editing interactions when already editing
     if (editing && (e.target as HTMLElement).closest("textarea, input")) {
       return;
     }
     e.preventDefault();
-    e.stopPropagation();
-    onSelect(block.id, { toggle: e.shiftKey });
+    onSelect(block.id, {
+      toggle: e.shiftKey || e.ctrlKey || e.metaKey,
+    });
     props.onGestureStart?.();
     gestureRef.current = {
       mode: "drag",
@@ -241,7 +290,9 @@ export function BlockFrame(
     if (preview || block.locked || !onMoveResize) return;
     e.preventDefault();
     e.stopPropagation();
-    onSelect(block.id, { toggle: e.shiftKey });
+    onSelect(block.id, {
+      toggle: e.shiftKey || e.ctrlKey || e.metaKey,
+    });
     props.onGestureStart?.();
     gestureRef.current = {
       mode: "resize",
@@ -271,22 +322,42 @@ export function BlockFrame(
     .join(" ");
 
   const commentCount = props.commentCount ?? 0;
+  const frameTransform = cssTransformFromStyle(block.style);
+  const page = activePage.value;
+  const sessionSize = canvasSizeForSession(project.value, prefs.value);
+  const layout = resolvePinnedRect(
+    block,
+    page?.margins,
+    sessionSize.w,
+    sessionSize.h,
+  );
+  const pinned = pinIsActive(block.pin);
 
   return (
     <div
       ref={frameRef}
-      class={className}
+      class={[
+        className,
+        pinned ? "block-frame--pinned" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
       role="group"
-      aria-label={`${block.name}, ${px(block.w)} by ${px(block.h)} pixels`}
+      aria-label={`${block.name}, ${px(layout.w)} by ${px(layout.h)} pixels`}
       style={{
-        left: `${px(block.x)}px`,
-        top: `${px(block.y)}px`,
-        width: `${px(block.w)}px`,
-        height: `${px(block.h)}px`,
+        left: `${px(layout.x)}px`,
+        top: `${px(layout.y)}px`,
+        width: `${px(layout.w)}px`,
+        height: `${px(layout.h)}px`,
         margin: block.style.margin ? `${block.style.margin}px` : undefined,
-        zIndex: selected ? Math.max(block.zIndex ?? 1, 20) : (block.zIndex ?? 1),
+        zIndex: effectiveZ(block),
+        transform: frameTransform || undefined,
+        transformOrigin: "center center",
       }}
       onPointerDown={beginDrag}
+      onClick={(e) => {
+        e.stopPropagation();
+      }}
       onContextMenu={(e) => {
         if (preview) return;
         e.preventDefault();
@@ -316,9 +387,17 @@ export function BlockFrame(
           Locked
         </span>
       )}
+      {pinned && !preview && !block.locked && (
+        <span class="block-pin-badge" title="Pinned to surface edge">
+          Pin
+        </span>
+      )}
       <div
         class={[
           "block-body",
+          block.type === "picture" || block.type === "shape"
+            ? "block-body--clip"
+            : "",
           block.style.verticalAlign === "middle"
             ? "block-body--valign-middle"
             : block.style.verticalAlign === "bottom"
@@ -355,15 +434,24 @@ export function ParagraphBlock(props: BlockViewProps) {
   return (
     <BlockFrame {...props}>
       {preview ? (
-        <div>{value}</div>
+        <div class="block-paragraph-preview">
+          <RichText text={value} />
+        </div>
       ) : (
         <textarea
           value={String(block.content.text ?? "")}
           onInput={(e) =>
             onChangeContent?.(block.id, { text: e.currentTarget.value })
           }
+          onKeyDown={(e) =>
+            onTextExpansionKeyDown(e, (text, cursor) => {
+              onChangeContent?.(block.id, { text });
+              queueMicrotask(() => {
+                e.currentTarget.setSelectionRange(cursor, cursor);
+              });
+            })
+          }
           aria-label={`${block.name} text`}
-          // Drag uses the frame; double-click enables editing (CSS pointer-events)
         />
       )}
     </BlockFrame>
@@ -372,6 +460,136 @@ export function ParagraphBlock(props: BlockViewProps) {
 
 export function TextBlock(props: BlockViewProps) {
   return <ParagraphBlock {...props} />;
+}
+
+export function DataBlock(props: BlockViewProps) {
+  const { block, preview, row, runtime, selected, onChangeContent } = props;
+  const path = String(block.content.path ?? "");
+  const label = dataFieldLabel(path);
+  const [editing, setEditing] = useState(false);
+  const firstRow = dataRows.value[0];
+
+  useEffect(() => {
+    if (!selected) setEditing(false);
+  }, [selected]);
+
+  const previewValue = normalizeDataFieldPath(path)
+    ? firstRow
+      ? resolveDataField(path, firstRow, runtime)
+      : null
+    : null;
+
+  if (preview) {
+    const value = resolveDataField(path, row, runtime);
+    return (
+      <BlockFrame {...props}>
+        <span class="block-data block-data--resolved">{value || label}</span>
+      </BlockFrame>
+    );
+  }
+
+  return (
+    <BlockFrame {...props}>
+      <BindingPreview
+        class="block-data-wrap binding-preview--data"
+        chipClass="block-data"
+        label={label}
+        previewValue={
+          previewValue ??
+          (normalizeDataFieldPath(path) && !firstRow ? "No data rows loaded" : null)
+        }
+        editing={selected && editing}
+        ariaLabel={`${block.name} field path`}
+        onActivate={() => setEditing(true)}
+        editSlot={
+          <input
+            class="block-data__input"
+            value={path}
+            aria-label={`${block.name} field path`}
+            onInput={(e) =>
+              onChangeContent?.(block.id, { path: e.currentTarget.value })
+            }
+            onBlur={() => setEditing(false)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === "Escape") {
+                setEditing(false);
+                (e.target as HTMLInputElement).blur();
+              }
+            }}
+          />
+        }
+      />
+    </BlockFrame>
+  );
+}
+
+export function LinkBlock(props: BlockViewProps) {
+  const { block, preview, row, runtime, selected, onChangeContent } = props;
+  const hook = parseLinkHook(block.content.hook);
+  const target = String(block.content.target ?? "");
+  const customLabel = String(block.content.label ?? "");
+  const [editing, setEditing] = useState(false);
+  const firstRow = dataRows.value[0];
+
+  useEffect(() => {
+    if (!selected) setEditing(false);
+  }, [selected]);
+
+  const editLabel = linkEditLabel(hook, target, customLabel);
+  const resolvedHref = resolveLinkTarget(hook, target, preview ? row : firstRow, runtime);
+  const previewText =
+    resolvedHref ||
+    (hasMergeBinding(target) && !firstRow ? "No data rows loaded" : null);
+
+  if (preview) {
+    const href = resolveLinkTarget(hook, target, row, runtime);
+    const text = resolveTemplate(customLabel || editLabel, row, {
+      missingAsEmpty: true,
+      ctx: runtime,
+    });
+    return (
+      <BlockFrame {...props}>
+        {href ? (
+          <a class="block-link block-link--resolved" href={href}>
+            {text || href}
+          </a>
+        ) : (
+          <span class="block-link block-link--missing">{text || editLabel}</span>
+        )}
+      </BlockFrame>
+    );
+  }
+
+  return (
+    <BlockFrame {...props}>
+      <BindingPreview
+        class="block-link-wrap binding-preview--link"
+        chipClass="block-link"
+        label={`${LINK_HOOK_LABEL[hook]} · ${editLabel}`}
+        previewValue={previewText}
+        editing={selected && editing}
+        ariaLabel={`${block.name} link target`}
+        onActivate={() => setEditing(true)}
+        editSlot={
+          <input
+            class="block-link__input"
+            value={target}
+            aria-label={`${block.name} link target`}
+            onInput={(e) =>
+              onChangeContent?.(block.id, { target: e.currentTarget.value })
+            }
+            onBlur={() => setEditing(false)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === "Escape") {
+                setEditing(false);
+                (e.target as HTMLInputElement).blur();
+              }
+            }}
+          />
+        }
+      />
+    </BlockFrame>
+  );
 }
 
 export function ListBlock(props: BlockViewProps) {
@@ -391,10 +609,12 @@ export function ListBlock(props: BlockViewProps) {
       >
         {items.map((item, i) => (
           <li key={i}>
-            {resolveTemplate(item, row, {
-              missingAsEmpty: preview,
-              ctx: runtime,
-            })}
+            <RichText
+              text={resolveTemplate(item, row, {
+                missingAsEmpty: preview,
+                ctx: runtime,
+              })}
+            />
           </li>
         ))}
       </Tag>
@@ -404,7 +624,8 @@ export function ListBlock(props: BlockViewProps) {
 
 export function PictureBlock(props: BlockViewProps) {
   const { block, preview, row, runtime } = props;
-  const src = resolveTemplate(String(block.content.src ?? ""), row, {
+  const rawSrc = String(block.content.src ?? "");
+  const src = resolveTemplate(rawSrc, row, {
     missingAsEmpty: preview,
     ctx: runtime,
   });
@@ -416,7 +637,39 @@ export function PictureBlock(props: BlockViewProps) {
     block.content.fit as never,
   )
     ? (block.content.fit as "cover" | "contain" | "fill")
-    : "cover";
+    : "contain";
+  const pos = String(block.content.objectPosition ?? "center");
+  const firstRow = dataRows.value[0];
+  const bindingEdit =
+    !preview && (hasMergeBinding(rawSrc) || (!rawSrc.trim() && hasMergeBinding(String(block.content.alt ?? ""))));
+
+  if (bindingEdit) {
+    const previewUrl = resolveBindingPreview(rawSrc, firstRow, runtime);
+    const chipLabel = bindingPreviewLabel(rawSrc || String(block.content.alt ?? "image"));
+    return (
+      <BlockFrame {...props}>
+        <div class="block-picture block-picture--binding">
+          <BindingPreview
+            class="binding-preview--media"
+            chipClass="block-picture__chip"
+            label={chipLabel}
+            previewValue={previewUrl ?? (!firstRow ? "No data rows loaded" : null)}
+            media={
+              previewUrl && !previewUrl.startsWith("(") ? (
+                <img
+                  class="binding-preview__thumb"
+                  src={previewUrl}
+                  alt=""
+                />
+              ) : undefined
+            }
+            ariaLabel={`${block.name} image URL`}
+          />
+        </div>
+      </BlockFrame>
+    );
+  }
+
   return (
     <BlockFrame {...props}>
       <div class="block-picture">
@@ -424,10 +677,14 @@ export function PictureBlock(props: BlockViewProps) {
           <img
             src={src}
             alt={alt}
-            style={{ objectFit: fit, filter: pictureFilter(block.content) }}
+            style={{
+              objectFit: fit,
+              objectPosition: pos,
+              filter: pictureFilter(block.content),
+            }}
           />
         ) : (
-          <span>No image URL</span>
+          <span>No image — set URL or upload</span>
         )}
       </div>
     </BlockFrame>
@@ -455,22 +712,46 @@ export function ShapeBlock(props: BlockViewProps) {
       </BlockFrame>
     );
   }
+  const filled = Boolean(block.content.filled);
+  const bg =
+    filled ||
+    (block.style.background && block.style.background !== "transparent")
+      ? (block.style.background ?? "#e3ddd3")
+      : "transparent";
+  const strokeW = block.style.borderWidth ?? (filled ? 0 : 1.5);
+  const radius = Number(block.style.borderRadius ?? 0);
+  const roundClass =
+    variant === "ellipse" || variant === "circle"
+      ? "block-shape--ellipse"
+      : variant === "triangle"
+        ? "block-shape--triangle"
+        : variant === "diamond"
+          ? "block-shape--diamond"
+          : variant === "rounded"
+            ? "block-shape--rounded"
+            : "";
+  // Circle / ellipse always fully round; rounded defaults to 16px if unset;
+  // rect uses the Radius control (high value on a square → circle).
+  const corner =
+    variant === "ellipse" || variant === "circle"
+      ? "50%"
+      : variant === "rounded"
+        ? `${radius > 0 ? radius : 16}px`
+        : variant === "triangle" || variant === "diamond"
+          ? undefined
+          : `${radius}px`;
+
   return (
     <BlockFrame {...props}>
-      <div
-        class={
-          variant === "ellipse"
-            ? "block-shape block-shape--ellipse"
-            : "block-shape"
-        }
-      >
+      <div class={["block-shape", roundClass].filter(Boolean).join(" ")}>
         <div
           class="block-shape__rect"
           style={{
-            background: block.style.background ?? "#e3ddd3",
+            background: bg,
+            borderRadius: corner,
             border:
-              (block.style.borderWidth ?? 0) > 0
-                ? `${block.style.borderWidth}px solid ${block.style.borderColor ?? "#2a2622"}`
+              strokeW > 0
+                ? `${strokeW}px solid ${block.style.borderColor ?? "#2a2622"}`
                 : undefined,
           }}
         />
@@ -483,30 +764,47 @@ export function TableBlock(props: BlockViewProps) {
   const { block, preview, row, runtime } = props;
   const cells = (block.content.cells as string[][]) ?? [];
   const header = Boolean(block.content.header);
+  const datasetName = String(block.content.datasetName ?? "").trim();
   const sourcePath = String(block.content.sourcePath ?? "").trim();
+  const bound = Boolean(datasetName || sourcePath);
 
   const zebra = Boolean(block.content.zebra);
   const cellPad = Number(block.content.cellPadding ?? 6);
   const headerBg = String(block.content.headerBackground ?? "");
+  const showBorders = block.content.showBorders !== false;
+  const borderColor = String(block.content.borderColor ?? "#cfc8bc");
 
-  let dataRows: Record<string, unknown>[] = [];
-  if (sourcePath) {
-    try {
-      dataRows = resolveItemsPath(sourcePath, row, runtime).flatMap((it) =>
-        it && typeof it === "object" && !Array.isArray(it)
-          ? [it as Record<string, unknown>]
-          : [],
-      );
-    } catch {
-      dataRows = [];
-    }
-  }
+  const dataRows = bound
+    ? resolveTableSourceRows(
+        {
+          datasetName,
+          sourcePath,
+          header,
+          cells,
+        },
+        row,
+        runtime,
+      )
+    : [];
+  const templates = bound ? tableColumnTemplates(cells, header) : [];
+  const bodyRows = bound
+    ? dataRows.map((r) => mapTableItemToCells(r, templates, preview, runtime))
+    : cells.slice(header ? 1 : 0);
 
   return (
     <BlockFrame {...props}>
       <table
-        class={zebra ? "block-table block-table--zebra" : "block-table"}
-        style={{ "--cell-pad": `${cellPad}px` }}
+        class={[
+          "block-table",
+          zebra ? "block-table--zebra" : "",
+          showBorders ? "" : "block-table--borderless",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        style={{
+          "--cell-pad": `${cellPad}px`,
+          "--table-border": borderColor,
+        }}
       >
         {header && (
           <thead>
@@ -523,19 +821,16 @@ export function TableBlock(props: BlockViewProps) {
           </thead>
         )}
         <tbody>
-          {(sourcePath && dataRows.length
-            ? dataRows.map((r) =>
-                (cells[0] ?? []).map((_, ci) => String(r[Object.keys(r)[ci] ?? ci] ?? "")),
-              )
-            : cells.slice(header ? 1 : 0)
-          ).map((r, ri) => (
+          {bodyRows.map((r, ri) => (
             <tr key={ri}>
               {r.map((cell, ci) => (
                 <td key={ci}>
-                  {resolveTemplate(String(cell), row, {
-                    missingAsEmpty: preview,
-                    ctx: runtime,
-                  })}
+                  {bound
+                    ? String(cell)
+                    : resolveTemplate(String(cell), row, {
+                        missingAsEmpty: preview,
+                        ctx: runtime,
+                      })}
                 </td>
               ))}
             </tr>
@@ -548,14 +843,34 @@ export function TableBlock(props: BlockViewProps) {
 
 export function FilesBlock(props: BlockViewProps) {
   const { block, preview, row, runtime } = props;
+  const fileName = String(block.content.fileName ?? "");
+  const fileSize = Number(block.content.fileSize ?? 0);
+  const dataUrl = String(block.content.dataUrl ?? "");
+  const label = resolveTemplate(String(block.content.label ?? "Attachment"), row, {
+    missingAsEmpty: preview,
+    ctx: runtime,
+  });
   return (
     <BlockFrame {...props}>
       <div class="block-files">
-        {resolveTemplate(String(block.content.label ?? "Files"), row, {
-          missingAsEmpty: preview,
-          ctx: runtime,
-        })}{" "}
-        ({Number(block.content.count ?? 0)})
+        {dataUrl && fileName ? (
+          <a
+            class="block-files__link"
+            href={dataUrl}
+            download={fileName}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {label || fileName}
+            {fileSize > 0 ? ` · ${(fileSize / 1024).toFixed(0)} KB` : ""}
+          </a>
+        ) : (
+          <span>
+            {label}
+            {Number(block.content.count ?? 0) > 0
+              ? ` (${Number(block.content.count)})`
+              : " — no file"}
+          </span>
+        )}
       </div>
     </BlockFrame>
   );
@@ -583,23 +898,85 @@ export function GroupBlock(props: BlockViewProps) {
     ? (block.content.blocks as Block[])
     : [];
   const repeating = Boolean(itemsPath) || block.type === "repeat";
-  // Repeating groups are expanded into real blocks by the canvas, so a
-  // nested render here would double-paint; only static groups nest.
   const nests = preview && !repeating;
   const flexRects = computeFlexRects(block);
+  const page = activePage.value;
+  const sel = selection.value;
+  const isolationId = prefs.value.groupIsolationId;
+  const isolated = isolationId === block.id;
+  const selectedInside =
+    sel?.kind === "block" &&
+    page &&
+    findBlockAncestors(page.blocks, sel.id).some((a) => a.id === block.id);
+  const drillIn = !preview && (isolated || selectedInside) && !repeating;
 
   return (
-    <BlockFrame {...props}>
-      <div class={repeating ? "block-group block-group--repeat" : "block-group"}>
-        {!nests && (
+    <BlockFrame
+      {...props}
+      block={{
+        ...block,
+        style: {
+          ...block.style,
+          ...(isolated
+            ? { borderColor: "#0f6b63", borderWidth: 2 }
+            : {}),
+        },
+      }}
+    >
+      <div
+        class={[
+          repeating ? "block-group block-group--repeat" : "block-group",
+          drillIn ? "block-group--drill" : "",
+          isolated ? "block-group--isolated" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        onDblClick={(e) => {
+          if (preview || repeating) return;
+          e.stopPropagation();
+          setGroupIsolation(block.id);
+        }}
+      >
+        {!nests && !drillIn && (
           <div class="block-group__badge">
             {repeating
               ? `Group · repeat ${itemsPath || "line_items"}`
-              : `Group · ${children.length} item(s)`}
+              : `Group · ${children.length} item(s) — double-click to isolate`}
             {preview && repeating ? " (expanded)" : ""}
           </div>
         )}
+        {drillIn &&
+          children.map((child) => {
+            const r = flexRects.get(child.id);
+            const placed: Block = {
+              ...child,
+              x: r?.x ?? child.x,
+              y: r?.y ?? child.y,
+              w: r?.w ?? child.w,
+              h: r?.h ?? child.h,
+            };
+            return (
+              <div
+                key={child.id}
+                class="block-group__nested"
+                style={{
+                  position: "absolute",
+                  left: `${px(placed.x)}px`,
+                  top: `${px(placed.y)}px`,
+                  width: `${px(placed.w)}px`,
+                  height: `${px(placed.h)}px`,
+                }}
+              >
+                {renderBlock({
+                  ...props,
+                  block: placed,
+                  selected: sel?.kind === "block" && sel.id === child.id,
+                })}
+              </div>
+            );
+          })}
         {!preview &&
+          !drillIn &&
           children.map((child) => {
             const r = flexRects.get(child.id);
             return (
@@ -651,6 +1028,8 @@ export function RepeatBlock(props: BlockViewProps) {
 const RENDERERS: Record<BlockType, (props: BlockViewProps) => VNode> = {
   paragraph: ParagraphBlock,
   text: TextBlock,
+  data: DataBlock,
+  link: LinkBlock,
   list: ListBlock,
   picture: PictureBlock,
   shape: ShapeBlock,

@@ -42,12 +42,13 @@ export interface FieldProps {
   label: string;
   forId?: string;
   hint?: string;
+  compact?: boolean;
   children: ComponentChildren;
 }
 
-export function Field({ label, forId, hint, children }: FieldProps) {
+export function Field({ label, forId, hint, compact, children }: FieldProps) {
   return (
-    <div class="field">
+    <div class={compact ? "field field--compact" : "field"}>
       {forId ? (
         <label for={forId}>{label}</label>
       ) : (
@@ -67,6 +68,7 @@ export function NumField({
   min,
   max,
   step = 1,
+  compact,
 }: {
   id: string;
   label: string;
@@ -75,9 +77,10 @@ export function NumField({
   min?: number;
   max?: number;
   step?: number;
+  compact?: boolean;
 }) {
   return (
-    <Field label={label} forId={id}>
+    <Field label={label} forId={id} compact={compact}>
       <input
         id={id}
         type="number"
@@ -100,15 +103,17 @@ export function ColorField({
   value,
   fallback,
   onValue,
+  compact,
 }: {
   id: string;
   label: string;
   value: string | undefined;
   fallback: string;
   onValue: (v: string) => void;
+  compact?: boolean;
 }) {
   return (
-    <Field label={label} forId={id}>
+    <Field label={label} forId={id} compact={compact}>
       <input
         id={id}
         type="color"
@@ -126,6 +131,7 @@ export function SelectField({
   options,
   onChange,
   hint,
+  compact,
 }: {
   id: string;
   label: string;
@@ -133,9 +139,10 @@ export function SelectField({
   options: { value: string; label: string }[];
   onChange: (v: string) => void;
   hint?: string;
+  compact?: boolean;
 }) {
   return (
-    <Field label={label} forId={id} hint={hint}>
+    <Field label={label} forId={id} hint={hint} compact={compact}>
       <select
         id={id}
         value={value}

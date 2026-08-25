@@ -28,6 +28,26 @@ describe("evaluateExpr", () => {
     expect(evaluateExpr("includes(data.company, 'a')", ctx)).toBe(true);
   });
 
+  it("looks up a linked dataset row by key", () => {
+    const withDs: RuntimeContext = {
+      ...ctx,
+      data: { ...ctx.data, employee_id: "E1" },
+      datasets: {
+        salary: {
+          keyField: "employee_id",
+          rows: [
+            { employee_id: "E1", amount: 72000 },
+            { employee_id: "E2", amount: 64000 },
+          ],
+        },
+      },
+    };
+    expect(evaluateExpr("lookup('salary', employee_id, 'amount')", withDs)).toBe(
+      72000,
+    );
+    expect(evaluateExpr("lookup('salary', 'E2', 'amount')", withDs)).toBe(64000);
+  });
+
   it("supports or/and/not", () => {
     expect(evaluateExpr("!empty(data.name) && (output.kind == 'api' || device.dpi >= 200)", ctx)).toBe(
       true,

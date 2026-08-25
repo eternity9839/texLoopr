@@ -1,12 +1,12 @@
 [package]
-name = "texloopr"
+name = "texlooper"
 version = "0.1.0"
-description = "texLoopr — document studio with Rust runtime backbone"
-authors = ["texLoopr"]
+description = "texLooper — document studio with Rust runtime backbone"
+authors = ["texLooper"]
 edition = "2021"
 
 [lib]
-name = "texloopr_lib"
+name = "texlooper_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "preact/hooks";
+import type { ComponentChildren } from "preact";
 import type { StudioView } from "../model/document";
+import { AppearanceMenu } from "./AppearanceMenu";
 import { Icon, type IconName } from "./icons";
+import { t } from "../i18n";
 import {
   project,
   studioView,
@@ -12,81 +15,265 @@ import {
   setPreviewMode,
   startTour,
   catalogProjectId,
+  createProject,
+  openSettings,
   prefs,
+  selection,
+  selectedBlock,
+  activePage,
+  select,
+  setGroupIsolation,
 } from "../state/store";
+import { findBlockAncestors } from "../model/outlineTree";
+import { isEphemeral } from "../runtimeConfig";
 
-const VIEWS: { id: StudioView; label: string; icon: IconName }[] = [
-  { id: "edit", label: "Edit", icon: "edit" },
-  { id: "data", label: "Data", icon: "database" },
+const VIEWS: { id: StudioView; labelKey: "edit" | "data"; icon: IconName }[] = [
+  { id: "edit", labelKey: "edit", icon: "edit" },
+  { id: "data", labelKey: "data", icon: "database" },
 ];
+
+function MenuItem({
+  icon,
+  children,
+  onClick,
+}: {
+  icon: IconName;
+  children: ComponentChildren;
+  onClick: () => void;
+}) {
+  return (
+    <button type="button" role="menuitem" onClick={onClick}>
+      <span class="overflow-menu__icon" aria-hidden="true">
+        <Icon name={icon} size={14} />
+      </span>
+      <span class="overflow-menu__label">{children}</span>
+    </button>
+  );
+}
 
 export function ContextBar() {
   const proj = project.value;
   const view = studioView.value;
   const isPreview = previewMode.value;
   const inCatalog = Boolean(catalogProjectId.value);
-  const density = prefs.value.density;
-  const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const ephemeral = isEphemeral();
+  const [projectMenuOpen, setProjectMenuOpen] = useState(false);
+  const projectMenuRef = useRef<HTMLDivElement>(null);
+
+  void prefs.value.locale;
 
   useEffect(() => {
-    if (!menuOpen) return;
+    if (!projectMenuOpen) return;
     const onDoc = (e: MouseEvent) => {
-      if (!menuRef.current?.contains(e.target as Node)) {
-        setMenuOpen(false);
+      if (
+        projectMenuRef.current &&
+        !projectMenuRef.current.contains(e.target as Node)
+      ) {
+        setProjectMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
-  }, [menuOpen]);
+  }, [projectMenuOpen]);
 
-  const savedLabel = proj.lastSaved
-    ? inCatalog
-      ? `Catalog · ${new Date(proj.lastSaved).toLocaleString()}`
-      : `Saved · ${new Date(proj.lastSaved).toLocaleString()}`
-    : "Autosaved locally";
+  const savedLabel = ephemeral
+    ? t("demoNotSaved")
+    : proj.lastSaved
+      ? inCatalog
+        ? `${t("catalogSaved")} · ${new Date(proj.lastSaved).toLocaleString()}`
+        : `${t("localSaved")} · ${new Date(proj.lastSaved).toLocaleString()}`
+      : t("autosavedLocally");
 
-  const saveTitle = inCatalog
-    ? "Save to catalog"
-    : "Save draft to catalog";
+  const page = activePage.value;
+  const block = selectedBlock.value;
+  const sel = selection.value;
+  const breadcrumb =
+    view === "edit" && sel?.kind === "block" && block && page
+      ? [
+          { id: page.id, label: page.name, kind: "page" as const },
+          ...findBlockAncestors(page.blocks, block.id).map((g) => ({
+            id: g.id,
+            label: g.name,
+            kind: "block" as const,
+          })),
+          { id: block.id, label: block.name, kind: "block" as const },
+        ]
+      : null;
+
+  const saveTitle = ephemeral
+    ? t("demoNotSaved")
+    : inCatalog
+      ? t("saveToCatalog")
+      : t("saveDraftToCatalog");
+  const closeProjectMenu = () => setProjectMenuOpen(false);
 
   return (
     <header class="context-bar" role="banner">
-      <div class="context-bar__brand">texLoopr</div>
+      <div class="context-bar__brand-wrap" ref={projectMenuRef}>
+        <button
+          type="button"
+          class="context-bar__brand"
+          aria-label={t("projectMenu")}
+          aria-haspopup="menu"
+          aria-expanded={projectMenuOpen}
+          title={t("projectMenu")}
+          onClick={() => setProjectMenuOpen((o) => !o)}
+        >
+          texLooper
+        </button>
+        {projectMenuOpen && (
+          <div class="overflow-menu context-bar__project-menu" role="menu">
+            <MenuItem
+              icon="file"
+              onClick={() => {
+                createProject();
+                closeProjectMenu();
+              }}
+            >
+              {t("newProject")}
+            </MenuItem>
+            <MenuItem
+              icon="folder"
+              onClick={() => {
+                setOverlay("catalog");
+                closeProjectMenu();
+              }}
+            >
+              {t("open")}
+            </MenuItem>
+            {!ephemeral && (
+              <MenuItem
+                icon="save"
+                onClick={() => {
+                  stampSaved();
+                  closeProjectMenu();
+                }}
+              >
+                {t("save")}
+              </MenuItem>
+            )}
+            <hr class="overflow-menu__sep" />
+            <MenuItem
+              icon="sparkles"
+              onClick={() => {
+                setOverlay("samples");
+                closeProjectMenu();
+              }}
+            >
+              {t("samples")}
+            </MenuItem>
+            <MenuItem
+              icon="workflow"
+              onClick={() => {
+                setOverlay("automation");
+                closeProjectMenu();
+              }}
+            >
+              {t("automation")}
+            </MenuItem>
+            <MenuItem
+              icon="settings"
+              onClick={() => {
+                openSettings("general");
+                closeProjectMenu();
+              }}
+            >
+              {t("settings")}
+            </MenuItem>
+            <MenuItem
+              icon="book"
+              onClick={() => {
+                startTour();
+                closeProjectMenu();
+              }}
+            >
+              {t("editionTour")}
+            </MenuItem>
+            <hr class="overflow-menu__sep" />
+            <MenuItem
+              icon="info"
+              onClick={() => {
+                setOverlay("about");
+                closeProjectMenu();
+              }}
+            >
+              {t("about")}
+            </MenuItem>
+          </div>
+        )}
+      </div>
       <input
         class="context-bar__title"
-        aria-label="Project name"
+        aria-label={t("newProject")}
         value={proj.name}
         onInput={(e) => updateProjectMeta({ name: e.currentTarget.value })}
       />
-      <span class="context-bar__meta" title={savedLabel}>
-        {savedLabel}
-      </span>
-      <button
-        type="button"
-        class="btn btn--ghost btn--small btn--icon"
-        title={saveTitle}
-        aria-label={saveTitle}
-        onClick={() => stampSaved()}
+      <span
+        class="context-bar__pill"
+        title={savedLabel}
+        aria-label={savedLabel}
       >
-        <Icon name="save" size={15} />
-      </button>
+        {ephemeral ? t("demo") : proj.lastSaved ? t("saved") : t("draft")}
+      </span>
+      {breadcrumb && breadcrumb.length > 1 && (
+        <nav class="context-bar__crumb" aria-label="Selection path">
+          {breadcrumb.map((crumb, i) => (
+            <span key={crumb.id} class="context-bar__crumb-item">
+              {i > 0 && <span class="context-bar__crumb-sep">›</span>}
+              {i < breadcrumb.length - 1 ? (
+                <button
+                  type="button"
+                  class="context-bar__crumb-link"
+                  onClick={() => {
+                    if (crumb.kind === "page") {
+                      select({ kind: "page", id: crumb.id });
+                      setGroupIsolation(null);
+                    } else {
+                      select({ kind: "block", id: crumb.id });
+                      if (page) {
+                        const chain = findBlockAncestors(page.blocks, crumb.id);
+                        if (chain.length > 0) {
+                          setGroupIsolation(chain[chain.length - 1]!.id);
+                        } else {
+                          setGroupIsolation(crumb.id);
+                        }
+                      }
+                    }
+                  }}
+                >
+                  {crumb.label}
+                </button>
+              ) : (
+                <span class="context-bar__crumb-current">{crumb.label}</span>
+              )}
+            </span>
+          ))}
+        </nav>
+      )}
+      {!ephemeral && (
+        <button
+          type="button"
+          class="btn btn--ghost btn--small btn--icon"
+          title={saveTitle}
+          aria-label={saveTitle}
+          onClick={() => stampSaved()}
+        >
+          <Icon name="save" size={15} />
+        </button>
+      )}
 
-      <nav class="studio-switch" aria-label="Studio views">
+      <nav class="studio-switch" aria-label={t("edit")}>
         {VIEWS.map((v) => (
           <button
             type="button"
             class="studio-switch__btn studio-switch__btn--icon"
             key={v.id}
-            title={v.label}
-            aria-label={v.label}
+            title={t(v.labelKey)}
+            aria-label={t(v.labelKey)}
             aria-current={view === v.id ? "page" : undefined}
             onClick={() => setStudioView(v.id)}
           >
             <Icon name={v.icon} size={15} />
-            {density === "comfortable" && (
-              <span class="studio-switch__label">{v.label}</span>
-            )}
           </button>
         ))}
       </nav>
@@ -99,12 +286,8 @@ export function ContextBar() {
               ? "btn btn--small btn--icon"
               : "btn btn--ghost btn--small btn--icon"
           }
-          title={
-            isPreview
-              ? "Exit preview (Ctrl+.)"
-              : "Preview (Ctrl+.)"
-          }
-          aria-label={isPreview ? "Exit preview" : "Preview"}
+          title={isPreview ? t("exitPreview") : t("preview")}
+          aria-label={isPreview ? t("exitPreview") : t("preview")}
           aria-pressed={isPreview}
           data-tour="preview-toggle"
           onClick={() => setPreviewMode(!isPreview)}
@@ -113,90 +296,7 @@ export function ContextBar() {
         </button>
       )}
 
-      <div class="context-bar__overflow" ref={menuRef}>
-        <button
-          type="button"
-          class="overflow-trigger"
-          aria-label="More"
-          aria-expanded={menuOpen}
-          aria-haspopup="menu"
-          onClick={() => setMenuOpen((o) => !o)}
-        >
-          <Icon name="moreHorizontal" size={16} />
-        </button>
-        {menuOpen && (
-          <div class="overflow-menu" role="menu">
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setOverlay("settings");
-                setMenuOpen(false);
-              }}
-            >
-              <Icon name="settings" size={14} />
-              Settings
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setOverlay("automation");
-                setMenuOpen(false);
-              }}
-            >
-              <Icon name="workflow" size={14} />
-              Automation
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setOverlay("catalog");
-                setMenuOpen(false);
-              }}
-            >
-              <Icon name="folder" size={14} />
-              Catalog
-            </button>
-            <hr class="overflow-menu__sep" />
-            <button
-              type="button"
-              role="menuitem"
-              class="overflow-menu__quiet"
-              onClick={() => {
-                setOverlay("samples");
-                setMenuOpen(false);
-              }}
-            >
-              <Icon name="sparkles" size={14} />
-              Samples…
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                startTour();
-                setMenuOpen(false);
-              }}
-            >
-              <Icon name="book" size={14} />
-              Edition tour
-            </button>
-            <button
-              type="button"
-              role="menuitem"
-              onClick={() => {
-                setOverlay("about");
-                setMenuOpen(false);
-              }}
-            >
-              <Icon name="info" size={14} />
-              About
-            </button>
-          </div>
-        )}
-      </div>
+      {view === "edit" && <AppearanceMenu />}
     </header>
   );
 }

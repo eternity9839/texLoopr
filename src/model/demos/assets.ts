@@ -16,17 +16,42 @@ export const DEMO_IMG = {
   <text x="8" y="52" fill="#6b7280" font-family="system-ui,sans-serif" font-size="10">Authorized signature</text>
 </svg>`),
   productHero: svgDataUri(`
-<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200" viewBox="0 0 320 200">
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="240" viewBox="0 0 720 240">
   <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#1a3a36"/>
-      <stop offset="100%" stop-color="#0f6b63"/>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0c2f2b"/>
+      <stop offset="55%" stop-color="#0f6b63"/>
+      <stop offset="100%" stop-color="#1a8a7e"/>
+    </linearGradient>
+    <linearGradient id="pack" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2a4a46"/>
+      <stop offset="100%" stop-color="#163532"/>
     </linearGradient>
   </defs>
-  <rect width="320" height="200" fill="url(#g)"/>
-  <circle cx="220" cy="90" r="48" fill="rgba(255,255,255,0.12)"/>
-  <text x="24" y="110" fill="#fff" font-family="Georgia,serif" font-size="28">Atlas Pack</text>
-  <text x="24" y="138" fill="rgba(255,255,255,0.75)" font-family="system-ui,sans-serif" font-size="13">Spring collection · 2026</text>
+  <rect width="720" height="240" fill="url(#sky)"/>
+  <circle cx="560" cy="70" r="100" fill="rgba(255,255,255,0.06)"/>
+  <rect x="490" y="48" width="140" height="156" rx="16" fill="url(#pack)" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
+  <rect x="518" y="36" width="84" height="24" rx="10" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3"/>
+  <rect x="512" y="88" width="96" height="64" rx="8" fill="rgba(255,255,255,0.08)"/>
+  <text x="40" y="100" fill="#fff" font-family="Georgia,serif" font-size="40" font-weight="600">Atlas Pack</text>
+  <text x="40" y="132" fill="rgba(255,255,255,0.8)" font-family="system-ui,sans-serif" font-size="15">Spring collection · 2026</text>
+  <text x="40" y="188" fill="rgba(255,255,255,0.55)" font-family="system-ui,sans-serif" font-size="12">35L · weatherproof · lifetime stitch guarantee</text>
+</svg>`),
+  /** Detail / lifestyle crop for the flyer back — distinct from the hero. */
+  productDetail: svgDataUri(`
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="240" viewBox="0 0 320 240">
+  <defs>
+    <linearGradient id="warm" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2a2622"/>
+      <stop offset="100%" stop-color="#5c4033"/>
+    </linearGradient>
+  </defs>
+  <rect width="320" height="240" fill="url(#warm)"/>
+  <ellipse cx="170" cy="130" rx="70" ry="85" fill="#3d4a45"/>
+  <ellipse cx="170" cy="130" rx="48" ry="60" fill="#1a3a36"/>
+  <rect x="148" y="70" width="44" height="18" rx="8" fill="none" stroke="#cfc8bc" stroke-width="2"/>
+  <text x="20" y="36" fill="#f4f1ec" font-family="Georgia,serif" font-size="18">Detail</text>
+  <text x="20" y="210" fill="rgba(244,241,236,0.75)" font-family="system-ui,sans-serif" font-size="12">Harness · quiet zip · 16″ sleeve</text>
 </svg>`),
   headshot: svgDataUri(`
 <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">

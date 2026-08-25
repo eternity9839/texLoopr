@@ -16,6 +16,7 @@ import {
 import { MIN_BLOCK_H, MIN_BLOCK_W, px } from "../../model/geometry";
 import { dataColumnNames } from "../../model/bindings";
 import { LIST_STYLES, FONT_OPTIONS, type Block, type BlockStyle, type PageNumber } from "../../model/document";
+import { resizeTableCells } from "../../model/placeTools";
 import { defaultRepeatChildren } from "../../model/repeat";
 import { Icon } from "../../ui/icons";
 import {
@@ -123,7 +124,7 @@ export function MetadataPanel() {
 
   return (
     <div class="panel-pad" aria-label="Document metadata">
-      <Section title="Page">
+      <Section title="Surface">
         {page && (
           <Field label="Name" forId="page-name">
             <input
@@ -139,13 +140,13 @@ export function MetadataPanel() {
           <>
             <SelectField
               id="pn-mode"
-              label="Page number"
+              label="Surface number"
               value={page.pageNumber?.mode ?? "all"}
               options={[
                 { value: "off", label: "Off" },
-                { value: "all", label: "All pages" },
-                { value: "odd", label: "Odd pages only" },
-                { value: "even", label: "Even pages only" },
+                { value: "all", label: "All surfaces" },
+                { value: "odd", label: "Odd surfaces only" },
+                { value: "even", label: "Even surfaces only" },
               ]}
               onChange={(v) =>
                 v === "off"
@@ -165,9 +166,9 @@ export function MetadataPanel() {
                     })
                   }
                 >
-                  Skip first page
+                  Skip first surface
                 </CheckRow>
-                <Field label="Skip pages (comma list)" forId="pn-skip">
+                <Field label="Skip surfaces (comma list)" forId="pn-skip">
                   <input
                     id="pn-skip"
                     value={(page.pageNumber?.skipPages ?? []).join(", ")}
@@ -186,7 +187,7 @@ export function MetadataPanel() {
                   <input
                     id="pn-format"
                     value={page.pageNumber?.format ?? ""}
-                    placeholder="Page {n} of {total}"
+                    placeholder="Surface {n} of {total}"
                     onInput={(e) => {
                       const format = e.currentTarget.value || undefined;
                       updatePage(page.id, {
@@ -440,6 +441,31 @@ export function PropertiesPanel() {
                   }
                 />
               </Field>
+              <Field label="Upload image (max 2 MB)" forId="pic-file">
+                <input
+                  id="pic-file"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.currentTarget.files?.[0];
+                    if (!file) return;
+                    if (file.size > 2 * 1024 * 1024) {
+                      window.alert("Image exceeds 2 MB limit.");
+                      return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      updateBlock(block.id, {
+                        content: {
+                          src: String(reader.result ?? ""),
+                          alt: file.name,
+                        },
+                      });
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                />
+              </Field>
               <Field label="Alt text" forId="pic-alt">
                 <input
                   id="pic-alt"
@@ -451,6 +477,57 @@ export function PropertiesPanel() {
                   }
                 />
               </Field>
+            </>
+          )}
+          {block.type === "files" && (
+            <>
+              <Field label="Label" forId="file-label">
+                <input
+                  id="file-label"
+                  value={String(block.content.label ?? "")}
+                  onInput={(e) =>
+                    updateBlock(block.id, {
+                      content: { label: e.currentTarget.value },
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Attach file (max 2 MB)" forId="file-attach">
+                <input
+                  id="file-attach"
+                  type="file"
+                  onChange={(e) => {
+                    const file = e.currentTarget.files?.[0];
+                    if (!file) return;
+                    if (file.size > 2 * 1024 * 1024) {
+                      window.alert("File exceeds 2 MB limit.");
+                      return;
+                    }
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                      updateBlock(block.id, {
+                        content: {
+                          fileName: file.name,
+                          fileSize: file.size,
+                          mimeType: file.type || "application/octet-stream",
+                          dataUrl: String(reader.result ?? ""),
+                          count: 1,
+                          label: file.name,
+                        },
+                      });
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                />
+              </Field>
+              {String(block.content.fileName ?? "") ? (
+                <p class="muted prop-hint">
+                  {String(block.content.fileName)} ·{" "}
+                  {(Number(block.content.fileSize ?? 0) / 1024).toFixed(1)} KB
+                </p>
+              ) : (
+                <p class="muted prop-hint">No file attached.</p>
+              )}
             </>
           )}
           {block.type === "list" && (
@@ -820,8 +897,8 @@ export function PropertiesPanel() {
               label="Corner radius"
               value={block.style.borderRadius ?? 0}
               min={0}
-              max={48}
-              onValue={styleNum("borderRadius", 0, 48)}
+              max={999}
+              onValue={styleNum("borderRadius", 0, 999)}
             />
           </Grid2>
           <ColorField
@@ -891,7 +968,7 @@ export function PropertiesPanel() {
             <SelectField
               id="pic-fit"
               label="Fit"
-              value={String(block.content.fit ?? "cover")}
+              value={String(block.content.fit ?? "contain")}
               options={[
                 { value: "cover", label: "Cover (fill frame)" },
                 { value: "contain", label: "Contain (fit inside)" },
@@ -901,6 +978,21 @@ export function PropertiesPanel() {
                 updateBlock(block.id, {
                   content: { fit: v },
                 })
+              }
+            />
+            <SelectField
+              id="pic-pos"
+              label="Position"
+              value={String(block.content.objectPosition ?? "center")}
+              options={[
+                { value: "center", label: "Center" },
+                { value: "top", label: "Top" },
+                { value: "bottom", label: "Bottom" },
+                { value: "left", label: "Left" },
+                { value: "right", label: "Right" },
+              ]}
+              onChange={(v) =>
+                updateBlock(block.id, { content: { objectPosition: v } })
               }
             />
             <Grid2>
@@ -946,23 +1038,120 @@ export function PropertiesPanel() {
               value={String(block.content.variant ?? "rect")}
               options={[
                 { value: "rect", label: "Rectangle" },
+                { value: "rounded", label: "Rounded" },
                 { value: "ellipse", label: "Ellipse" },
+                { value: "circle", label: "Circle" },
+                { value: "triangle", label: "Triangle" },
+                { value: "diamond", label: "Diamond" },
                 { value: "line", label: "Rule / line" },
               ]}
               onChange={(v) =>
-                updateBlock(block.id, { content: { variant: v } })
+                updateBlock(block.id, { content: { variant: v, shape: v } })
               }
             />
+            <CheckRow
+              checked={Boolean(block.content.filled)}
+              onChange={(v) => {
+                updateBlock(block.id, {
+                  content: { filled: v },
+                  style: {
+                    background: v
+                      ? block.style.background &&
+                        block.style.background !== "transparent"
+                        ? block.style.background
+                        : "#e3ddd3"
+                      : "transparent",
+                    borderWidth: v
+                      ? (block.style.borderWidth ?? 0)
+                      : Math.max(1, block.style.borderWidth ?? 1.5),
+                  },
+                });
+              }}
+            >
+              Fill shape
+            </CheckRow>
           </Section>
         )}
 
         {block.type === "table" && (
           <Section title="Table" defaultOpen={false}>
+            <Grid2>
+              <NumField
+                id="table-rows"
+                label="Rows"
+                value={Number(block.content.rows ?? ((block.content.cells as string[][]) ?? []).length ?? 3)}
+                min={1}
+                max={32}
+                onValue={(v) => {
+                  const rows = Math.round(v);
+                  const cols = Number(
+                    block.content.cols ??
+                      ((block.content.cells as string[][]) ?? [])[0]?.length ??
+                      3,
+                  );
+                  updateBlock(block.id, {
+                    content: {
+                      rows,
+                      cols,
+                      cells: resizeTableCells(
+                        (block.content.cells as string[][]) ?? [],
+                        rows,
+                        cols,
+                      ),
+                    },
+                  });
+                }}
+              />
+              <NumField
+                id="table-cols"
+                label="Columns"
+                value={Number(
+                  block.content.cols ??
+                    ((block.content.cells as string[][]) ?? [])[0]?.length ??
+                    3,
+                )}
+                min={1}
+                max={16}
+                onValue={(v) => {
+                  const cols = Math.round(v);
+                  const rows = Number(
+                    block.content.rows ??
+                      ((block.content.cells as string[][]) ?? []).length ??
+                      3,
+                  );
+                  updateBlock(block.id, {
+                    content: {
+                      rows,
+                      cols,
+                      cells: resizeTableCells(
+                        (block.content.cells as string[][]) ?? [],
+                        rows,
+                        cols,
+                      ),
+                    },
+                  });
+                }}
+              />
+            </Grid2>
+            <CheckRow
+              checked={Boolean(block.content.header)}
+              onChange={(v) => updateBlock(block.id, { content: { header: v } })}
+            >
+              Header row
+            </CheckRow>
             <CheckRow
               checked={Boolean(block.content.zebra)}
               onChange={(v) => updateBlock(block.id, { content: { zebra: v } })}
             >
               Zebra stripes
+            </CheckRow>
+            <CheckRow
+              checked={block.content.showBorders !== false}
+              onChange={(v) =>
+                updateBlock(block.id, { content: { showBorders: v } })
+              }
+            >
+              Show borders
             </CheckRow>
             <Grid2>
               <NumField
@@ -987,6 +1176,26 @@ export function PropertiesPanel() {
                 }
               />
             </Grid2>
+            <ColorField
+              id="table-border"
+              label="Border color"
+              value={String(block.content.borderColor ?? "#cfc8bc")}
+              fallback="#cfc8bc"
+              onValue={(v) =>
+                updateBlock(block.id, { content: { borderColor: v } })
+              }
+            />
+            <Field label="Data path" forId="table-source" hint="Optional JSON array path">
+              <input
+                id="table-source"
+                value={String(block.content.sourcePath ?? "")}
+                onInput={(e) =>
+                  updateBlock(block.id, {
+                    content: { sourcePath: e.currentTarget.value },
+                  })
+                }
+              />
+            </Field>
           </Section>
         )}
       </div>

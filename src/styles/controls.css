@@ -126,17 +126,17 @@ button:not([class]):disabled {
   width: 100%;
 }
 
-/* 3 ─ Menu items shared by overflow / nav-add / context menus.
-   File-specific rules below only add what differs. */
+/* 3 ─ Menu items shared by overflow / nav-add / context menus. */
 .overflow-menu button,
-.nav-add__menu button,
-.app-ctx-menu__item {
-  display: flex;
+.nav-add__menu button {
+  display: grid;
+  grid-template-columns: 1.25rem 1fr;
+  column-gap: 0.55rem;
   align-items: center;
-  gap: 0.5rem;
   width: 100%;
   min-height: var(--control-h);
-  padding: var(--btn-pad-y) var(--btn-pad-x);
+  padding: var(--btn-pad-y) 0.55rem;
+  margin: 0;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
@@ -146,6 +146,48 @@ button:not([class]):disabled {
   transition:
     background var(--motion-fast) var(--ease-out),
     color var(--motion-fast) var(--ease-out);
+}
+
+.app-ctx-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  width: 100%;
+  min-height: var(--control-h);
+  padding: var(--btn-pad-y) 0.55rem;
+  margin: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  font-size: var(--text-xs);
+  text-align: left;
+  transition:
+    background var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out);
+}
+
+.overflow-menu button > .overflow-menu__icon,
+.nav-add__menu button > .overflow-menu__icon {
+  display: grid;
+  place-items: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+}
+
+.overflow-menu button > .overflow-menu__icon .icon,
+.nav-add__menu button > .overflow-menu__icon .icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+  margin: 0;
+}
+
+.overflow-menu button > .overflow-menu__label,
+.nav-add__menu button > .overflow-menu__label {
+  min-width: 0;
+  text-align: left;
 }
 
 .overflow-menu button:hover,

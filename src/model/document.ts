@@ -36,6 +36,8 @@ export type AppMode = StudioView;
 export type BlockType =
   | "paragraph"
   | "text"
+  | "data"
+  | "link"
   | "list"
   | "picture"
   | "shape"
@@ -88,7 +90,24 @@ export const FONT_OPTIONS: { value: FontPreset; label: string }[] = [
 export type TextTransform = "none" | "uppercase" | "lowercase" | "capitalize";
 export type VerticalAlign = "top" | "middle" | "bottom";
 export type PictureFit = "cover" | "contain" | "fill";
-export type ShapeVariant = "rect" | "ellipse" | "line";
+export type ShapeVariant =
+  | "rect"
+  | "rounded"
+  | "ellipse"
+  | "circle"
+  | "triangle"
+  | "diamond"
+  | "line";
+
+export const SHAPE_VARIANTS: { value: ShapeVariant; label: string }[] = [
+  { value: "rect", label: "Rectangle" },
+  { value: "rounded", label: "Rounded" },
+  { value: "ellipse", label: "Ellipse" },
+  { value: "circle", label: "Circle" },
+  { value: "triangle", label: "Triangle" },
+  { value: "diamond", label: "Diamond" },
+  { value: "line", label: "Line / rule" },
+];
 
 export interface BlockStyle {
   fontSize?: number;
@@ -127,6 +146,20 @@ export interface BlockStyle {
   alignItems?: "start" | "center" | "end" | "stretch";
   /** Gap between children along the main axis, px */
   gap?: number;
+  /** Rotation in degrees (CSS transform on the frame) */
+  rotate?: number;
+  /** Mirror horizontally (scaleX -1) */
+  mirrorX?: boolean;
+  /** Mirror vertically (scaleY -1) */
+  mirrorY?: boolean;
+}
+
+/** Edge pinning — resolves against page size / margins at render time */
+export interface BlockPin {
+  top?: boolean;
+  bottom?: boolean;
+  left?: boolean;
+  right?: boolean;
 }
 
 export interface Block {
@@ -147,6 +180,8 @@ export interface Block {
   zIndex?: number;
   /** Parent group id when nested (optional; children also live in content.blocks) */
   parentId?: string;
+  /** Lock edges to the surface (header/footer/sidebars) */
+  pin?: BlockPin;
 }
 
 /** Saved reusable group (letterhead, address block, …) */
@@ -178,17 +213,56 @@ export const DEFAULT_MARGINS: PageMargins = {
 
 export type WatermarkKind = "text" | "draft" | "confidential";
 
+/** How the watermark is laid out on the surface */
+export type WatermarkLayout = "centered" | "repeated" | "diffuse";
+
+/** Paint order relative to blocks */
+export type WatermarkLayer = "behind" | "front";
+
 export interface Watermark {
   /** Preset wording; plain custom text when omitted */
   kind?: WatermarkKind;
   text?: string;
-  /** Watermark font size in px */
+  /** Image URL or data URL (takes precedence over text when set) */
+  src?: string;
+  /** Watermark font size in px (text mode) */
   fontSize?: number;
+  /** Image scale relative to page (1 = 100% of min side) */
+  scale?: number;
   /** Rotation in degrees */
   angle?: number;
   opacity?: number;
   color?: string;
+  layout?: WatermarkLayout;
+  /** behind = under blocks (default); front = above everything */
+  layer?: WatermarkLayer;
 }
+
+export type CanvasPresetId =
+  | "document"
+  | "letter"
+  | "a4"
+  | "a5"
+  | "mobile"
+  | "notification"
+  | "square"
+  | "landscape";
+
+export type PageViewMode = "single" | "continuous" | "spread";
+
+export const CANVAS_PRESETS: Record<
+  CanvasPresetId,
+  { w: number; h: number; label: string }
+> = {
+  document: { w: 720, h: 960, label: "Document" },
+  letter: { w: 720, h: 960, label: "US Letter" },
+  a4: { w: 714, h: 1010, label: "A4" },
+  a5: { w: 505, h: 714, label: "A5" },
+  mobile: { w: 390, h: 844, label: "Mobile phone" },
+  notification: { w: 360, h: 180, label: "Notification" },
+  square: { w: 720, h: 720, label: "Square" },
+  landscape: { w: 960, h: 540, label: "Landscape" },
+};
 
 export interface Page {
   id: string;
@@ -202,6 +276,12 @@ export interface Page {
   watermark?: Watermark;
   /** Page numbering display rule */
   pageNumber?: PageNumber;
+  /** Rotate the whole surface (degrees) */
+  rotate?: number;
+  /** Mirror the surface horizontally */
+  mirrorX?: boolean;
+  /** Mirror the surface vertically */
+  mirrorY?: boolean;
 }
 
 /** Configures automatic page numbering in preview / print */
@@ -261,6 +341,20 @@ export interface Project {
   contactEmail?: string;
   /** Free-form key=value lines (one per line) */
   customMeta?: string;
+  /** Logical artboard size for this project (drives canvas prefs on load) */
+  artboard?: CanvasPresetId;
+  /** Named tabular datasets (CSV/JSON rows) for merge + lookup */
+  datasets?: ProjectDataset[];
+  /** Which dataset drives the preview row picker */
+  primaryDatasetId?: string;
+}
+
+export interface ProjectDataset {
+  id: string;
+  name: string;
+  /** Field used to join from the primary row into this dataset */
+  keyField?: string;
+  rows: Record<string, unknown>[];
 }
 
 export type Selection =
@@ -270,6 +364,9 @@ export type Selection =
 
 export type UiTheme = "stone" | "mist" | "dusk" | "nova";
 
+/** How bound fields show row-1 hints in edit mode (data, links, bound images…). */
+export type BindingPreviewMode = "inline" | "popup";
+
 export interface EditorPrefs {
   showGrid: boolean;
   snap: boolean;
@@ -278,6 +375,12 @@ export interface EditorPrefs {
   theme?: UiTheme;
   showRulers?: boolean;
   showComments?: boolean;
+  /** Show left insert palette (Edit) */
+  showToolsRail?: boolean;
+  /** Show right inspector (Edit) */
+  showInspectorRail?: boolean;
+  /** Show bottom status strip */
+  showStatusBar?: boolean;
   /** Pane widths (px) when expanded */
   navWidth?: number;
   toolsWidth?: number;
@@ -286,20 +389,46 @@ export interface EditorPrefs {
   navCollapsed?: boolean;
   toolsCollapsed?: boolean;
   inspectorCollapsed?: boolean;
-  /** Floating toolbox orientation over the canvas */
+  /** @deprecated Floating toolbox removed */
   toolsOrientation?: "vertical" | "horizontal";
-  /** Height of the bottom properties dock (px) */
+  /** @deprecated Bottom property dock removed */
   propsHeight?: number;
-  /** Bottom dock collapsed to a slim bar */
+  /** @deprecated Bottom dock collapsed */
   propsCollapsed?: boolean;
-  /** Canvas grid cell size (px) */
+  /** Canvas grid cell size (px) — legacy single size; prefer gridSizeX/Y */
   gridSize?: number;
+  /** Horizontal grid spacing (px) */
+  gridSizeX?: number;
+  /** Vertical grid spacing (px) */
+  gridSizeY?: number;
+  /** Grid line/dot color */
+  gridColor?: string;
   /** Snap moves/resizes to the grid */
   gridLock?: boolean;
   /** Grid rendering style */
   gridStyle?: "lines" | "dots";
-  /** Show dashed margin guides from page margins */
+  /** Show dashed margin guides from surface margins */
   showMarginGuides?: boolean;
+  /** UI language */
+  locale?: "en" | "fr";
+  /** Logical canvas size preset (not responsive — target artboard) */
+  canvasPreset?: CanvasPresetId;
+  /** How pages are arranged on the board */
+  pageViewMode?: PageViewMode;
+  /** Board rotation for checking alternate orientations (degrees) */
+  canvasRotate?: 0 | 90 | 180 | 270;
+  /** Fit fills the stage; manual uses canvasZoom */
+  canvasZoomMode?: "fit" | "manual";
+  /** Manual zoom factor (1 = 100%). Ignored while mode is fit. */
+  canvasZoom?: number;
+  /** Show output format branches under each surface in Layers */
+  showFormatsInTree?: boolean;
+  /** Group isolation — edit children of this group on canvas */
+  groupIsolationId?: string | null;
+  /** Edit-mode preview for merge-bound blocks: inline swap vs popup */
+  bindingPreviewMode?: BindingPreviewMode;
+  /** Emmet-style text expansions in paragraph / text fields */
+  textExpansionsEnabled?: boolean;
 }
 
 /** Logical page size used by align tools (matches CSS tokens) */
@@ -322,6 +451,18 @@ export const BLOCK_DEFAULTS: Record<
     h: 32,
     content: { text: "Short text" },
   },
+  data: {
+    name: "Data field",
+    w: 120,
+    h: 28,
+    content: { path: "field" },
+  },
+  link: {
+    name: "Link",
+    w: 160,
+    h: 28,
+    content: { hook: "url", target: "https://example.com", label: "Visit site" },
+  },
   list: {
     name: "List",
     w: 200,
@@ -336,18 +477,24 @@ export const BLOCK_DEFAULTS: Record<
     name: "Picture",
     w: 160,
     h: 110,
-    content: { src: "", alt: "Picture", fit: "cover" },
+    content: {
+      src: "",
+      alt: "Picture",
+      fit: "contain",
+      objectPosition: "center",
+    },
   },
   shape: {
     name: "Shape",
     w: 96,
     h: 64,
-    content: { shape: "rect", variant: "rect" },
+    /** Empty stroke frame by default — fill via Design / place params. */
+    content: { shape: "rect", variant: "rect", filled: false },
   },
   table: {
     name: "Table",
-    w: 240,
-    h: 96,
+    w: 280,
+    h: 120,
     content: {
       header: true,
       sourcePath: "",
@@ -356,6 +503,8 @@ export const BLOCK_DEFAULTS: Record<
       zebra: false,
       cellPadding: 6,
       headerBackground: "#f0ebe3",
+      borderColor: "#cfc8bc",
+      showBorders: true,
       cells: [
         ["A1", "B1", "C1"],
         ["A2", "B2", "C2"],
@@ -364,10 +513,17 @@ export const BLOCK_DEFAULTS: Record<
     },
   },
   files: {
-    name: "Files",
-    w: 160,
-    h: 48,
-    content: { label: "Attached files", count: 0 },
+    name: "Attachment",
+    w: 180,
+    h: 52,
+    content: {
+      label: "Attachment",
+      count: 0,
+      fileName: "",
+      fileSize: 0,
+      mimeType: "",
+      dataUrl: "",
+    },
   },
   prebuild: {
     name: "Prebuild",
@@ -432,6 +588,7 @@ export function ensureProjectAutomation(project: Project): Project {
 export function createEmptyProject(): Project {
   const pageId = createId();
   const outputs = defaultOutputs();
+  const primaryId = createId();
   return {
     name: "Untitled project",
     author: "",
@@ -446,6 +603,9 @@ export function createEmptyProject(): Project {
     workflow: defaultWorkflow(),
     scripts: defaultScripts(),
     comments: [],
+    artboard: "document",
+    datasets: [{ id: primaryId, name: "primary", rows: [] }],
+    primaryDatasetId: primaryId,
   };
 }
 
@@ -457,4 +617,18 @@ export function normalizeMargins(m?: Partial<PageMargins>): PageMargins {
     bottom: m?.bottom ?? DEFAULT_MARGINS.bottom,
     left: m?.left ?? DEFAULT_MARGINS.left,
   };
+}
+
+/** CSS transform fragment for rotate + mirror (empty string when identity). */
+export function cssTransformFromStyle(style: {
+  rotate?: number;
+  mirrorX?: boolean;
+  mirrorY?: boolean;
+}): string {
+  const parts: string[] = [];
+  const rot = style.rotate ?? 0;
+  if (rot !== 0) parts.push(`rotate(${rot}deg)`);
+  if (style.mirrorX) parts.push("scaleX(-1)");
+  if (style.mirrorY) parts.push("scaleY(-1)");
+  return parts.join(" ");
 }

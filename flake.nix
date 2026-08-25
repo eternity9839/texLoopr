@@ -1,5 +1,5 @@
 {
-  description = "texLoopr — document templating editor (Preact + Tauri)";
+  description = "texLooper — document templating editor (Preact + Tauri)";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -30,11 +30,32 @@
           targets.i686-linux-android.stable.rust-std
           targets.x86_64-linux-android.stable.rust-std
         ];
+      deployPkgs = with pkgs; [
+        nodejs_22
+        rsync
+        openssh
+        curl
+      ];
     in
     {
+      apps.${system} = {
+        deploy-orangepi = {
+          type = "app";
+          program = "${pkgs.writeShellApplication {
+            name = "deploy-orangepi";
+            runtimeInputs = deployPkgs;
+            text = ''
+              set -euo pipefail
+              cd ${self}
+              exec bash deploy/orangepi/deploy-from-laptop.sh "$@"
+            '';
+          }}/bin/deploy-orangepi";
+        };
+      };
+
       devShells.${system} = {
         default = pkgs.mkShell {
-        name = "texloopr";
+        name = "texlooper";
         packages = with pkgs; [
           nodejs_22
           cargo
@@ -56,7 +77,7 @@
         shellHook = ''
           export RUST_BACKTRACE=1
           export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
-          echo "texLoopr shell: node $(node -v), rustc $(rustc --version | cut -d' ' -f2)"
+          echo "texLooper shell: node $(node -v), rustc $(rustc --version | cut -d' ' -f2)"
         '';
         };
 
@@ -76,7 +97,7 @@
             };
         in
         pkgsAndroid.mkShell {
-          name = "texloopr-android";
+          name = "texlooper-android";
           packages = with pkgsAndroid; [
             nodejs_22
             jdk17
@@ -100,10 +121,23 @@
                 printf '\nandroid.aapt2FromMavenOverride=%s\n' "$AAPT2" >> "$GRADLE_PROPS"
               fi
             fi
-            echo "texLoopr android shell:"
+            echo "texLooper android shell:"
             echo "  java   $($JAVA_HOME/bin/java -version 2>&1 | head -1)"
             echo "  sdk    $ANDROID_HOME"
             echo "  ndk    $NDK_HOME"
+          '';
+        };
+
+        # Hosted demo deploy (build SPA + rsync + path-aware restart on orangepi5).
+        deploy = pkgs.mkShell {
+          name = "texlooper-deploy";
+          packages = deployPkgs;
+          shellHook = ''
+            export SSH_CFG="''${SSH_CFG:-$HOME/.config/home-manager/servers/orangepi5-server/ssh-config}"
+            export HOST="''${HOST:-orangepi5}"
+            echo "texLooper deploy shell: node $(node -v)"
+            echo "  nix run .#deploy-orangepi"
+            echo "  bash deploy/orangepi/deploy-from-laptop.sh"
           '';
         };
       };

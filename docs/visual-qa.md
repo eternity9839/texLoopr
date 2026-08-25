@@ -1,16 +1,26 @@
-# Visual QA checklist (calm document studio)
+# Visual QA checklist (pro document studio)
 
-- [ ] 1280×800: Context bar + Edit studio (navigator, toolbox, paper, inspector)
-- [ ] 900×600: Studio switch usable; panels do not crush canvas
-- [ ] Studio switch: Edit ↔ Data only (no Preview tab); comfortable shows labels
-- [ ] Preview button / `Ctrl+.` toggles preview; Exit preview returns to editing
-- [ ] While previewing: toolbox/inspector hidden; row picker visible; canvas read-only
-- [ ] Overflow ··· opens Settings / About overlays; Escape closes; focus returns
-- [ ] Settings → Appearance: Stone (default) / Nova / Mist / Dusk; paper stays light
-- [ ] Right-click empty page → create menu; toolbox click inserts block
-- [ ] Data Apply / Automation Run use Rust when Tauri is present
-- [ ] About shows runtime backbone (rust on Tauri, javascript on web)
-- [ ] Save status: Autosaved locally vs catalog stamp
-- [ ] First viewport reads as light document studio (Stone default)
-- [ ] `npm run typecheck`, `npm test`, `npm run build` pass; `cargo test` in src-tauri
-- [ ] `npm run tauri:dev` loads UI on :1420 against Rust catalog + engines
+- [ ] Tables: Design → Rows from = Static / Field path / Named dataset; + New dataset; column templates
+- [ ] Invoice sample: SKU line_items table + bank dataset lookup; page 3 product_files pack; memo agenda from JSON array
+- [ ] No ContextBar `···`; project menu (texLooper) covers Settings / Samples / Automation / Tour / About
+- [ ] Project menu icons + labels column-aligned (CSS grid)
+- [ ] Status bar pinned to viewport bottom (~1.65rem; taller on touch/safe-area)
+- [ ] Left palette **arms** place tools (crosshair + options strip); click page places; Esc cancels
+- [ ] Options bar: view mode, **artboard** (writes `project.artboard`), **zoom** (Fit / % / ±), grid
+- [ ] Landscape sample (`landscape-slide`) opens 960×540; Screen/PDF/Email hide different blocks
+- [ ] Preview kinds include Image; hint explains condition filtering
+- [ ] Data studio: empty editable table by default; + Dataset tabs; key field; nested tabs for JSON arrays (line_items, product_files); optional Paste CSV
+- [ ] `lookup('dataset', key, 'field')` resolves in Preview when datasets are linked
+- [ ] Studio switch: Edit ↔ Data; Preview toggle / `Ctrl+.`; preview row `[` `]` / Alt+←→; output Shift+`[` `]`
+- [ ] Print advertisement: reload from Samples if an old session still shows overlapping back-page chrome
+- [ ] Brand **texLooper** opens project menu (New / Open / Save / Samples…)
+- [ ] Inspector tabs: Layers · Design · Data · Notes · Meta; condition presets on Data tab
+- [ ] Layers navigator: project root, surface twisties, group expand/collapse, sort (Order / Pile / Name / Type)
+- [ ] Send forward/back and Front/Back on ribbon or Design → Stack changes visible paint order
+- [ ] Group: select nested child in Layers → canvas highlights child; double-click group or Isolate → drill-in; Esc exits isolation
+- [ ] Context bar breadcrumb when a nested block is selected (Surface › Group › …)
+- [ ] Toggle **Formats** chip or Settings → Formats in Layers tree → Screen/PDF/Email branches under each surface
+- [ ] Data field / link / bound image: Settings → Editor → **Bound field preview** — Inline vs Popup; hover chip only
+- [ ] Keyboard shortcuts: Settings → General lists all bindings; P/T/D/K place tools; Ctrl+] layer order
+- [ ] Emmet in paragraph: `https://…` + Space → link; `data-source://email` → `{{email}}`; `@name` → `{{name}}`
+- [ ] `npm run typecheck`, `npm test`, `npm run build` pass

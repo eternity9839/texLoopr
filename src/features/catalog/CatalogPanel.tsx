@@ -7,6 +7,8 @@ import {
   persistActiveToCatalog,
   project,
 } from "../../state/store";
+import { isEphemeral } from "../../runtimeConfig";
+import { t } from "../../i18n";
 
 export function CatalogPanel() {
   const [projects, setProjects] = useState<ProjectSummary[]>([]);
@@ -15,6 +17,7 @@ export function CatalogPanel() {
   const [fsAlias, setFsAlias] = useState("workspace");
   const [fsRoot, setFsRoot] = useState("");
   const activeId = catalogProjectId.value;
+  const ephemeral = isEphemeral();
 
   const refresh = async () => {
     try {
@@ -30,6 +33,19 @@ export function CatalogPanel() {
   useEffect(() => {
     void refresh();
   }, [activeId, catalogBackend.value]);
+
+  if (ephemeral) {
+    return (
+      <div class="panel-pad">
+        <p class="muted" style={{ fontSize: "var(--text-xs)", marginTop: 0 }}>
+          {t("demoCatalogHint")}
+        </p>
+        <p class="muted" style={{ fontSize: "var(--text-xs)", marginTop: "0.75rem" }}>
+          Active in memory: {project.value.name}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div class="panel-pad">

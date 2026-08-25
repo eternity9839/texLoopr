@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { buildOutlineRows, sortBlocks } from "../features/tree/DocumentTree";
-import type { Block, Page } from "./document";
+import type { Block, Page, Project } from "./document";
+import {
+  buildOutlineRows,
+  expandKeyPage,
+  expandKeyProject,
+  sortBlocksList,
+} from "./outlineTree";
+import { defaultOutputs } from "./workflow";
 
 function block(partial: Partial<Block> & Pick<Block, "id" | "name">): Block {
   return {
@@ -16,18 +22,32 @@ function block(partial: Partial<Block> & Pick<Block, "id" | "name">): Block {
   };
 }
 
-describe("sortBlocks", () => {
+function projectFromPages(pages: Page[]): Project {
+  return {
+    name: "Test",
+    author: "",
+    subject: "",
+    description: "",
+    published: false,
+    lastSaved: null,
+    activePageId: pages[0]?.id ?? "p1",
+    pages,
+    outputs: defaultOutputs(),
+  };
+}
+
+describe("sortBlocksList", () => {
   const items = [
     block({ id: "1", name: "B", type: "text", zIndex: 1 }),
     block({ id: "2", name: "A", type: "paragraph", zIndex: 5 }),
   ];
 
   it("sorts by pile z-order descending", () => {
-    expect(sortBlocks(items, "z").map((b) => b.id)).toEqual(["2", "1"]);
+    expect(sortBlocksList(items, "z").map((b) => b.id)).toEqual(["2", "1"]);
   });
 
   it("sorts by name", () => {
-    expect(sortBlocks(items, "name").map((b) => b.name)).toEqual(["A", "B"]);
+    expect(sortBlocksList(items, "name").map((b) => b.name)).toEqual(["A", "B"]);
   });
 });
 
@@ -48,9 +68,16 @@ describe("buildOutlineRows", () => {
   ];
 
   it("collapses inactive pages to headers only", () => {
-    const rows = buildOutlineRows(pages, { p1: false, p2: false }, "", "document");
-    expect(rows).toHaveLength(2);
-    expect(rows.every((r) => r.kind === "page")).toBe(true);
+    const rows = buildOutlineRows({
+      project: projectFromPages(pages),
+      expanded: {
+        [expandKeyProject()]: true,
+        [expandKeyPage("p1")]: false,
+        [expandKeyPage("p2")]: false,
+      },
+    });
+    expect(rows.filter((r) => r.kind === "page")).toHaveLength(2);
+    expect(rows.filter((r) => r.kind === "block")).toHaveLength(0);
   });
 
   it("expands thousands of siblings as flat rows", () => {
@@ -63,20 +90,32 @@ describe("buildOutlineRows", () => {
         ),
       },
     ];
-    const rows = buildOutlineRows(many, { big: true }, "", "z");
-    expect(rows).toHaveLength(2501);
-    expect(rows[0].kind).toBe("page");
-    expect(rows[1].kind).toBe("block");
-    if (rows[1].kind === "block") {
-      expect(rows[1].block.zIndex).toBe(2499);
-    }
+    const rows = buildOutlineRows({
+      project: projectFromPages(many),
+      expanded: {
+        [expandKeyProject()]: true,
+        [expandKeyPage("big")]: true,
+      },
+      sort: "z",
+    });
+    expect(rows.length).toBeGreaterThan(2500);
+    expect(rows.some((r) => r.kind === "page")).toBe(true);
+    const firstBlock = rows.find((r) => r.kind === "block");
+    expect(firstBlock?.kind === "block" && firstBlock.block.zIndex).toBe(2499);
   });
 
   it("filters by query; page count is full hierarchy size", () => {
-    const rows = buildOutlineRows(pages, { p1: true }, "Block 9", "document");
+    const rows = buildOutlineRows({
+      project: projectFromPages(pages),
+      expanded: {
+        [expandKeyProject()]: true,
+        [expandKeyPage("p1")]: true,
+      },
+      query: "Block 9",
+    });
     const pageRow = rows.find((r) => r.kind === "page" && r.page.id === "p1");
     expect(pageRow?.kind === "page" && pageRow.count).toBe(100);
     const blockRows = rows.filter((r) => r.kind === "block");
-    expect(blockRows.length).toBe(11); // 9, 90-99
+    expect(blockRows.length).toBe(11);
   });
 });

@@ -1,9 +1,12 @@
 import { useEffect, useState } from "preact/hooks";
 import { getRuntimeInfo } from "../../model/backend";
+import { prefs } from "../../state/store";
+import { t } from "../../i18n";
 
 const FALLBACK_VERSION = "0.1.0";
 
 export function AboutMode() {
+  void prefs.value.locale;
   const [version, setVersion] = useState(FALLBACK_VERSION);
   const [runtime, setRuntime] = useState<{
     version: string;
@@ -31,24 +34,17 @@ export function AboutMode() {
 
   return (
     <div>
-      <p>
-        Create tailored bulk documents with templating and simple data formats.
-        Edit once, preview against many rows.
-      </p>
-      <p class="muted">Version {version}</p>
-      <p class="muted">
-        Studio views: Edit (with Preview toggle) and Data. Bind fields with{" "}
-        <code>{"{{name}}"}</code>. Themes and density live in Settings.
-      </p>
+      <p>{t("aboutLead")}</p>
+      <p class="muted">{t("aboutVersion", { version })}</p>
+      <p class="muted">{t("aboutStudio")}</p>
       {runtime && (
         <p class="muted" style={{ fontSize: "0.75rem" }}>
-          Runtime backbone: {runtime.backbone}
+          {t("aboutRuntime", { backbone: runtime.backbone })}
           {runtime.engines?.length ? ` · ${runtime.engines.join(", ")}` : ""}
         </p>
       )}
       <p class="muted" style={{ fontSize: "0.75rem" }}>
-        Tip: <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>.</kbd> toggles Preview on the
-        Edit view.
+        {t("aboutTip")}
       </p>
     </div>
   );

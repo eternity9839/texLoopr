@@ -4,8 +4,8 @@ import { prefs, updatePrefs } from "../state/store";
 import { Icon, type IconName } from "./icons";
 
 const NARROW_QUERY = "(max-width: 880px)";
+const TOOLS_W = 48;
 
-/** True while the viewport fits the phone/tablet layout */
 function useNarrow(): boolean {
   const [narrow, setNarrow] = useState(
     () =>
@@ -24,39 +24,40 @@ function useNarrow(): boolean {
 
 interface StudioLayoutProps {
   variant?: "edit" | "aux";
-  navigator: ComponentChildren;
-  /** @deprecated Blocks live in a floating toolbox over the canvas */
+  /** Left outline (Data / aux). Edit uses Layers in the inspector instead. */
+  navigator?: ComponentChildren;
+  /** Fixed left tool palette (Edit only). */
   tools?: ComponentChildren;
   main: ComponentChildren;
   inspector?: ComponentChildren;
-  /** Bottom dock content (block appearance bar) */
+  /** @deprecated Bottom property dock removed — use inspector Design tab. */
   asideBottom?: ComponentChildren;
 }
 
 const MIN_NAV = 160;
 const MAX_NAV = 420;
-const MIN_INSPECTOR = 180;
-const MAX_INSPECTOR = 480;
+const MIN_INSPECTOR = 200;
+const MAX_INSPECTOR = 420;
 const COLLAPSED = 44;
 
 type ResizeTarget = "nav" | "inspector";
-type PaneId = "nav" | "inspector";
+type PaneId = "nav" | "inspector" | "tools";
 
 export function StudioLayout({
   variant = "edit",
   navigator,
+  tools,
   main,
   inspector,
-  asideBottom,
 }: StudioLayoutProps) {
   const p = prefs.value;
   const aux = variant === "aux";
+  const showTools = !aux && tools != null;
+  const showNav = aux && navigator != null;
   const showInspector = !aux && inspector != null;
-  const previewChrome = !aux && !showInspector;
+  const previewChrome = !aux && !showInspector && !showTools;
   const narrow = useNarrow();
 
-  // Narrow screens: canvas first, rails collapsed to header bars that
-  // slide open (one at a time). Desktop: prefs-driven side rails.
   const [openPane, setOpenPane] = useState<PaneId | null>(null);
 
   const navCollapsed = narrow
@@ -65,10 +66,14 @@ export function StudioLayout({
   const inspectorCollapsed = narrow
     ? openPane !== "inspector"
     : Boolean(p.inspectorCollapsed);
+  const toolsCollapsed = narrow ? openPane !== "tools" : false;
 
-  const navW = navCollapsed
-    ? COLLAPSED
-    : Math.min(MAX_NAV, Math.max(MIN_NAV, p.navWidth ?? 240));
+  const navW = !showNav
+    ? 0
+    : navCollapsed
+      ? COLLAPSED
+      : Math.min(MAX_NAV, Math.max(MIN_NAV, p.navWidth ?? 240));
+  const toolsW = !showTools ? 0 : toolsCollapsed ? COLLAPSED : TOOLS_W;
   const inspW = !showInspector
     ? 0
     : inspectorCollapsed
@@ -77,10 +82,10 @@ export function StudioLayout({
           MAX_INSPECTOR,
           Math.max(MIN_INSPECTOR, p.inspectorWidth ?? 280),
         );
+
   const dragRef = useRef<{
     target: ResizeTarget;
     startX: number;
-    startY: number;
     startW: number;
   } | null>(null);
 
@@ -123,23 +128,25 @@ export function StudioLayout({
       dragRef.current = {
         target,
         startX: e.clientX,
-        startY: e.clientY,
         startW: startPos,
       };
       document.body.classList.add("is-resizing-panes");
     };
 
-  const togglePane = (id: PaneId, prefKey: "navCollapsed" | "inspectorCollapsed") => {
+  const togglePane = (
+    id: PaneId,
+    prefKey?: "navCollapsed" | "inspectorCollapsed",
+  ) => {
     if (narrow) {
       setOpenPane((cur) => (cur === id ? null : id));
-    } else {
+    } else if (prefKey) {
       updatePrefs({ [prefKey]: !p[prefKey] });
     }
   };
 
   const layoutClass = [
     "studio-layout",
-    aux ? "studio-layout--aux" : "",
+    aux ? "studio-layout--aux" : "studio-layout--edit",
     previewChrome ? "studio-layout--preview" : "",
     narrow ? "studio-layout--stack" : "",
     "studio-layout--resizable",
@@ -147,46 +154,78 @@ export function StudioLayout({
     .filter(Boolean)
     .join(" ");
 
-  const columns =
-    aux || previewChrome
-      ? `${navW}px minmax(0, 1fr)`
-      : `${navW}px minmax(0, 1fr) ${inspW}px`;
+  const columns = (() => {
+    if (narrow) return undefined;
+    if (aux) return `${navW}px minmax(0, 1fr)`;
+    if (previewChrome) return `minmax(0, 1fr)`;
+    const parts: string[] = [];
+    if (showTools) parts.push(`${toolsW}px`);
+    parts.push("minmax(0, 1fr)");
+    if (showInspector) parts.push(`${inspW}px`);
+    return parts.join(" ");
+  })();
 
   return (
     <div
       class={layoutClass}
       style={narrow ? undefined : { gridTemplateColumns: columns }}
     >
-      <aside
-        class={navCollapsed ? "studio-nav studio-rail--collapsed" : "studio-nav"}
-        aria-label="Navigator"
-        data-collapsed={navCollapsed || undefined}
-      >
-        <RailHead
-          label="Outline"
-          compact={!narrow && navCollapsed}
-          collapsed={navCollapsed}
-          collapseIcon="chevronLeft"
-          expandIcon="chevronRight"
-          onToggle={() => togglePane("nav", "navCollapsed")}
-        />
-        <div class="rail-reveal">
-          <div class="studio-rail__body">{navigator}</div>
-        </div>
-        {!navCollapsed && (
-          <div
-            class="pane-resizer pane-resizer--east"
-            role="separator"
-            aria-orientation="vertical"
-            aria-label="Resize navigator"
-            onPointerDown={startResize("nav", navW)}
+      {showTools && (
+        <aside
+          class={
+            toolsCollapsed
+              ? "studio-tools studio-rail--collapsed"
+              : "studio-tools"
+          }
+          aria-label="Tools"
+          data-collapsed={toolsCollapsed || undefined}
+        >
+          {narrow && (
+            <RailHead
+              label="Tools"
+              collapsed={toolsCollapsed}
+              collapseIcon="chevronLeft"
+              expandIcon="chevronRight"
+              onToggle={() => togglePane("tools")}
+            />
+          )}
+          <div class="rail-reveal">
+            <div class="studio-rail__body">{tools}</div>
+          </div>
+        </aside>
+      )}
+
+      {showNav && (
+        <aside
+          class={navCollapsed ? "studio-nav studio-rail--collapsed" : "studio-nav"}
+          aria-label="Navigator"
+          data-collapsed={navCollapsed || undefined}
+        >
+          <RailHead
+            label="Outline"
+            compact={!narrow && navCollapsed}
+            collapsed={navCollapsed}
+            collapseIcon="chevronLeft"
+            expandIcon="chevronRight"
+            onToggle={() => togglePane("nav", "navCollapsed")}
           />
-        )}
-      </aside>
+          <div class="rail-reveal">
+            <div class="studio-rail__body">{navigator}</div>
+          </div>
+          {!navCollapsed && (
+            <div
+              class="pane-resizer pane-resizer--east"
+              role="separator"
+              aria-orientation="vertical"
+              aria-label="Resize navigator"
+              onPointerDown={startResize("nav", navW)}
+            />
+          )}
+        </aside>
+      )}
 
       <section class="studio-main">
         <div class="studio-main__content">{main}</div>
-        {asideBottom}
       </section>
 
       {showInspector && (
@@ -235,7 +274,6 @@ function RailHead({
 }: {
   label: string;
   collapsed: boolean;
-  /** Slim strip mode (desktop collapsed rail): icon only */
   compact?: boolean;
   collapseIcon: IconName;
   expandIcon: IconName;
@@ -260,7 +298,10 @@ function RailHead({
         aria-label={collapsed ? `Expand ${label}` : `Collapse ${label}`}
         onClick={onToggle}
       >
-        <Icon name={compact ? expandIcon : collapsed ? "chevronDown" : collapseIcon} size={12} />
+        <Icon
+          name={compact ? expandIcon : collapsed ? "chevronDown" : collapseIcon}
+          size={12}
+        />
       </button>
     </header>
   );
