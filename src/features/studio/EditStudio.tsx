@@ -4,6 +4,8 @@ import { Navigator } from "../tree/DocumentTree";
 import { Toolbox } from "../editor/Toolbox";
 import { EditorCanvas } from "../editor/EditorCanvas";
 import { EditRibbon } from "../editor/EditRibbon";
+import { PrebuildPicker } from "../editor/PrebuildPicker";
+import { AppearanceBar } from "../properties/AppearanceBar";
 import { PropertiesPanel, MetadataPanel } from "../properties/PropertiesPanel";
 import { CommentsPanel } from "../editor/CommentsPanel";
 import { INSPECTOR_TABS } from "./inspectorTabs";
@@ -78,10 +80,12 @@ export function EditStudio() {
           )}
           <div class="editor-stage">
             {!preview && <Toolbox />}
+            {!preview && <PrebuildPicker />}
             <EditorCanvas preview={preview} />
           </div>
         </div>
       }
+      asideBottom={preview ? undefined : <AppearanceBar />}
       inspector={
         preview ? undefined : (
           <div data-tour="inspector" class="inspector-shell">

@@ -1,10 +1,9 @@
 import { useState } from "preact/hooks";
 import { Icon, BLOCK_TYPE_ICON } from "../../ui/icons";
 import type { BlockType } from "../../model/document";
-import { PREBUILD_RECIPES } from "../../model/prebuild/library";
 import {
-  activePrebuildId,
   insertBlock,
+  openPrebuildPicker,
   placeCustomObject,
   prefs,
   project,
@@ -28,13 +27,19 @@ export { TOOLS as BLOCK_TOOLS };
 export function Toolbox() {
   const collapsed = Boolean(prefs.value.toolsCollapsed);
   const vertical = prefs.value.toolsOrientation === "vertical";
-  const recipeId = activePrebuildId.value;
   const customs = project.value.customObjects ?? [];
   const [flash, setFlash] = useState<string | null>(null);
   const [moreOpen, setMoreOpen] = useState(false);
 
   const place = (type: BlockType) => {
     setStudioView("edit");
+    if (type === "prebuild") {
+      // Show the saved-recipe chooser instead of inserting blindly
+      openPrebuildPicker();
+      setFlash(type);
+      window.setTimeout(() => setFlash((f) => (f === type ? null : f)), 280);
+      return;
+    }
     insertBlock(type);
     setFlash(type);
     window.setTimeout(() => setFlash((f) => (f === type ? null : f)), 280);
@@ -108,23 +113,16 @@ export function Toolbox() {
       </div>
       {moreOpen && (
         <div class="float-toolbox__sheet">
-          <label class="float-toolbox__field">
-            <span>Prebuild</span>
-            <select
-              value={recipeId}
-              title="Prebuild recipe"
-              aria-label="Prebuild recipe"
-              onChange={(e) => {
-                activePrebuildId.value = e.currentTarget.value;
-              }}
-            >
-              {PREBUILD_RECIPES.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <button
+            type="button"
+            class="btn btn--ghost btn--small toolbox__browse"
+            onClick={() => {
+              setMoreOpen(false);
+              openPrebuildPicker();
+            }}
+          >
+            Browse prebuilds…
+          </button>
           {customs.length > 0 ? (
             <div class="float-toolbox__customs" aria-label="Custom objects">
               {customs.map((c) => (

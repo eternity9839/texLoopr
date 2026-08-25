@@ -692,3 +692,326 @@ body.is-resizing-panes {
   overflow: auto;
   padding: clamp(0.75rem, 0.5rem + 1vw, 1rem);
 }
+
+/* ---- Main column split: content + bottom properties dock ---- */
+.studio-main__content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.prop-dock {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--chrome-elevated);
+  border-top: 1px solid var(--border);
+  animation: mode-fade var(--motion-fast) var(--ease-out);
+}
+
+.prop-dock--collapsed {
+  height: auto;
+}
+
+.prop-dock__body {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.prop-dock__toggle {
+  position: absolute;
+  top: 4px;
+  right: var(--space-3);
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-faint);
+}
+
+.prop-dock__toggle:hover {
+  background: var(--surface-hover);
+  border-color: var(--border);
+  color: var(--ink);
+}
+
+.pane-resizer--north {
+  position: absolute;
+  top: -3px;
+  left: 0;
+  right: 0;
+  height: 6px;
+  cursor: row-resize;
+  z-index: 3;
+}
+
+.pane-resizer--north:hover,
+body.is-resizing-panes .pane-resizer--north {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+/* ---- Prebuild recipe picker (floating over the canvas) ---- */
+.prebuild-picker {
+  position: absolute;
+  top: calc(var(--bar-height) + var(--space-4));
+  left: var(--space-4);
+  z-index: calc(var(--z-nav) + 5);
+  width: 16rem;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--chrome-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: panel-slide var(--motion-mode) var(--ease-out);
+}
+
+.prebuild-picker__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--text-sm);
+}
+
+.prebuild-picker__close {
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink-faint);
+}
+
+.prebuild-picker__close:hover {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+
+.prebuild-picker__hint {
+  margin: 0;
+  font-size: var(--text-xs);
+}
+
+.prebuild-picker__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 15rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.prebuild-picker__item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "name size"
+    "blurb blurb";
+  align-items: baseline;
+  column-gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2);
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+}
+
+.prebuild-picker__item:hover {
+  background: var(--accent-wash);
+  border-color: var(--accent-ring);
+}
+
+.prebuild-picker__item[aria-current="true"] {
+  background: var(--accent-muted);
+}
+
+.prebuild-picker__name {
+  grid-area: name;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+.prebuild-picker__size {
+  grid-area: size;
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.prebuild-picker__blurb {
+  grid-area: blurb;
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+}
+
+.prebuild-picker__place {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+}
+
+/* ---- Settings: connections summary ---- */
+.settings-conn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.settings-conn__row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  font-size: var(--text-sm);
+}
+
+.settings-hint {
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-xs);
+}
+
+/* ── Responsive & touch layer ─────────────────────────────────────── */
+
+@supports (height: 100dvh) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+  }
+}
+
+body {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.pane-resizer,
+.resize-handle,
+.prop-dock__toggle {
+  touch-action: none;
+}
+
+.studio-layout--narrow {
+  position: relative;
+}
+
+.studio-drawer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: calc(var(--z-nav) + 4);
+  display: flex;
+  flex-direction: column;
+  width: min(85vw, 20rem);
+  background: var(--chrome);
+  box-shadow: var(--shadow-lg);
+}
+
+.studio-drawer--left {
+  left: 0;
+  border-right: 1px solid var(--border);
+}
+
+.studio-drawer--right {
+  right: 0;
+  border-left: 1px solid var(--border);
+}
+
+.drawer-tab {
+  position: absolute;
+  top: 0.75rem;
+  z-index: calc(var(--z-nav) + 3);
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  backdrop-filter: blur(8px);
+  color: var(--ink-faint);
+  cursor: pointer;
+}
+
+.drawer-tab:hover {
+  color: var(--ink);
+  border-color: var(--border-strong);
+}
+
+.drawer-tab--left {
+  left: 0.5rem;
+}
+
+.drawer-tab--right {
+  right: 0.5rem;
+}
+
+@media (max-width: 880px) {
+  .context-bar__meta,
+  .context-bar .context-bar__brand span {
+    display: none;
+  }
+
+  .overlay-dialog {
+    max-width: min(94vw, 40rem);
+    max-height: min(86dvh, 52rem);
+  }
+
+  .settings-panel {
+    padding: var(--space-4);
+  }
+
+  .prop-dock:not(.prop-dock--collapsed) {
+    max-height: 44dvh;
+  }
+}
+
+.studio-drawer {
+  z-index: calc(var(--z-nav) + 4);
+}
+
+.drawer-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: calc(var(--z-nav) + 3);
+  background: color-mix(in srgb, #000 32%, transparent);
+}
+
+@supports (padding: env(safe-area-inset-left)) {
+  @media (max-width: 880px) {
+    .context-bar {
+      padding-left: max(0.5rem, env(safe-area-inset-left));
+      padding-right: max(0.5rem, env(safe-area-inset-right));
+    }
+
+    .drawer-tab--left {
+      left: max(0.5rem, env(safe-area-inset-left));
+    }
+
+    .drawer-tab--right {
+      right: max(0.5rem, env(safe-area-inset-right));
+    }
+  }
+}

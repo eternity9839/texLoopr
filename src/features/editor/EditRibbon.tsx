@@ -1,4 +1,6 @@
+import { useState } from "preact/hooks";
 import { Icon, type IconName } from "../../ui/icons";
+import { BLOCK_TOOLS } from "./Toolbox";
 import {
   alignSelected,
   canRedo,
@@ -8,6 +10,8 @@ import {
   cutSelected,
   duplicateSelected,
   groupSelection,
+  insertBlockPlaced,
+  insertPlacement,
   nudgeZOrder,
   pasteClipboard,
   prefs,
@@ -15,6 +19,7 @@ import {
   saveSelectionAsCustomObject,
   selectedBlock,
   selectedIds,
+  setInsertPlacement,
   toggleLockSelected,
   undoEdit,
   ungroupSelection,
@@ -23,6 +28,7 @@ import {
   addComment,
   inspectorTab,
 } from "../../state/store";
+import type { BlockType } from "../../model/document";
 
 function IconBtn({
   icon,
@@ -68,6 +74,10 @@ export function EditRibbon() {
   const multi = selectedIds.value.length;
   const canGroup = multi >= 1 || hasBlock;
   const isGroup = block?.type === "group" || block?.type === "repeat";
+  const [insertType, setInsertType] = useState<BlockType>("paragraph");
+  const [gridMenu, setGridMenu] = useState(false);
+  const p = prefs.value;
+  const gridSize = p.gridSize ?? 16;
 
   return (
     <div
@@ -76,6 +86,44 @@ export function EditRibbon() {
       role="toolbar"
       aria-label="Edit ribbon"
     >
+      <div class="ribbon-group__actions" role="group" aria-label="Insert">
+        <span class="ribbon-select">
+          <select
+            value={insertType}
+            aria-label="Block type to insert"
+            onChange={(e) => setInsertType(e.currentTarget.value as BlockType)}
+          >
+            {BLOCK_TOOLS.map((t) => (
+              <option key={t.type} value={t.type}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </span>
+        <span class="ribbon-select ribbon-select--narrow">
+          <select
+            value={insertPlacement.value}
+            aria-label="Insert placement"
+            title="Where inserted blocks land"
+            onChange={(e) =>
+              setInsertPlacement(e.currentTarget.value as typeof insertPlacement.value)
+            }
+          >
+            <option value="cascade">Cascade</option>
+            <option value="center">Center</option>
+            <option value="margins">At margins</option>
+          </select>
+        </span>
+        <button
+          type="button"
+          class="ribbon-btn"
+          onClick={() => insertBlockPlaced(insertType)}
+        >
+          <Icon name="plus" size={14} />
+          <span>Insert</span>
+        </button>
+      </div>
+      <Sep />
       <div class="ribbon-group__actions" role="group" aria-label="Clipboard">
         <IconBtn icon="cut" label="Cut (Ctrl+X)" disabled={!hasBlock} onClick={cutSelected} />
         <IconBtn icon="copy" label="Copy (Ctrl+C)" disabled={!hasBlock} onClick={copySelected} />
@@ -225,17 +273,79 @@ export function EditRibbon() {
       </div>
       <Sep />
       <div class="ribbon-group__actions" role="group" aria-label="View">
+        <span class="ribbon-pop__anchor">
+          <IconBtn
+            icon="grid"
+            label="Grid options"
+            pressed={p.showGrid || gridMenu}
+            onClick={() => setGridMenu((v) => !v)}
+          />
+          {gridMenu && (
+            <div class="ribbon-pop" role="menu" aria-label="Grid settings">
+              <label class="ribbon-pop__row">
+                <span>Cell size</span>
+                <input
+                  type="number"
+                  min={4}
+                  max={64}
+                  step={2}
+                  value={gridSize}
+                  onChange={(e) =>
+                    updatePrefs({
+                      gridSize: Math.max(
+                        4,
+                        Math.min(64, Number(e.currentTarget.value) || 16),
+                      ),
+                    })
+                  }
+                />
+              </label>
+              <label class="ribbon-pop__row">
+                <span>Style</span>
+                <select
+                  value={p.gridStyle ?? "lines"}
+                  onChange={(e) =>
+                    updatePrefs({
+                      gridStyle: e.currentTarget.value === "dots" ? "dots" : "lines",
+                    })
+                  }
+                >
+                  <option value="lines">Lines</option>
+                  <option value="dots">Dots</option>
+                </select>
+              </label>
+              <label class="ribbon-pop__row ribbon-pop__row--check">
+                <input
+                  type="checkbox"
+                  checked={p.gridLock === true}
+                  onChange={(e) => updatePrefs({ gridLock: e.currentTarget.checked })}
+                />
+                <span>Lock to grid (magnet)</span>
+              </label>
+              <label class="ribbon-pop__row ribbon-pop__row--check">
+                <input
+                  type="checkbox"
+                  checked={p.showMarginGuides !== false}
+                  onChange={(e) =>
+                    updatePrefs({ showMarginGuides: e.currentTarget.checked })
+                  }
+                />
+                <span>Margin guides</span>
+              </label>
+            </div>
+          )}
+        </span>
         <IconBtn
-          icon="grid"
-          label="Toggle grid"
-          pressed={prefs.value.showGrid}
-          onClick={() => updatePrefs({ showGrid: !prefs.value.showGrid })}
+          icon="magnet"
+          label="Lock to grid"
+          pressed={p.gridLock === true}
+          onClick={() => updatePrefs({ gridLock: p.gridLock !== true })}
         />
         <IconBtn
           icon="crosshair"
           label="Toggle snap"
-          pressed={prefs.value.snap}
-          onClick={() => updatePrefs({ snap: !prefs.value.snap })}
+          pressed={p.snap}
+          onClick={() => updatePrefs({ snap: !p.snap })}
         />
         <IconBtn
           icon="ruler"

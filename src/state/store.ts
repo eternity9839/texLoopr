@@ -9,18 +9,21 @@ import {
   EditorPrefs,
   ensureProjectAutomation,
   LegacyAppMode,
+  normalizeMargins,
   Page,
+  PageMargins,
   PAGE_HEIGHT,
   PAGE_WIDTH,
   Project,
   Selection,
   StudioView,
   UiOverlay,
+  Watermark,
 } from "../model/document";
 import { createDemoProject, getDemo } from "../model/demos/library";
 import { DataRow, parseDataInput, SAMPLE_CSV } from "../model/bindings";
 import { normalizeRect, px } from "../model/geometry";
-import { expandPrebuild } from "../model/prebuild/library";
+import { expandPrebuild, getPrebuildRecipe } from "../model/prebuild/library";
 import { defaultRepeatChildren } from "../model/repeat";
 import {
   customObjectFromGroup,
@@ -138,11 +141,37 @@ export const prefs = signal<EditorPrefs>(
     toolsCollapsed: false,
     inspectorCollapsed: false,
     toolsOrientation: "horizontal",
+    propsHeight: 240,
+    propsCollapsed: false,
+    gridSize: 16,
+    gridLock: false,
+    gridStyle: "lines",
+    showMarginGuides: true,
   },
 );
 export const activeTool = signal<BlockType | null>(null);
 export const activePrebuildId = signal<string>("header");
 export const placeCascade = signal(saved?.placeCascade ?? 0);
+
+/** Where a freshly inserted block lands (shared by ribbon, toolbox, pickers) */
+export type InsertPlacement = "cascade" | "center" | "margins";
+export const insertPlacement = signal<InsertPlacement>("cascade");
+
+export function setInsertPlacement(next: InsertPlacement): void {
+  insertPlacement.value = next;
+}
+
+/** Prebuild recipe chooser visibility */
+export const prebuildPickerOpen = signal(false);
+
+export function openPrebuildPicker(): void {
+  prebuildPickerOpen.value = true;
+  activeTool.value = null;
+}
+
+export function closePrebuildPicker(): void {
+  prebuildPickerOpen.value = false;
+}
 export const catalogReady = signal(false);
 export const catalogBackend = signal<"tauri" | "web" | null>(null);
 
@@ -463,13 +492,20 @@ export function addPage(name?: string): void {
 
 export function updatePage(
   pageId: string,
-  patch: Partial<Pick<Page, "name">>,
+  patch: Partial<Pick<Page, "name" | "background">> & {
+    margins?: Partial<PageMargins>;
+    watermark?: Watermark | null;
+  },
 ): void {
   updateProject((draft) => {
     const page = draft.pages.find((p) => p.id === pageId);
-    if (page) Object.assign(page, patch);
+    if (!page) return draft;
+    const { margins, watermark, ...rest } = patch;
+    Object.assign(page, rest);
+    if (margins) page.margins = normalizeMargins({ ...normalizeMargins(page.margins), ...margins });
+    if (watermark !== undefined) page.watermark = watermark ?? undefined;
     return draft;
-  });
+  }, { history: true });
 }
 
 export function insertBlock(
@@ -481,8 +517,7 @@ export function insertBlock(
   const y = px(at?.y ?? 48 + (cascade % 5) * 24);
 
   if (type === "prebuild") {
-    const recipeId = activePrebuildId.value;
-    const pieces = expandPrebuild(recipeId, { x, y });
+    const pieces = expandPrebuild(activePrebuildId.value, { x, y });
     let lastId = "";
     updateProject((draft) => {
       const page = draft.pages.find((p) => p.id === draft.activePageId);
@@ -534,6 +569,71 @@ export function insertBlock(
   selection.value = { kind: "block", id };
   activeTool.value = null;
   return id;
+}
+
+/** Compute the origin for a placed insert according to the chosen placement */
+function originForPlacement(
+  placement: InsertPlacement,
+  wPx: number,
+  hPx: number,
+): { x: number; y: number } {
+  if (placement === "center") {
+    return {
+      x: Math.round((PAGE_WIDTH - wPx) / 2),
+      y: Math.round((PAGE_HEIGHT - hPx) / 2),
+    };
+  }
+  if (placement === "margins") {
+    const m = normalizeMargins(activePage.value?.margins);
+    return { x: m.left, y: m.top };
+  }
+  const cascade = placeCascade.value;
+  return { x: 48 + (cascade % 5) * 24, y: 48 + (cascade % 5) * 24 };
+}
+
+export function insertBlockPlaced(
+  type: BlockType,
+  placement: InsertPlacement = insertPlacement.value,
+): void {
+  if (type === "prebuild") {
+    // Never insert blindly — let the user pick a recipe first.
+    openPrebuildPicker();
+    return;
+  }
+  const defaults = BLOCK_DEFAULTS[type];
+  const origin = originForPlacement(placement, px(defaults.w), px(defaults.h));
+  insertBlock(type, origin);
+}
+
+/** Insert a specific prebuild recipe at the chosen placement */
+export function insertPrebuildRecipe(recipeId: string): void {
+  const recipe = getPrebuildRecipe(recipeId);
+  if (!recipe) return;
+  const origin = originForPlacement(
+    insertPlacement.value,
+    px(recipe.w),
+    px(recipe.h),
+  );
+  const cascade = placeCascade.value;
+  const pieces = expandPrebuild(recipeId, {
+    x: px(origin.x),
+    y: px(origin.y),
+  });
+  let lastId = "";
+  updateProject((draft) => {
+    const page = draft.pages.find((p) => p.id === draft.activePageId);
+    if (!page) return draft;
+    for (const piece of pieces) {
+      piece.zIndex = (piece.zIndex ?? 1) + cascade;
+      page.blocks.push(piece);
+      lastId = piece.id;
+    }
+    return draft;
+  }, { history: true });
+  placeCascade.value = cascade + pieces.length;
+  activePrebuildId.value = recipeId;
+  if (lastId) selection.value = { kind: "block", id: lastId };
+  closePrebuildPicker();
 }
 
 export function updateBlock(
@@ -632,9 +732,22 @@ export function deleteSelection(): void {
 export function nudgeSelection(dx: number, dy: number): void {
   const sel = selection.value;
   if (!sel || sel.kind !== "block") return;
-  const block = selectedBlock.value;
-  if (!block || block.locked) return;
-  updateBlock(block.id, { x: block.x + dx, y: block.y + dy });
+  const ids = selectedIds.value.length ? selectedIds.value : [sel.id];
+  const page = activePage.value;
+  const targets = (page?.blocks ?? []).filter(
+    (b) => ids.includes(b.id) && !b.locked,
+  );
+  if (!targets.length) return;
+  updateProject((draft) => {
+    const draftPage = draft.pages.find((p) => p.id === draft.activePageId);
+    if (!draftPage) return draft;
+    for (const b of draftPage.blocks) {
+      if (!ids.includes(b.id) || b.locked) continue;
+      b.x += dx;
+      b.y += dy;
+    }
+    return draft;
+  }, { history: true });
 }
 
 export type AlignMode =
@@ -645,7 +758,45 @@ export type AlignMode =
   | "middle"
   | "bottom";
 
+/** Bounding box of the current selection (page when single block) */
+function alignBounds(): { minX: number; maxX: number; minY: number; maxY: number } | null {
+  const targets = selectedBlocks.value.filter((b) => !b.locked);
+  if (!targets.length) return null;
+  if (targets.length === 1 || selectedIds.value.length <= 1) return null;
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const b of targets) {
+    minX = Math.min(minX, b.x);
+    maxX = Math.max(maxX, b.x + b.w);
+    minY = Math.min(minY, b.y);
+    maxY = Math.max(maxY, b.y + b.h);
+  }
+  return { minX, maxX, minY, maxY };
+}
+
 export function alignSelected(mode: AlignMode): void {
+  const bounds = alignBounds();
+  if (bounds) {
+    const ids = selectedIds.value;
+    updateProject((draft) => {
+      const page = draft.pages.find((p) => p.id === draft.activePageId);
+      if (!page) return draft;
+      for (const b of page.blocks) {
+        if (!ids.includes(b.id) || b.locked) continue;
+        switch (mode) {
+          case "left": b.x = bounds.minX; break;
+          case "center-x": b.x = Math.round((bounds.minX + bounds.maxX - b.w) / 2); break;
+          case "right": b.x = bounds.maxX - b.w; break;
+          case "top": b.y = bounds.minY; break;
+          case "middle": b.y = Math.round((bounds.minY + bounds.maxY - b.h) / 2); break;
+          case "bottom": b.y = bounds.maxY - b.h; break;
+        }
+      }
+      return draft;
+    }, { history: true });
+    return;
+  }
+
+  // Single selection: align to the page
   const block = selectedBlock.value;
   if (!block || block.locked) return;
   let patch: Partial<Pick<Block, "x" | "y">> = {};

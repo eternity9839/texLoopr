@@ -1167,3 +1167,210 @@
   gap: var(--space-2);
   flex-wrap: wrap;
 }
+
+/* ---- Grid: cell size + style from prefs (--board-grid-size on .editor-board) */
+.editor-board--grid {
+  background-color: var(--board);
+  background-image:
+    linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+  background-size: var(--board-grid-size, 16px) var(--board-grid-size, 16px);
+}
+
+.editor-board--grid.editor-board--grid-dots {
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--grid-dot) 1.2px, transparent 0);
+}
+
+/* ---- Page backdrop, watermark and margin guides ---- */
+.page-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page-watermark {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-doc);
+  font-size: clamp(3rem, 9vw, 5.5rem);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+.page-margin-guide {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.page-margin-guide--top {
+  top: 0;
+  left: 0;
+  right: 0;
+  border-bottom: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.page-margin-guide--bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.page-margin-guide--left {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  border-right: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.page-margin-guide--right {
+  top: 0;
+  bottom: 0;
+  right: 0;
+  border-left: 1px dashed color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* Blocks sit above decorations */
+.block-frame {
+  z-index: 2;
+}
+
+/* ---- Table header row (content.header = true renders <thead><th>) ---- */
+.block-table th {
+  background: #f1efea;
+  font-weight: 600;
+  text-align: inherit;
+}
+
+.block-table--source td {
+  color: inherit;
+}
+
+/* ---- Ribbon insert selects + grid popover ---- */
+.ribbon-select select {
+  min-height: calc(var(--control-h) - 4px);
+  max-width: 9.5rem;
+}
+
+.ribbon-select--narrow select {
+  max-width: 7rem;
+}
+
+.ribbon-pop__anchor {
+  position: relative;
+  display: inline-flex;
+}
+
+.ribbon-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: var(--z-menu);
+  min-width: 13rem;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: var(--chrome-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: overlay-in var(--motion-fast) var(--ease-out);
+}
+
+.ribbon-pop__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--ink-muted);
+}
+
+.ribbon-pop__row select,
+.ribbon-pop__row input[type="number"] {
+  width: 5.5rem;
+  min-height: 1.7rem;
+}
+
+.ribbon-pop__row--check {
+  justify-content: flex-start;
+  cursor: pointer;
+}
+
+/* ── Responsive & touch layer ─────────────────────────────────────── */
+
+.block-frame,
+.resize-handle {
+  touch-action: none;
+}
+
+@media (max-width: 880px) {
+  .float-toolbox {
+    top: auto;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    align-items: stretch;
+  }
+
+  .float-toolbox__bar {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .float-toolbox__bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .prebuild-picker {
+    left: 0.75rem;
+    right: 0.75rem;
+    width: auto;
+    max-width: none;
+  }
+
+  .edit-ribbon {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+}
+
+@media (pointer: coarse) {
+  .resize-handle::after {
+    inset: -6px;
+  }
+
+  .tool,
+  .ribbon-btn,
+  .rail-toggle,
+  .prop-dock__toggle,
+  .drawer-tab,
+  .prebuild-picker__close {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+
+@supports (padding: env(safe-area-inset-bottom)) {
+  @media (max-width: 880px) {
+    .float-toolbox {
+      left: max(0.5rem, env(safe-area-inset-left));
+      right: max(0.5rem, env(safe-area-inset-right));
+      bottom: max(0.5rem, env(safe-area-inset-bottom));
+    }
+  }
+}
