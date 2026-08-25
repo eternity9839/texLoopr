@@ -144,12 +144,11 @@ export function StudioLayout({
         aria-label="Navigator"
         data-collapsed={navCollapsed || undefined}
       >
-        <RailChrome
-          collapsed={navCollapsed}
+        <RailHead
           label="Outline"
-          icon="panelLeft"
-          expandIcon="chevronRight"
+          collapsed={navCollapsed}
           collapseIcon="chevronLeft"
+          expandIcon="chevronRight"
           onToggle={() => updatePrefs({ navCollapsed: !navCollapsed })}
         />
         <div class="studio-rail__body">{navigator}</div>
@@ -170,16 +169,21 @@ export function StudioLayout({
           <div
             class={p.propsCollapsed ? "prop-dock prop-dock--collapsed" : "prop-dock"}
           >
-            <div class="prop-dock__body">{asideBottom}</div>
-            <button
-              type="button"
-              class="prop-dock__toggle"
-              title={p.propsCollapsed ? "Expand properties" : "Collapse properties"}
-              aria-expanded={!p.propsCollapsed}
-              onClick={() => updatePrefs({ propsCollapsed: !p.propsCollapsed })}
-            >
-              <Icon name={p.propsCollapsed ? "chevronUp" : "chevronDown"} size={12} />
-            </button>
+            <div class="prop-dock__head">
+              <span class="prop-dock__title">Properties</span>
+              <button
+                type="button"
+                class="rail-head__btn"
+                title={p.propsCollapsed ? "Expand properties" : "Collapse properties"}
+                aria-expanded={!p.propsCollapsed}
+                onClick={() => updatePrefs({ propsCollapsed: !p.propsCollapsed })}
+              >
+                <Icon name={p.propsCollapsed ? "chevronUp" : "chevronDown"} size={12} />
+              </button>
+            </div>
+            <div class="prop-dock__reveal">
+              <div class="prop-dock__body">{asideBottom}</div>
+            </div>
           </div>
         )}
       </section>
@@ -194,12 +198,11 @@ export function StudioLayout({
           aria-label="Inspector"
           data-collapsed={inspectorCollapsed || undefined}
         >
-          <RailChrome
-            collapsed={inspectorCollapsed}
+          <RailHead
             label="Inspect"
-            icon="sliders"
-            expandIcon="chevronLeft"
+            collapsed={inspectorCollapsed}
             collapseIcon="chevronRight"
+            expandIcon="chevronLeft"
             onToggle={() =>
               updatePrefs({ inspectorCollapsed: !inspectorCollapsed })
             }
@@ -220,33 +223,34 @@ export function StudioLayout({
   );
 }
 
-function RailChrome({
-  collapsed,
+function RailHead({
   label,
-  onToggle,
-  expandIcon,
+  collapsed,
   collapseIcon,
+  expandIcon,
+  onToggle,
 }: {
-  collapsed: boolean;
   label: string;
-  onToggle: () => void;
-  icon: IconName;
-  expandIcon: IconName;
+  collapsed: boolean;
   collapseIcon: IconName;
+  expandIcon: IconName;
+  onToggle: () => void;
 }) {
   return (
-    <div class="rail-chrome">
+    <header class="rail-head">
+      {!collapsed && <span class="rail-head__label">{label}</span>}
       <button
         type="button"
-        class={collapsed ? "rail-toggle rail-toggle--collapsed" : "rail-toggle"}
+        class={
+          collapsed ? "rail-head__btn rail-head__btn--solo" : "rail-head__btn"
+        }
         title={collapsed ? `Expand ${label}` : `Collapse ${label}`}
         aria-expanded={!collapsed}
         aria-label={collapsed ? `Expand ${label}` : `Collapse ${label}`}
         onClick={onToggle}
       >
         <Icon name={collapsed ? expandIcon : collapseIcon} size={12} />
-        {!collapsed && <span class="rail-toggle__label">{label}</span>}
       </button>
-    </div>
+    </header>
   );
 }
