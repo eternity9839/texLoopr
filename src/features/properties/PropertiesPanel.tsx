@@ -15,7 +15,7 @@ import {
 } from "../../state/store";
 import { MIN_BLOCK_H, MIN_BLOCK_W, px } from "../../model/geometry";
 import { dataColumnNames } from "../../model/bindings";
-import { LIST_STYLES, type Block } from "../../model/document";
+import { LIST_STYLES, FONT_OPTIONS, type Block, type BlockStyle } from "../../model/document";
 import { defaultRepeatChildren } from "../../model/repeat";
 import { Icon } from "../../ui/icons";
 import {
@@ -28,6 +28,7 @@ import {
   SelectField,
 } from "../../ui/controls";
 import { INSPECTOR_TABS } from "../studio/inspectorTabs";
+import { ClearFormatButton, type AppearanceCtx } from "./appearance";
 
 function FieldPicker({
   block,
@@ -305,6 +306,8 @@ export function PropertiesPanel() {
             [key]: Math.min(max ?? Infinity, Math.max(min ?? -Infinity, v)),
           },
         });
+    const setStyle: AppearanceCtx["setStyle"] = (patch) =>
+      updateBlock(block.id, { style: patch });
 
     return (
       <div class="panel-pad" aria-label="Block properties">
@@ -472,7 +475,7 @@ export function PropertiesPanel() {
           h={block.h}
         />
 
-        <Section title="Style" defaultOpen={false}>
+        <Section title="Typography" defaultOpen>
           <Grid2>
             <NumField
               id="font-size"
@@ -482,6 +485,49 @@ export function PropertiesPanel() {
               max={72}
               onValue={styleNum("fontSize", 10, 72)}
             />
+            <NumField
+              id="line-height"
+              label="Line height"
+              value={block.style.lineHeight ?? 1.4}
+              min={0.8}
+              max={3}
+              step={0.05}
+              onValue={styleNum("lineHeight", 0.8, 3)}
+            />
+          </Grid2>
+          <Grid2>
+            <SelectField
+              id="font-family"
+              label="Font family"
+              value={block.style.fontFamily ?? ""}
+              options={[
+                { value: "", label: "Default" },
+                ...FONT_OPTIONS,
+              ]}
+              onChange={(v) =>
+                updateBlock(block.id, {
+                  style: { fontFamily: v as BlockStyle["fontFamily"] },
+                })
+              }
+            />
+            <SelectField
+              id="text-case"
+              label="Letter case"
+              value={block.style.textTransform ?? "none"}
+              options={[
+                { value: "none", label: "As typed" },
+                { value: "uppercase", label: "UPPERCASE" },
+                { value: "lowercase", label: "lowercase" },
+                { value: "capitalize", label: "Capitalize" },
+              ]}
+              onChange={(v) =>
+                updateBlock(block.id, {
+                  style: { textTransform: v as BlockStyle["textTransform"] },
+                })
+              }
+            />
+          </Grid2>
+          <Grid2>
             <ColorField
               id="font-color"
               label="Color"
@@ -491,6 +537,55 @@ export function PropertiesPanel() {
                 updateBlock(block.id, { style: { color: v } })
               }
             />
+            <NumField
+              id="letter-spacing"
+              label="Letter spacing"
+              value={block.style.letterSpacing ?? 0}
+              min={-4}
+              max={12}
+              step={0.5}
+              onValue={styleNum("letterSpacing", -4, 12)}
+            />
+          </Grid2>
+          <Grid2>
+            <NumField
+              id="text-indent"
+              label="First-line indent"
+              value={block.style.textIndent ?? 0}
+              min={0}
+              max={96}
+              onValue={styleNum("textIndent", 0, 96)}
+            />
+            <CheckRow
+              checked={Number(block.style.fontWeight) >= 600}
+              onChange={(v) =>
+                updateBlock(block.id, { style: { fontWeight: v ? 700 : 400 } })
+              }
+            >
+              Bold
+            </CheckRow>
+          </Grid2>
+          <Grid2>
+            <CheckRow
+              checked={block.style.fontStyle === "italic"}
+              onChange={(v) =>
+                updateBlock(block.id, {
+                  style: { fontStyle: v ? "italic" : "normal" },
+                })
+              }
+            >
+              Italic
+            </CheckRow>
+            <CheckRow
+              checked={block.style.textDecoration === "underline"}
+              onChange={(v) =>
+                updateBlock(block.id, {
+                  style: { textDecoration: v ? "underline" : "none" },
+                })
+              }
+            >
+              Underline
+            </CheckRow>
           </Grid2>
           <SelectField
             id="text-align"
@@ -507,22 +602,9 @@ export function PropertiesPanel() {
               })
             }
           />
-          {block.type === "list" && (
-            <SelectField
-              id="list-style"
-              label="List markers"
-              value={block.style.listStyle ?? "disc"}
-              options={LIST_STYLES.map((s) => ({
-                value: s.value,
-                label: s.label,
-              }))}
-              onChange={(v) =>
-                updateBlock(block.id, {
-                  style: { listStyle: v as Block["style"]["listStyle"] },
-                })
-              }
-            />
-          )}
+        </Section>
+
+        <Section title="Layout" defaultOpen={false}>
           <Grid2>
             <NumField
               id="opacity"
@@ -542,6 +624,32 @@ export function PropertiesPanel() {
               onValue={styleNum("padding", 0, 48)}
             />
           </Grid2>
+          <SelectField
+            id="valign"
+            label="Vertical align"
+            value={block.style.verticalAlign ?? "top"}
+            options={[
+              { value: "top", label: "Top" },
+              { value: "middle", label: "Middle" },
+              { value: "bottom", label: "Bottom" },
+            ]}
+            onChange={(v) =>
+              updateBlock(block.id, {
+                style: {
+                  verticalAlign: v as BlockStyle["verticalAlign"],
+                },
+              })
+            }
+          />
+          <CheckRow
+            checked={Boolean(block.style.shadow)}
+            onChange={(v) => updateBlock(block.id, { style: { shadow: v } })}
+          >
+            Drop shadow
+          </CheckRow>
+        </Section>
+
+        <Section title="Appearance" defaultOpen={false}>
           <Grid2>
             <NumField
               id="border-w"
@@ -578,7 +686,153 @@ export function PropertiesPanel() {
               updateBlock(block.id, { style: { borderColor: v } })
             }
           />
-        </Section>
+          <ClearFormatButton ctx={{ block, setStyle }} />        </Section>
+
+        {block.type === "list" && (
+          <Section title="List" defaultOpen={false}>
+            <SelectField
+              id="list-style"
+              label="Markers"
+              value={block.style.listStyle ?? "disc"}
+              options={LIST_STYLES.map((s) => ({
+                value: s.value,
+                label: s.label,
+              }))}
+              onChange={(v) =>
+                updateBlock(block.id, {
+                  style: { listStyle: v as Block["style"]["listStyle"] },
+                })
+              }
+            />
+            <Grid2>
+              <NumField
+                id="list-start"
+                label="Start at"
+                value={Number(block.content.start ?? 1)}
+                min={1}
+                max={999}
+                onValue={(v) =>
+                  updateBlock(block.id, {
+                    content: { start: Math.max(1, Math.round(v)) },
+                  })
+                }
+              />
+              <ColorField
+                id="marker-color"
+                label="Marker color"
+                value={String(block.content.markerColor ?? "")}
+                fallback="#8a8577"
+                onValue={(v) =>
+                  updateBlock(block.id, { content: { markerColor: v } })
+                }
+              />
+            </Grid2>
+          </Section>
+        )}
+
+        {block.type === "picture" && (
+          <Section title="Picture" defaultOpen={false}>
+            <SelectField
+              id="pic-fit"
+              label="Fit"
+              value={String(block.content.fit ?? "cover")}
+              options={[
+                { value: "cover", label: "Cover (fill frame)" },
+                { value: "contain", label: "Contain (fit inside)" },
+                { value: "fill", label: "Stretch" },
+              ]}
+              onChange={(v) =>
+                updateBlock(block.id, {
+                  content: { fit: v },
+                })
+              }
+            />
+            <Grid2>
+              <NumField
+                id="filter-gray"
+                label="Grayscale %"
+                value={Number(block.content.filterGrayscale ?? 0)}
+                min={0}
+                max={100}
+                onValue={(v) =>
+                  updateBlock(block.id, { content: { filterGrayscale: v } })
+                }
+              />
+              <NumField
+                id="filter-sepia"
+                label="Sepia %"
+                value={Number(block.content.filterSepia ?? 0)}
+                min={0}
+                max={100}
+                onValue={(v) =>
+                  updateBlock(block.id, { content: { filterSepia: v } })
+                }
+              />
+            </Grid2>
+            <NumField
+              id="filter-blur"
+              label="Blur px"
+              value={Number(block.content.filterBlur ?? 0)}
+              min={0}
+              max={20}
+              onValue={(v) =>
+                updateBlock(block.id, { content: { filterBlur: v } })
+              }
+            />
+          </Section>
+        )}
+
+        {block.type === "shape" && (
+          <Section title="Shape" defaultOpen={false}>
+            <SelectField
+              id="shape-variant"
+              label="Variant"
+              value={String(block.content.variant ?? "rect")}
+              options={[
+                { value: "rect", label: "Rectangle" },
+                { value: "ellipse", label: "Ellipse" },
+                { value: "line", label: "Rule / line" },
+              ]}
+              onChange={(v) =>
+                updateBlock(block.id, { content: { variant: v } })
+              }
+            />
+          </Section>
+        )}
+
+        {block.type === "table" && (
+          <Section title="Table" defaultOpen={false}>
+            <CheckRow
+              checked={Boolean(block.content.zebra)}
+              onChange={(v) => updateBlock(block.id, { content: { zebra: v } })}
+            >
+              Zebra stripes
+            </CheckRow>
+            <Grid2>
+              <NumField
+                id="cell-pad"
+                label="Cell padding"
+                value={Number(block.content.cellPadding ?? 6)}
+                min={0}
+                max={24}
+                onValue={(v) =>
+                  updateBlock(block.id, {
+                    content: { cellPadding: Math.round(v) },
+                  })
+                }
+              />
+              <ColorField
+                id="header-bg"
+                label="Header fill"
+                value={String(block.content.headerBackground ?? "")}
+                fallback="#f0ebe3"
+                onValue={(v) =>
+                  updateBlock(block.id, { content: { headerBackground: v } })
+                }
+              />
+            </Grid2>
+          </Section>
+        )}
       </div>
     );
   }

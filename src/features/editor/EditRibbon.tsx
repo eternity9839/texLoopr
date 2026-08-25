@@ -28,7 +28,17 @@ import {
   addComment,
   inspectorTab,
 } from "../../state/store";
-import type { BlockType } from "../../model/document";
+import { BLOCK_DEFAULTS, type BlockType } from "../../model/document";
+import {
+  AlignPicker,
+  BIUToggle,
+  FontFamilySelect,
+  LineHeightSelect,
+  SizeStepper,
+  TextColorSwatch,
+  TransformSelect,
+  type AppearanceCtx,
+} from "../properties/appearance";
 
 function IconBtn({
   icon,
@@ -74,6 +84,25 @@ export function EditRibbon() {
   const multi = selectedIds.value.length;
   const canGroup = multi >= 1 || hasBlock;
   const isGroup = block?.type === "group" || block?.type === "repeat";
+  const typoCtx: AppearanceCtx = {
+    block:
+      block ??
+      ({
+        id: "ribbon-placeholder",
+        pageId: "",
+        type: "paragraph",
+        name: "",
+        x: 0,
+        y: 0,
+        w: BLOCK_DEFAULTS.paragraph.w,
+        h: BLOCK_DEFAULTS.paragraph.h,
+        content: {},
+        style: {},
+      } as never),
+    setStyle: (patch: Parameters<AppearanceCtx["setStyle"]>[0]) => {
+      if (block) updateBlock(block.id, { style: patch }, { history: true });
+    },
+  };
   const [insertType, setInsertType] = useState<BlockType>("paragraph");
   const [gridMenu, setGridMenu] = useState(false);
   const p = prefs.value;
@@ -180,75 +209,14 @@ export function EditRibbon() {
         />
       </div>
       <Sep />
-      <div class="ribbon-group__actions" role="group" aria-label="Typography">
-        <IconBtn
-          icon="bold"
-          label="Bold"
-          disabled={!hasBlock}
-          pressed={Number(block?.style.fontWeight) >= 600}
-          onClick={() => {
-            if (!block) return;
-            const bold = Number(block.style.fontWeight) >= 600;
-            updateBlock(block.id, { style: { fontWeight: bold ? 400 : 700 } }, { history: true });
-          }}
-        />
-        <IconBtn
-          icon="italic"
-          label="Italic"
-          disabled={!hasBlock}
-          pressed={block?.style.fontStyle === "italic"}
-          onClick={() => {
-            if (!block) return;
-            const on = block.style.fontStyle === "italic";
-            updateBlock(
-              block.id,
-              { style: { fontStyle: on ? "normal" : "italic" } },
-              { history: true },
-            );
-          }}
-        />
-        <IconBtn
-          icon="underline"
-          label="Underline"
-          disabled={!hasBlock}
-          pressed={block?.style.textDecoration === "underline"}
-          onClick={() => {
-            if (!block) return;
-            const on = block.style.textDecoration === "underline";
-            updateBlock(
-              block.id,
-              { style: { textDecoration: on ? "none" : "underline" } },
-              { history: true },
-            );
-          }}
-        />
-        <IconBtn
-          icon="alignTextLeft"
-          label="Align text left"
-          disabled={!hasBlock}
-          pressed={block?.style.textAlign === "left" || !block?.style.textAlign}
-          onClick={() =>
-            block && updateBlock(block.id, { style: { textAlign: "left" } }, { history: true })
-          }
-        />
-        <IconBtn
-          icon="alignTextCenter"
-          label="Align text center"
-          disabled={!hasBlock}
-          pressed={block?.style.textAlign === "center"}
-          onClick={() =>
-            block && updateBlock(block.id, { style: { textAlign: "center" } }, { history: true })
-          }
-        />
-        <IconBtn
-          icon="alignTextRight"
-          label="Align text right"
-          disabled={!hasBlock}
-          pressed={block?.style.textAlign === "right"}
-          onClick={() =>
-            block && updateBlock(block.id, { style: { textAlign: "right" } }, { history: true })
-          }
-        />
+      <div class="ribbon-group__actions ribbon-typography" role="group" aria-label="Typography">
+        <FontFamilySelect ctx={typoCtx} disabled={!block} />
+        <SizeStepper ctx={typoCtx} disabled={!block} />
+        <BIUToggle ctx={typoCtx} disabled={!block} />
+        <AlignPicker ctx={typoCtx} disabled={!block} />
+        <TransformSelect ctx={typoCtx} disabled={!block} />
+        <LineHeightSelect ctx={typoCtx} disabled={!block} />
+        <TextColorSwatch ctx={typoCtx} disabled={!block} />
       </div>
       <Sep />
       <div class="ribbon-group__actions" role="group" aria-label="Review">
