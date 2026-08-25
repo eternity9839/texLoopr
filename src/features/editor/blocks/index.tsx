@@ -2,6 +2,9 @@ import type { ComponentChildren, VNode } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { Block, BlockType, ListStyle } from "../../../model/document";
 import {
+  FONT_STACKS,
+} from "../../../model/document";
+import {
   resolveTemplate,
   evaluateCondition,
   resolveItemsPath,
@@ -38,28 +41,46 @@ export interface BlockViewProps {
 const HANDLES: ResizeHandle[] = ["n", "ne", "e", "se", "s", "sw", "w", "nw"];
 const DRAG_THRESHOLD = 3;
 
-function styleFromBlock(block: Block): Record<string, string | number> {
+export function styleFromBlock(
+  block: Block,
+): Record<string, string | number | undefined> {
   const s = block.style;
   return {
     fontSize: s.fontSize ?? 14,
     fontWeight: s.fontWeight ?? 400,
     fontStyle: s.fontStyle ?? "normal",
     textDecoration: s.textDecoration ?? "none",
+    fontFamily: s.fontFamily ? FONT_STACKS[s.fontFamily] : undefined,
     color: s.color ?? "#2a2622",
     textAlign: s.textAlign ?? "left",
     textIndent: `${s.textIndent ?? 0}px`,
     lineHeight: s.lineHeight && s.lineHeight > 0 ? String(s.lineHeight) : "1.4",
     letterSpacing: `${s.letterSpacing ?? 0}px`,
+    textTransform: s.textTransform ?? "none",
     background: s.background ?? "transparent",
     borderRadius: s.borderRadius ?? 0,
     opacity: s.opacity ?? 1,
     padding: s.padding ?? 0,
+    boxShadow: s.shadow ? "var(--shadow-page)" : undefined,
     listStyleType: s.listStyle && s.listStyle !== "none" ? s.listStyle : "none",
+    "--marker-color": (block.content?.markerColor as string) || undefined,
     border:
       s.borderWidth && s.borderWidth > 0
         ? `${s.borderWidth}px solid ${s.borderColor ?? "#2a2622"}`
         : "none",
   };
+}
+
+/** CSS filter() string built from a picture block's filter params */
+export function pictureFilter(content: Record<string, unknown>): string {
+  const parts: string[] = [];
+  const gray = Number(content.filterGrayscale ?? 0);
+  const sepia = Number(content.filterSepia ?? 0);
+  const blur = Number(content.filterBlur ?? 0);
+  if (gray > 0) parts.push(`grayscale(${Math.min(100, gray)}%)`);
+  if (sepia > 0) parts.push(`sepia(${Math.min(100, sepia)}%)`);
+  if (blur > 0) parts.push(`blur(${Math.min(20, blur)}px)`);
+  return parts.length ? parts.join(" ") : "none";
 }
 
 const ORDERED: ListStyle[] = ["decimal", "upper-roman", "lower-alpha"];
@@ -290,7 +311,19 @@ export function BlockFrame(
           Locked
         </span>
       )}
-      <div class="block-body" style={styleFromBlock(block)}>
+      <div
+        class={[
+          "block-body",
+          block.style.verticalAlign === "middle"
+            ? "block-body--valign-middle"
+            : block.style.verticalAlign === "bottom"
+              ? "block-body--valign-bottom"
+              : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        style={styleFromBlock(block)}
+      >
         {children}
       </div>
       {selected && !preview && !block.locked &&
@@ -347,7 +380,10 @@ export function ListBlock(props: BlockViewProps) {
   const Tag = style as "ol" | "ul";
   return (
     <BlockFrame {...props}>
-      <Tag class="block-list">
+      <Tag
+        class="block-list"
+        start={Tag === "ol" ? Number(block.content.start ?? 1) : undefined}
+      >
         {items.map((item, i) => (
           <li key={i}>
             {resolveTemplate(item, row, {
@@ -371,20 +407,68 @@ export function PictureBlock(props: BlockViewProps) {
     missingAsEmpty: preview,
     ctx: runtime,
   });
+  const fit = (["cover", "contain", "fill"] as const).includes(
+    block.content.fit as never,
+  )
+    ? (block.content.fit as "cover" | "contain" | "fill")
+    : "cover";
   return (
     <BlockFrame {...props}>
       <div class="block-picture">
-        {src ? <img src={src} alt={alt} /> : <span>No image URL</span>}
+        {src ? (
+          <img
+            src={src}
+            alt={alt}
+            style={{ objectFit: fit, filter: pictureFilter(block.content) }}
+          />
+        ) : (
+          <span>No image URL</span>
+        )}
       </div>
     </BlockFrame>
   );
 }
 
 export function ShapeBlock(props: BlockViewProps) {
+  const { block } = props;
+  const variant =
+    (block.content.variant as string) ??
+    (block.content.shape as string) ??
+    "rect";
+  if (variant === "line") {
+    return (
+      <BlockFrame {...props}>
+        <div class="block-shape block-shape--line">
+          <div
+            class="block-shape__rule"
+            style={{
+              borderTopWidth: `${Math.max(1, block.style.borderWidth ?? 2)}px`,
+              borderTopColor: block.style.borderColor ?? "#2a2622",
+            }}
+          />
+        </div>
+      </BlockFrame>
+    );
+  }
   return (
     <BlockFrame {...props}>
-      <div class="block-shape">
-        <div class="block-shape__rect" />
+      <div
+        class={
+          variant === "ellipse"
+            ? "block-shape block-shape--ellipse"
+            : "block-shape"
+        }
+      >
+        <div
+          class="block-shape__rect"
+          style={{
+            background: block.style.background ?? "#e3ddd3",
+            border:
+              (block.style.borderWidth ?? 0) > 0
+                ? `${block.style.borderWidth}px solid ${block.style.borderColor ?? "#2a2622"}`
+                : undefined,
+          }}
+        />
       </div>
     </BlockFrame>
   );
@@ -395,6 +479,10 @@ export function TableBlock(props: BlockViewProps) {
   const cells = (block.content.cells as string[][]) ?? [];
   const header = Boolean(block.content.header);
   const sourcePath = String(block.content.sourcePath ?? "").trim();
+
+  const zebra = Boolean(block.content.zebra);
+  const cellPad = Number(block.content.cellPadding ?? 6);
+  const headerBg = String(block.content.headerBackground ?? "");
 
   let dataRows: Record<string, unknown>[] = [];
   if (sourcePath) {
@@ -411,12 +499,15 @@ export function TableBlock(props: BlockViewProps) {
 
   return (
     <BlockFrame {...props}>
-      <table class="block-table">
+      <table
+        class={zebra ? "block-table block-table--zebra" : "block-table"}
+        style={{ "--cell-pad": `${cellPad}px` }}
+      >
         {header && (
           <thead>
             <tr>
               {(cells[0] ?? []).map((cell, ci) => (
-                <th key={ci}>
+                <th key={ci} style={headerBg ? { background: headerBg } : undefined}>
                   {resolveTemplate(cell, row, {
                     missingAsEmpty: preview,
                     ctx: runtime,
