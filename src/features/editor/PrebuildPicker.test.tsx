@@ -19,7 +19,27 @@ beforeEach(() => {
 });
 
 describe("PrebuildPicker", () => {
+  it("stays hidden while the picker signal is closed", () => {
+    const { container } = render(<PrebuildPicker />);
+    expect(container.querySelector(".prebuild-picker")).toBeNull();
+  });
+
+  it("opens on the signal and closes via scrim tap or X button", () => {
+    prebuildPickerOpen.value = true;
+    const { container } = render(<PrebuildPicker />);
+    expect(container.querySelector(".prebuild-picker")).toBeTruthy();
+    fireEvent.click(document.querySelector(".prebuild-picker__scrim")!);
+    expect(prebuildPickerOpen.value).toBe(false);
+    expect(container.querySelector(".prebuild-picker")).toBeNull();
+    cleanup();
+    prebuildPickerOpen.value = true;
+    const again = render(<PrebuildPicker />);
+    fireEvent.click(again.getByLabelText("Close prebuild picker"));
+    expect(prebuildPickerOpen.value).toBe(false);
+  });
+
   it("renders a dialog listing every recipe with size hints", () => {
+    prebuildPickerOpen.value = true;
     const { getByRole } = render(<PrebuildPicker />);
     expect(getByRole("dialog", { name: "Insert prebuild" })).toBeTruthy();
     const body = document.body.innerHTML;
@@ -30,14 +50,8 @@ describe("PrebuildPicker", () => {
     expect(document.querySelector(".prebuild-picker__size")).toBeTruthy();
   });
 
-  it("closing the dialog flips the store signal", () => {
-    prebuildPickerOpen.value = true;
-    const { getByLabelText } = render(<PrebuildPicker />);
-    fireEvent.click(getByLabelText("Close prebuild picker"));
-    expect(prebuildPickerOpen.value).toBe(false);
-  });
-
   it("choosing a recipe inserts its pieces and closes the picker", () => {
+    prebuildPickerOpen.value = true;
     const recipe = PREBUILD_RECIPES[0]!;
     const expectedCount = recipe.build({ x: 0, y: 0 }).length;
     const before = activePage.value?.blocks.length ?? 0;
@@ -50,6 +64,7 @@ describe("PrebuildPicker", () => {
   });
 
   it("placement select updates where inserts land", () => {
+    prebuildPickerOpen.value = true;
     const { container } = render(<PrebuildPicker />);
     const select = container.querySelector(
       ".prebuild-picker__place select",

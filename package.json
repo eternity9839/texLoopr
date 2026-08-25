@@ -17,9 +17,12 @@
     "android:init": "nix develop .#android -c bash -c 'npm run tauri android init'",
     "android:debug": "nix develop .#android -c bash -c 'npm run tauri android build -- --debug --apk --target aarch64'",
     "android:release": "nix develop .#android -c bash -c 'npm run tauri android build -- --apk --target aarch64'",
-    "android:debug:universal": "nix develop .#android -c bash -c 'npm run tauri android build -- --debug --apk'"
+    "android:debug:universal": "nix develop .#android -c bash -c 'npm run tauri android build -- --debug --apk'",
+    "release:bump": "node scripts/release-bump.mjs"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/playfair-display": "^5.3.0",
     "@fontsource/sora": "^5.2.5",
     "@fontsource/source-serif-4": "^5.2.5",
     "@preact/signals": "^2.0.4",
