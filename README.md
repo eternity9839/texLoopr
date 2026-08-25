@@ -1,50 +1,37 @@
-# Project 
+# texLoopr
 
-This is a small open-source project to create tailored and dynamic bulk document using templating and simple data formats. Its aim is to be easy to use for everyone, while allowing for advanced document customization.
-It provides an editor usable on the web and as a desktop app. 
+Open-source editor for tailored bulk documents via templating and simple data formats. Runs on the web and as a Tauri desktop app.
 
+## Requirements
 
-## How to install: 
+Use the Nix flake (recommended):
 
-You need to install Rust, Node, and npm to have all the dependencies of this project. 
-
-#### Rust (via Chocolatey) : 
-
-```powershell
-choco install rust
+```fish
+direnv allow
+# or: nix develop
+npm install
 ```
 
+Without Nix you need Node 22+, Rust, and (for Tauri on Linux) WebKitGTK / GTK3.
 
-```bash
-curl https://sh.rustup.rs -sSf | sh
+## Develop
+
+```fish
+npm run dev          # web UI on http://localhost:1420
+npm run tauri:dev    # desktop app (SQLite catalog in app data dir)
+npm run typecheck
+npm run test
+npm run build
 ```
 
-#### Vite
+### Catalog database
 
-```
-npm install -D vite
-```
+Durable projects, files, filesystem aliases, and variables live in SQLite (`texloopr.db` under the app data directory when using Tauri). Only the **active** project is kept in memory / a temp browser draft. Open **··· → Catalog** to save, switch, and register filesystem roots. Web mode uses a localStorage-backed catalog with the same API.
 
+### Edition chrome
 
-## How to run : 
+Labeled toolbox + edit ribbon (clipboard, arrange, type, review, view). Comments live on the project and show as page markers. First launch opens a skippable **Edition tour** (··· → Edition tour to restart). The left **navigator** is an embedded virtualized outline (filter, pile/z sort, collapse) ready for thousands of blocks. **··· → Samples** opens nine conventional templates (letter, contract, ad, email, invoice, paper, label, memo, welcome) with matching data.
 
-To launch the web front without the tauri app, go to src : 
-```bash
-vite dev
-```
+### Templating & automation
 
-To launch the tauri app, go to the root of the project and run : 
-
-```bash 
-cargo tauri dev
-```
-
-# Tauri + Preact + Typescript
-
-This template should help get you started developing with Tauri, Preact and Typescript in Vite.
-
-[Tauri tutorial quickstart](https://v1.tauri.app/v1/guides/getting-started/setup/html-css-js)
-
-## Recommended IDE Setup
-
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+Projects include **outputs** (preview / PDF / print device / API), an ordered **workflow**, and named **scripts** (sandboxed expressions or templates). Block conditions and step `when` clauses can use `data.*`, `output.*`, `device.*`, `vars.*`, and `env.*`. Templates support filters like `{{name|upper}}` and `{{x|default:n/a}}`. Open **··· → Automation** to edit and dry-run; Preview’s toolbar selects the active output profile.

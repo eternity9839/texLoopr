@@ -1,16 +1,7 @@
-// import { invoke } from "@tauri-apps/api/core";
-import "./App.css";
-// import { Navbar } from "component/Navbar";
-// import { Editor } from "component/Editor";
-// import { CustomWindow } from "component/CustomWindow";
-import Toolbox from "./component/Toolbox"; 
+import { ModeWorkspace } from "./features/ModeWorkspace";
 
-function App() {
-  return (
-    <main class="container">
-      <Toolbox />
-    </main>
-  );
+export function App() {
+  return <ModeWorkspace />;
 }
 
 export default App;
