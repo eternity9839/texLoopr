@@ -181,23 +181,23 @@
     system-ui, sans-serif;
   --font-doc: "Source Serif 4", "Georgia", serif;
 
-  /* Fluid type — adapts across viewport widths */
-  --text-xs: clamp(0.6875rem, 0.65rem + 0.15vw, 0.75rem);
-  --text-sm: clamp(0.8125rem, 0.78rem + 0.2vw, 0.875rem);
-  --text-md: clamp(0.9375rem, 0.9rem + 0.25vw, 1rem);
-  --text-lg: clamp(1.125rem, 1.05rem + 0.35vw, 1.25rem);
+  /* Fluid type — compact ramp; UI stays quiet around the document */
+  --text-xs: clamp(0.6563rem, 0.63rem + 0.12vw, 0.7188rem);
+  --text-sm: clamp(0.7813rem, 0.75rem + 0.15vw, 0.8438rem);
+  --text-md: clamp(0.875rem, 0.84rem + 0.2vw, 0.9375rem);
+  --text-lg: clamp(1.0625rem, 1rem + 0.3vw, 1.1875rem);
 
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
   --space-4: 1rem;
-  --space-5: 1.5rem;
-  --space-6: 2rem;
-  --space-8: 3rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
+  --radius-sm: 5px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
   /* Canva-style pill for primary CTAs */
   --radius-pill: 999px;
 
@@ -213,32 +213,32 @@
   --motion-panel: 200ms;
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
 
-  /* Adaptive chrome — overridden by density + container queries */
-  --control-h: clamp(1.75rem, 1.5rem + 0.6vw, 2.125rem);
-  --btn-pad-x: clamp(0.5rem, 0.4rem + 0.4vw, 0.75rem);
-  --btn-pad-y: clamp(0.25rem, 0.2rem + 0.2vw, 0.4rem);
-  --tool-size: clamp(1.75rem, 1.5rem + 0.5vw, 2.125rem);
-  --bar-height: clamp(2.5rem, 2.25rem + 0.8vw, 3rem);
-  --nav-width: clamp(13.5rem, 12.5rem + 4vw, 17.5rem);
-  --tools-width: clamp(4.75rem, 4.25rem + 1.2vw, 5.75rem);
-  --inspector-width: clamp(14rem, 13rem + 4vw, 18rem);
+  /* Adaptive chrome — small components; density presets retune these */
+  --control-h: clamp(1.625rem, 1.45rem + 0.55vw, 1.9375rem);
+  --btn-pad-x: clamp(0.4rem, 0.34rem + 0.3vw, 0.6rem);
+  --btn-pad-y: clamp(0.2rem, 0.16rem + 0.2vw, 0.32rem);
+  --tool-size: clamp(1.625rem, 1.45rem + 0.45vw, 2rem);
+  --bar-height: clamp(2.25rem, 2.05rem + 0.7vw, 2.75rem);
+  --nav-width: clamp(12.5rem, 11.5rem + 4vw, 16rem);
+  --tools-width: clamp(4.25rem, 3.9rem + 1.2vw, 5.25rem);
+  --inspector-width: clamp(13rem, 12.25rem + 4vw, 17rem);
   --page-width: 720px;
   --page-height: 960px;
-  --handle-size: 8px;
+  --handle-size: 7px;
 }
 
 .app-shell[data-density="compact"] {
-  --control-h: clamp(1.5rem, 1.35rem + 0.4vw, 1.75rem);
-  --btn-pad-x: 0.45rem;
-  --btn-pad-y: 0.2rem;
-  --tool-size: 1.65rem;
-  --bar-height: 2.35rem;
-  --nav-width: clamp(11rem, 10rem + 3vw, 14rem);
-  --inspector-width: clamp(13rem, 12rem + 3vw, 15.5rem);
-  --text-sm: 0.8125rem;
+  --control-h: clamp(1.5rem, 1.38rem + 0.35vw, 1.6875rem);
+  --btn-pad-x: 0.4rem;
+  --btn-pad-y: 0.18rem;
+  --tool-size: 1.5625rem;
+  --bar-height: 2.1875rem;
+  --nav-width: clamp(10.5rem, 9.5rem + 3vw, 13.5rem);
+  --inspector-width: clamp(12.5rem, 11.5rem + 3vw, 14.5rem);
+  --text-sm: 0.7813rem;
 }
 
 .app-shell[data-density="comfortable"] {
-  --control-h: clamp(1.85rem, 1.6rem + 0.7vw, 2.25rem);
-  --tool-size: clamp(1.85rem, 1.6rem + 0.55vw, 2.25rem);
+  --control-h: clamp(1.75rem, 1.55rem + 0.65vw, 2.0625rem);
+  --tool-size: clamp(1.75rem, 1.55rem + 0.5vw, 2.125rem);
 }

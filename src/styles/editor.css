@@ -286,10 +286,10 @@
   inset: 0;
   display: grid;
   place-content: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   padding: var(--space-6);
   text-align: center;
-  color: var(--ink-muted);
+  color: var(--ink-faint);
   pointer-events: none;
 }
 
