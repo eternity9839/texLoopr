@@ -25,7 +25,7 @@
   position: absolute;
   top: 0.75rem;
   left: 0.75rem;
-  z-index: 12;
+  z-index: var(--z-canvas-float);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -64,29 +64,38 @@
 .float-toolbox__peek {
   display: grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 1.9rem;
+  height: 1.9rem;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--surface) 92%, transparent);
-  box-shadow: var(--shadow-md, 0 8px 24px rgba(28, 25, 23, 0.12));
-  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink-faint);
+  opacity: 0.75;
   cursor: pointer;
+  transition:
+    opacity var(--motion-fast) var(--ease-out),
+    color var(--motion-fast) var(--ease-out),
+    border-color var(--motion-fast) var(--ease-out);
 }
 
-.float-toolbox__peek:hover {
-  border-color: var(--accent);
-  color: var(--accent);
+.float-toolbox__peek:hover,
+.float-toolbox__peek:focus-visible {
+  opacity: 1;
+  border-color: var(--border-strong);
+  color: var(--ink);
 }
 
 .float-toolbox__sheet {
   min-width: 11rem;
   max-width: 16rem;
+  max-height: min(60vh, 26rem);
+  overflow-y: auto;
   padding: 0.55rem;
   border: 1px solid var(--border);
   border-radius: 10px;
   background: var(--surface);
-  box-shadow: var(--shadow-md, 0 8px 24px rgba(28, 25, 23, 0.12));
+  box-shadow: var(--shadow-md);
 }
 
 .float-toolbox__field {
@@ -245,7 +254,7 @@
   width: min(100%, var(--page-width));
   min-height: var(--page-min-height);
   margin: 0 auto;
-  background: #ffffff;
+  background: var(--paper);
   border: 1px solid var(--paper-edge);
   border-radius: 2px;
   box-shadow: var(--shadow-page);
@@ -279,7 +288,7 @@
   position: absolute;
   overflow: visible;
   border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
-  background: rgba(255, 255, 255, 0.92);
+  background: color-mix(in srgb, var(--paper) 92%, transparent);
   box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 4%, transparent);
   touch-action: none;
   user-select: none;
@@ -645,19 +654,9 @@
 }
 
 .nav-add__menu button {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  width: 100%;
   min-height: 1.6rem;
   padding: 0.2rem 0.4rem;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--ink);
   font-size: 0.7rem;
-  text-align: left;
-  cursor: pointer;
 }
 
 .nav-add__menu button:hover {
@@ -862,6 +861,7 @@
   flex-wrap: wrap;
   gap: var(--space-3);
   align-items: flex-start;
+  min-width: 0;
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border);
   background: var(--chrome-elevated);
