@@ -25,14 +25,14 @@
   --ink-muted: #6b645a;
   --ink-faint: #9a9288;
 
-  --accent: #0f6b63;
-  --accent-hover: #0c5852;
-  --accent-muted: #d8ebe8;
+  --accent: #2383e2;
+  --accent-hover: #1b76ce;
+  --accent-muted: #e1effb;
   --accent-text: #ffffff;
 
   --danger: #b42318;
   --danger-muted: #f5e0de;
-  --focus: #0f6b63;
+  --focus: #2383e2;
 
   --scrim: rgba(42, 38, 34, 0.35);
   --tour-scrim: rgba(28, 24, 20, 0.45);
@@ -41,11 +41,12 @@
   /* Native widget adaptation (selects, color pickers, scrollbars) */
   color-scheme: light;
 
-  --shadow-xs: 0 1px 1px color-mix(in srgb, var(--ink) 6%, transparent);
-  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--ink) 8%, transparent);
-  --shadow-md: 0 4px 16px color-mix(in srgb, var(--ink) 10%, transparent);
-  --shadow-lg: 0 10px 30px color-mix(in srgb, var(--ink) 14%, transparent);
-  --shadow-page: 0 8px 28px color-mix(in srgb, var(--ink) 12%, transparent);
+  --shadow-xs: 0 1px 1px color-mix(in srgb, var(--ink) 5%, transparent);
+  --shadow-sm: 0 1px 2px color-mix(in srgb, var(--ink) 7%, transparent);
+  --shadow-md: 0 4px 16px color-mix(in srgb, var(--ink) 9%, transparent);
+  --shadow-lg: 0 10px 30px color-mix(in srgb, var(--ink) 12%, transparent);
+  --shadow-page: 0 2px 6px color-mix(in srgb, var(--ink) 6%),
+    0 12px 32px color-mix(in srgb, var(--ink) 9%, transparent);
 
   --grid-dot: color-mix(in srgb, var(--ink) 7%, transparent);
   --grid-line: color-mix(in srgb, var(--ink) 5%, transparent);
@@ -74,14 +75,14 @@
   --ink-muted: #5b6b7c;
   --ink-faint: #8a97a6;
 
-  --accent: #0f6b63;
-  --accent-hover: #0c5852;
-  --accent-muted: #d4ebe8;
+  --accent: #2383e2;
+  --accent-hover: #1b76ce;
+  --accent-muted: #dcebfa;
   --accent-text: #ffffff;
 
   --danger: #b42318;
   --danger-muted: #f5e0de;
-  --focus: #0f6b63;
+  --focus: #2383e2;
 
   --grid-line: color-mix(in srgb, var(--ink) 5%, transparent);
 
@@ -108,14 +109,14 @@
   --ink-muted: #a8b0bc;
   --ink-faint: #7a8494;
 
-  --accent: #3db8ad;
-  --accent-hover: #52c9bf;
-  --accent-muted: #1e3f3c;
-  --accent-text: #0a1615;
+  --accent: #4ea9f0;
+  --accent-hover: #6cbcf5;
+  --accent-muted: #1d3a52;
+  --accent-text: #07131f;
 
   --danger: #f07178;
   --danger-muted: #3d2226;
-  --focus: #3db8ad;
+  --focus: #4ea9f0;
 
   --scrim: rgba(8, 10, 14, 0.55);
   --tour-scrim: rgba(8, 10, 14, 0.62);
@@ -176,7 +177,8 @@
 }
 
 :root {
-  --font-ui: "Sora", "Segoe UI", sans-serif;
+  --font-ui: "Inter", "SF Pro Text", -apple-system, "Segoe UI", Roboto,
+    system-ui, sans-serif;
   --font-doc: "Source Serif 4", "Georgia", serif;
 
   /* Fluid type — adapts across viewport widths */
@@ -193,9 +195,11 @@
   --space-6: 2rem;
   --space-8: 3rem;
 
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  /* Canva-style pill for primary CTAs */
+  --radius-pill: 999px;
 
   --z-nav: 40;
   --z-overlay: 60;
