@@ -1141,6 +1141,301 @@ function advancedInvoice(): Project {
 }
 
 
+const ACCENT = "#31547a";
+const INK = "#232a33";
+const MUTED = "#5c6570";
+
+function sectionHeading(text: string, x: number, y: number, w: number) {
+  return b("text", {
+    name: `Heading ${text}`,
+    x,
+    y,
+    w,
+    h: 20,
+    content: { text },
+    style: {
+      fontFamily: "ui",
+      fontSize: 11,
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: 1.6,
+      color: ACCENT,
+    },
+  });
+}
+
+function jobEntry(
+  y: number,
+  f: { period: string; title: string; company: string; p1: string; p2: string; p3: string },
+) {
+  return [
+    b("text", {
+      name: `Job period ${f.period}`,
+      x: 56,
+      y,
+      w: 96,
+      h: 20,
+      content: { text: f.period },
+      style: {
+        fontFamily: "ui",
+        fontSize: 10,
+        fontWeight: 600,
+        color: MUTED,
+        verticalAlign: "middle",
+      },
+    }),
+    b("text", {
+      name: `Job role ${f.title}`,
+      x: 164,
+      y,
+      w: 292,
+      h: 20,
+      content: { text: f.title },
+      style: {
+        fontFamily: "ui",
+        fontSize: 12.5,
+        fontWeight: 700,
+        color: INK,
+        verticalAlign: "middle",
+      },
+    }),
+    b("list", {
+      name: `Job bullets ${f.company}`,
+      x: 164,
+      y: y + 24,
+      w: 292,
+      h: 54,
+      content: {
+        items: [f.p1, f.p2, f.p3],
+        markerColor: ACCENT,
+      },
+      style: {
+        fontSize: 11.5,
+        lineHeight: 1.35,
+        color: INK,
+        listStyle: "disc",
+      },
+    }),
+  ];
+}
+
+function resume(): Project {
+  return shell(
+    {
+      name: "Resume — merge-field template",
+      author: "texLoopr samples",
+      subject: "One-page CV driven by Data rows",
+      description:
+        "Full resume layout with every field bound to data. Load the five sample profiles in Data and flip the preview row to render each candidate.",
+    },
+    [
+      page("Resume", [
+        // ---- Header ----
+        b("picture", {
+          name: "Portrait",
+          x: 560,
+          y: 44,
+          w: 104,
+          h: 104,
+          content: { src: "", alt: "Portrait", fit: "cover" },
+          style: { borderRadius: 52, borderWidth: 2, borderColor: ACCENT },
+        }),
+        b("text", {
+          name: "Candidate name",
+          x: 56,
+          y: 48,
+          w: 480,
+          h: 56,
+          content: { text: "{{full_name}}" },
+          style: {
+            fontFamily: "display",
+            fontSize: 34,
+            fontWeight: 700,
+            color: INK,
+          },
+        }),
+        b("text", {
+          name: "Role line",
+          x: 56,
+          y: 108,
+          w: 480,
+          h: 22,
+          content: { text: "{{role}}" },
+          style: {
+            fontFamily: "ui",
+            fontSize: 13,
+            fontWeight: 600,
+            textTransform: "uppercase",
+            letterSpacing: 2.4,
+            color: ACCENT,
+            verticalAlign: "middle",
+          },
+        }),
+        b("text", {
+          name: "Contact block",
+          x: 56,
+          y: 136,
+          w: 400,
+          h: 40,
+          content: {
+            text: "{{email}} · {{phone}}\n{{location}} · {{website}}",
+          },
+          style: {
+            fontFamily: "ui",
+            fontSize: 10.5,
+            lineHeight: 1.5,
+            color: MUTED,
+          },
+        }),
+        b("shape", {
+          name: "Header rule",
+          x: 56,
+          y: 188,
+          w: 608,
+          h: 3,
+          content: { variant: "rect" },
+          style: { background: ACCENT, borderRadius: 2 },
+        }),
+
+        // ---- Main column ----
+        sectionHeading("Profile", 56, 212, 200),
+        b("paragraph", {
+          name: "Summary",
+          x: 56,
+          y: 236,
+          w: 400,
+          h: 92,
+          content: { text: "{{summary}}" },
+          style: { fontSize: 11.5, lineHeight: 1.55, color: INK },
+        }),
+        sectionHeading("Experience", 56, 344, 200),
+        ...jobEntry(368, {
+          period: "{{j1_period}}",
+          title: "{{j1_title}} — {{j1_company}}",
+          company: "j1",
+          p1: "{{j1_p1}}",
+          p2: "{{j1_p2}}",
+          p3: "{{j1_p3}}",
+        }),
+        ...jobEntry(452, {
+          period: "{{j2_period}}",
+          title: "{{j2_title}} — {{j2_company}}",
+          company: "j2",
+          p1: "{{j2_p1}}",
+          p2: "{{j2_p2}}",
+          p3: "{{j2_p3}}",
+        }),
+        ...jobEntry(536, {
+          period: "{{j3_period}}",
+          title: "{{j3_title}} — {{j3_company}}",
+          company: "j3",
+          p1: "{{j3_p1}}",
+          p2: "{{j3_p2}}",
+          p3: "{{j3_p3}}",
+        }),
+
+        // ---- Sidebar ----
+        b("shape", {
+          name: "Sidebar wash",
+          x: 488,
+          y: 212,
+          w: 176,
+          h: 420,
+          content: { variant: "rect" },
+          style: {
+            background: "#f2f4f7",
+            borderRadius: 8,
+            padding: 10,
+            shadow: true,
+          },
+        }),
+        sectionHeading("Skills", 500, 226, 152),
+        b("list", {
+          name: "Skills list",
+          x: 502,
+          y: 250,
+          w: 150,
+          h: 118,
+          content: {
+            items: [
+              "{{skill1}}",
+              "{{skill2}}",
+              "{{skill3}}",
+              "{{skill4}}",
+              "{{skill5}}",
+              "{{skill6}}",
+            ],
+            markerColor: ACCENT,
+          },
+          style: {
+            fontSize: 11,
+            lineHeight: 1.45,
+            color: INK,
+            listStyle: "square",
+          },
+        }),
+        sectionHeading("Education", 500, 384, 152),
+        b("text", {
+          name: "Education entries",
+          x: 500,
+          y: 408,
+          w: 152,
+          h: 88,
+          content: {
+            text: "{{edu1_degree}}\n{{edu1_school}}, {{edu1_years}}\n\n{{edu2_degree}}\n{{edu2_school}}, {{edu2_years}}",
+          },
+          style: { fontSize: 10.5, lineHeight: 1.45, color: INK },
+        }),
+        sectionHeading("Languages", 500, 512, 152),
+        b("text", {
+          name: "Languages line",
+          x: 500,
+          y: 536,
+          w: 152,
+          h: 56,
+          content: { text: "{{languages}}" },
+          style: { fontSize: 10.5, lineHeight: 1.5, color: INK },
+        }),
+
+        // ---- Footer ----
+        b("shape", {
+          name: "Footer rule",
+          x: 56,
+          y: 668,
+          w: 608,
+          h: 1,
+          content: { variant: "line" },
+          style: { borderWidth: 1, borderColor: "#d4d9e0" },
+        }),
+        b("text", {
+          name: "Footer refs",
+          x: 56,
+          y: 678,
+          w: 608,
+          h: 18,
+          content: {
+            text: "References available on request · {{website}}",
+          },
+          style: {
+            fontFamily: "ui",
+            fontSize: 9.5,
+            letterSpacing: 0.4,
+            color: MUTED,
+            textAlign: "center",
+          },
+        }),
+      ]),
+    ],
+  );
+}
+
+export const RESUME_PROFILES_CSV = `full_name,role,email,phone,location,website,summary,j1_period,j1_title,j1_company,j1_p1,j1_p2,j1_p3,j2_period,j2_title,j2_company,j2_p1,j2_p2,j2_p3,j3_period,j3_title,j3_company,j3_p1,j3_p2,j3_p3,skill1,skill2,skill3,skill4,skill5,skill6,edu1_degree,edu1_school,edu1_years,edu2_degree,edu2_school,edu2_years,languages
+Elena Voss,Senior Frontend Engineer,elena.voss@example.com,+32 470 111 222,"Ghent, Belgium",elenavoss.dev,"Frontend engineer with 8 years building design systems and data-heavy dashboards. Ships accessible React at scale and mentors cross-functional teams.",2021 — Now,Senior Frontend Engineer,Nordwind Analytics,"Led rebuild of the analytics console used by 40k monthly users","Cut bundle size 46% via route-level code splitting","Drove WCAG 2.1 AA compliance across 120+ screens",2018 — 2021,Frontend Engineer,Tandem Retail,"Built checkout A/B framework lifting conversion 7.4%","Introduced Storybook adopted by 5 product squads","Automated visual regression catching 90% of UI defects pre-release",2016 — 2018,Junior Web Developer,Studio Pixel,"Delivered 25+ client sites on WordPress and JAMstack","Owned migration of legacy jQuery suite to Vue","Ran client workshops translating briefs into sitemaps",TypeScript,React,Preact,Vite,CSS architecture,Accessibility,MSc Computer Science,Ghent University,2016,BSc Software Engineering,Hanze University,2014,"English — fluent · Dutch — native · French — B1"
+Marcus Chen,Data Scientist,marcus.chen@example.com,+31 6 2345 6789,"Amsterdam, Netherlands",marcuschen.io,"Data scientist specialising in forecasting and experimentation. Turns messy pipelines into decision-grade models and clear stakeholder narratives.",2022 — Now,Lead Data Scientist,Delta Logistics,"Owns demand-forecast platform steering €120M inventory","Cut forecast error 28% with gradient-boosted ensembles","Built churn early-warning saving €1.8M annually",2019 — 2022,Data Scientist,Kanaal Bank,"Deployed credit-risk models under ECB review","Automated feature store cutting release cycle 3x","Published internal uplift-modelling toolkit",2017 — 2019,Analytics Consultant,Bright Data Co,"Delivered 15 dashboard projects for retail clients","Migrated reporting estate from Excel to dbt","Trained client teams on SQL and experiment design",Python,dbt,Airflow,SQL,Forecasting,Experimentation,MSc Statistics,Delft University of Technology,2017,BSc Mathematics,Utrecht University,2015,"English — fluent · Dutch — fluent · Mandarin — native"
+Amara Okafor,Product Manager,amara.okafor@example.com,+44 7700 900 123,"London, UK",amaraokafor.com,"Product manager bridging research, design and engineering for B2B SaaS. Launched three zero-to-one products and scaled pricing to £8M ARR.",2023 — Now,Principal Product Manager,Fleetwise,"Owns telematics platform roadmap across 3 squads","Launched usage-based pricing growing ARR 22%","Ran discovery programme interviewing 60 fleet operators",2020 — 2023,Senior Product Manager,Dispatchly,"Shipped driver mobile app rated 4.8 on stores","Introduced OKR cadence adopted company-wide","Reduced onboarding drop-off 35% via redesign",2017 — 2020,Associate Product Manager,MarketMuse,"Grew activation 18% through lifecycle emails","Managed integrations partnership roadmap","Founded internal product-guild community",Product strategy,Discovery,Roadmapping,SQL,Analytics,Pricing,MSc Management,London Business School,2017,BSc Economics,University of Lagos,2014,"English — native · Igbo — native · French — A2"
+Jonas Weber,DevOps Engineer,jonas.weber@example.com,+49 151 2345 678,"Berlin, Germany",jonasweber.dev,"Platform engineer focused on Kubernetes, observability and developer joy. Cut deploy times from hours to minutes for teams of 100+.",2022 — Now,Staff Platform Engineer,Wolke Systems,"Designed multi-region K8s platform at 99.95% SLA","Reduced mean deploy time from 45 to 6 minutes","Introduced OpenTelemetry tracing org-wide",2019 — 2022,DevOps Engineer,Funkhaus Media,"Terraformed full AWS estate as code","Built self-service preview environments per PR","Handled migration of 40 services to EKS",2016 — 2019,System Administrator,Bergwerk IT,"Automated patching for 300+ servers with Ansible","Consolidated monitoring onto Prometheus stack","Wrote runbooks adopted as company standard",Kubernetes,Terraform,AWS,Observability,Go,CI/CD design,BSc Information Systems, TU Munich,2016,Ausbildung IT Specialist,Berufsschule München,2013,"German — native · English — fluent"
+Sofia Reyes,UX Designer,sofia.reyes@example.com,+34 612 345 678,"Barcelona, Spain",sofiareyes.design,"Product designer crafting calm, research-led interfaces for fintech and health. Runs continuous discovery and designs in systems, not screens.",2021 — Now,Lead Product Designer,Clara Health,"Redesigned patient portal raising task success 41%","Built token-based design system across web and app","Coached squad designers on accessibility practice",2018 — 2021,Product Designer,Pago Fintech,"Simplified KYC flow cutting abandonment 26%","Ran quarterly benchmark usability programmes","Prototyped award-winning onboarding in Figma",2016 — 2018,Visual Designer,Estudio Norte,"Delivered brand systems for 12 startups","Introduced motion guidelines to the studio","Supported sales with interactive demos",Figma,Design systems,User research,Prototyping,Accessibility,Interaction design,BA Interaction Design,ELISAVA Barcelona,2016,Foundation Art & Design,Escola Eina,2013,"Spanish — native · Catalan — native · English — C1"`;
+
 export const DEMO_LIBRARY: DemoEntry[] = [
   {
     id: "welcome",
@@ -1161,6 +1456,15 @@ Alan Turing,Bletchley Park,Cryptanalyst`,
 21 Aug 2026,Ms,Elena Voss,Harbor Mutual,"12 Quay St, Rotterdam",Renewal of coverage,cyber liability,Jordan Hale,NL-4482
 21 Aug 2026,Mr,Tom Ikeda,Brightline Co,"88 Market Ave, Lisbon",Onboarding pack,API access,Jordan Hale,NL-4483`,
     build: letter,
+  },
+  {
+    id: "resume",
+    title: "Resume — 5 profiles",
+    category: "Career",
+    blurb:
+      "Full one-page CV template; every field merges from Data. Five candidate profiles included — flip the preview row to switch.",
+    sampleCsv: RESUME_PROFILES_CSV,
+    build: resume,
   },
   {
     id: "contract",
