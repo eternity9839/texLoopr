@@ -5,6 +5,7 @@ import type {
   ProjectRecord,
   VariableRow,
 } from "./types";
+import { createId } from "../model/document";
 
 const KEY = "texloopr.catalog.v1";
 
@@ -41,7 +42,7 @@ function save(data: WebCatalog): void {
 }
 
 function id(): string {
-  return crypto.randomUUID();
+  return createId();
 }
 
 function now(): string {
