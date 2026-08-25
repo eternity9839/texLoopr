@@ -66,6 +66,30 @@ export const LIST_STYLES: { value: ListStyle; label: string }[] = [
   { value: "none", label: "Plain (no marker)" },
 ];
 
+/** Font presets available to block typography (see FONT_STACKS) */
+export type FontPreset = "doc" | "ui" | "mono" | "inter" | "display";
+
+export const FONT_STACKS: Record<FontPreset, string> = {
+  doc: '"Source Serif 4", Georgia, serif',
+  ui: '"Sora", "Segoe UI", sans-serif',
+  mono: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  inter: '"Inter", "Segoe UI", sans-serif',
+  display: '"Playfair Display", "Source Serif 4", serif',
+};
+
+export const FONT_OPTIONS: { value: FontPreset; label: string }[] = [
+  { value: "doc", label: "Document — Source Serif" },
+  { value: "ui", label: "Studio — Sora" },
+  { value: "inter", label: "Inter" },
+  { value: "display", label: "Display — Playfair" },
+  { value: "mono", label: "Monospace" },
+];
+
+export type TextTransform = "none" | "uppercase" | "lowercase" | "capitalize";
+export type VerticalAlign = "top" | "middle" | "bottom";
+export type PictureFit = "cover" | "contain" | "fill";
+export type ShapeVariant = "rect" | "ellipse" | "line";
+
 export interface BlockStyle {
   fontSize?: number;
   fontWeight?: number | string;
@@ -85,6 +109,12 @@ export interface BlockStyle {
   padding?: number;
   /** Outlook of list blocks */
   listStyle?: ListStyle;
+  /** Font family preset */
+  fontFamily?: FontPreset;
+  textTransform?: TextTransform;
+  verticalAlign?: VerticalAlign;
+  /** Soft drop shadow under the block surface */
+  shadow?: boolean;
 }
 
 export interface Block {
@@ -266,19 +296,23 @@ export const BLOCK_DEFAULTS: Record<
     name: "List",
     w: 200,
     h: 88,
-    content: { items: ["First item", "Second item", "Third item"] },
+    content: {
+      items: ["First item", "Second item", "Third item"],
+      start: 1,
+      markerColor: "",
+    },
   },
   picture: {
     name: "Picture",
     w: 160,
     h: 110,
-    content: { src: "", alt: "Picture" },
+    content: { src: "", alt: "Picture", fit: "cover" },
   },
   shape: {
     name: "Shape",
     w: 96,
     h: 64,
-    content: { shape: "rect" },
+    content: { shape: "rect", variant: "rect" },
   },
   table: {
     name: "Table",
@@ -289,6 +323,9 @@ export const BLOCK_DEFAULTS: Record<
       sourcePath: "",
       rows: 3,
       cols: 3,
+      zebra: false,
+      cellPadding: 6,
+      headerBackground: "#f0ebe3",
       cells: [
         ["A1", "B1", "C1"],
         ["A2", "B2", "C2"],
