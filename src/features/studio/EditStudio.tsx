@@ -1,6 +1,7 @@
 import { StudioLayout } from "../../ui/StudioLayout";
 import { Icon } from "../../ui/icons";
 import { Navigator } from "../tree/DocumentTree";
+import { HierarchyPanel } from "../tree/HierarchyPanel";
 import { Toolbox } from "../editor/Toolbox";
 import { EditorCanvas } from "../editor/EditorCanvas";
 import { EditRibbon } from "../editor/EditRibbon";
@@ -34,6 +35,7 @@ export function EditStudio() {
     if (inspCollapsed) return <PropertiesPanel />;
     if (tab === "comments") return <CommentsPanel />;
     if (tab === "meta") return <MetadataPanel />;
+    if (tab === "tree") return <HierarchyPanel />;
     return <PropertiesPanel />;
   })();
 

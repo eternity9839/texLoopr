@@ -178,7 +178,9 @@ export const catalogBackend = signal<"tauri" | "web" | null>(null);
 const editHistory = new EditHistory();
 export const historyEpoch = signal(0);
 export const clipboardBlock = signal<Block | null>(null);
-export const inspectorTab = signal<"props" | "comments" | "meta">("props");
+export const inspectorTab = signal<"props" | "tree" | "comments" | "meta">(
+  "props",
+);
 export const tourActive = signal(false);
 export const tourStepIndex = signal(0);
 export const tourStepId = computed(
