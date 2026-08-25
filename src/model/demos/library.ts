@@ -2259,7 +2259,6 @@ function resume(): Project {
           style: {
             background: "#f3f6fa",
             borderRadius: 8,
-            padding: 10,
             shadow: true,
           },
         }),

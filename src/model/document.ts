@@ -115,6 +115,18 @@ export interface BlockStyle {
   verticalAlign?: VerticalAlign;
   /** Soft drop shadow under the block surface */
   shadow?: boolean;
+  /** Outer margin in px on all sides (offsets an absolutely placed block) */
+  margin?: number;
+  /** Flex arrangement for a container's child blocks; unset = absolute */
+  layout?: "flex";
+  /** Flex main axis direction */
+  direction?: "row" | "column";
+  /** Distribution of children along the main axis */
+  justify?: "start" | "center" | "end" | "space-between";
+  /** Cross-axis alignment of children */
+  alignItems?: "start" | "center" | "end" | "stretch";
+  /** Gap between children along the main axis, px */
+  gap?: number;
 }
 
 export interface Block {

@@ -1,6 +1,7 @@
 import type { ComponentChildren, VNode } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { Block, BlockType, ListStyle } from "../../../model/document";
+import { computeFlexRects } from "../../../model/flex";
 import {
   FONT_STACKS,
 } from "../../../model/document";
@@ -63,6 +64,7 @@ export function styleFromBlock(
     borderRadius: s.borderRadius ?? 0,
     opacity: s.opacity ?? 1,
     padding: s.padding ?? 0,
+    margin: s.margin ? `${s.margin}px` : undefined,
     boxShadow: s.shadow ? "var(--shadow-page)" : undefined,
     listStyleType: s.listStyle && s.listStyle !== "none" ? s.listStyle : "none",
     "--marker-color": (block.content?.markerColor as string) || undefined,
@@ -581,39 +583,65 @@ export function GroupBlock(props: BlockViewProps) {
     ? (block.content.blocks as Block[])
     : [];
   const repeating = Boolean(itemsPath) || block.type === "repeat";
+  // Repeating groups are expanded into real blocks by the canvas, so a
+  // nested render here would double-paint; only static groups nest.
+  const nests = preview && !repeating;
+  const flexRects = computeFlexRects(block);
 
   return (
     <BlockFrame {...props}>
       <div class={repeating ? "block-group block-group--repeat" : "block-group"}>
-        <div class="block-group__badge">
-          {repeating
-            ? `Group · repeat ${itemsPath || "line_items"}`
-            : `Group · ${children.length} item(s)`}
-          {preview && repeating ? " (expanded)" : ""}
-        </div>
-        {!preview && (
-          <div class="block-group__proto">
-            {children.map((child) => (
+        {!nests && (
+          <div class="block-group__badge">
+            {repeating
+              ? `Group · repeat ${itemsPath || "line_items"}`
+              : `Group · ${children.length} item(s)`}
+            {preview && repeating ? " (expanded)" : ""}
+          </div>
+        )}
+        {!preview &&
+          children.map((child) => {
+            const r = flexRects.get(child.id);
+            return (
               <div
                 key={child.id}
                 class="block-group__child"
                 style={{
-                  left: `${child.x}px`,
-                  top: `${child.y}px`,
-                  width: `${child.w}px`,
-                  height: `${child.h}px`,
+                  left: `${px(r?.x ?? child.x)}px`,
+                  top: `${px(r?.y ?? child.y)}px`,
+                  width: `${px(r?.w ?? child.w)}px`,
+                  height: `${px(r?.h ?? child.h)}px`,
                 }}
               >
                 {String(
                   (child.content as { text?: string }).text ?? child.name,
                 )}
               </div>
-            ))}
-          </div>
-        )}
+            );
+          })}
+        {nests &&
+          children.map((child) => {
+            const r = flexRects.get(child.id);
+            const placed: Block = r
+              ? { ...child, x: r.x, y: r.y, w: r.w, h: r.h }
+              : child;
+            return (
+              <GroupChildView key={child.id} {...props} block={placed} />
+            );
+          })}
       </div>
     </BlockFrame>
   );
+}
+
+/** Nested static rendering of a group's child inside preview */
+function GroupChildView(props: BlockViewProps) {
+  const vnode = renderBlock({
+    ...props,
+    selected: false,
+    commentCount: 0,
+  });
+  return vnode;
 }
 
 export function RepeatBlock(props: BlockViewProps) {

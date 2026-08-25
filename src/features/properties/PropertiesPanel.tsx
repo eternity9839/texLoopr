@@ -624,6 +624,98 @@ export function PropertiesPanel() {
               onValue={styleNum("padding", 0, 48)}
             />
           </Grid2>
+          <NumField
+            id="margin"
+            label="Margin (all sides)"
+            value={block.style.margin ?? 0}
+            min={0}
+            max={96}
+            onValue={styleNum("margin", 0, 96)}
+          />
+          {(block.type === "group" || block.type === "repeat") && (
+            <>
+              <SelectField
+                id="child-layout"
+                label="Arrange children"
+                value={block.style.layout ?? "absolute"}
+                options={[
+                  { value: "absolute", label: "Absolute (free drag)" },
+                  { value: "flex", label: "Flex stack" },
+                ]}
+                onChange={(v) =>
+                  updateBlock(block.id, {
+                    style: {
+                      layout: v === "flex" ? "flex" : undefined,
+                    },
+                  })
+                }
+              />
+              {block.style.layout === "flex" && (
+                <>
+                  <SelectField
+                    id="flex-direction"
+                    label="Direction"
+                    value={block.style.direction ?? "column"}
+                    options={[
+                      { value: "column", label: "Vertical" },
+                      { value: "row", label: "Horizontal" },
+                    ]}
+                    onChange={(v) =>
+                      updateBlock(block.id, {
+                        style: {
+                          direction: v as BlockStyle["direction"],
+                        },
+                      })
+                    }
+                  />
+                  <SelectField
+                    id="flex-justify"
+                    label="Distribute"
+                    value={block.style.justify ?? "start"}
+                    options={[
+                      { value: "start", label: "Start" },
+                      { value: "center", label: "Center" },
+                      { value: "end", label: "End" },
+                      { value: "space-between", label: "Space between" },
+                    ]}
+                    onChange={(v) =>
+                      updateBlock(block.id, {
+                        style: {
+                          justify: v as BlockStyle["justify"],
+                        },
+                      })
+                    }
+                  />
+                  <SelectField
+                    id="flex-align"
+                    label="Align items"
+                    value={block.style.alignItems ?? "stretch"}
+                    options={[
+                      { value: "stretch", label: "Stretch" },
+                      { value: "start", label: "Start" },
+                      { value: "center", label: "Center" },
+                      { value: "end", label: "End" },
+                    ]}
+                    onChange={(v) =>
+                      updateBlock(block.id, {
+                        style: {
+                          alignItems: v as BlockStyle["alignItems"],
+                        },
+                      })
+                    }
+                  />
+                  <NumField
+                    id="flex-gap"
+                    label="Gap"
+                    value={block.style.gap ?? 0}
+                    min={0}
+                    max={96}
+                    onValue={styleNum("gap", 0, 96)}
+                  />
+                </>
+              )}
+            </>
+          )}
           <SelectField
             id="valign"
             label="Vertical align"
