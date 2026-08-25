@@ -75,7 +75,10 @@ export type IconName =
   | "play"
   | "code"
   | "expand"
-  | "focus";
+  | "focus"
+  | "link"
+  | "history"
+  | "pointer";
 
 /** One or more path `d` values in a 24×24 viewBox. */
 const PATHS: Record<IconName, string[]> = {
@@ -136,6 +139,8 @@ const PATHS: Record<IconName, string[]> = {
   duplicate: ["M9 9h10v11H9z", "M5 15V4h10"],
   undo: ["M9 14L4 9l5-5", "M4 9h10.5a5.5 5.5 0 0 1 0 11H13"],
   redo: ["M15 14l5-5-5-5", "M20 9H9.5a5.5 5.5 0 0 0 0 11H11"],
+  history: ["M3 12a9 9 0 1 0 9-9", "M3 12V7", "M8 7H3", "M12 7v5l3 2"],
+  pointer: ["M4 4l7 16 2-7 7-2"],
   alignLeft: ["M4 4v16", "M8 6h12", "M8 12h8", "M8 18h10"],
   alignCenter: ["M12 4v16", "M6 6h12", "M8 12h8", "M5 18h14"],
   alignRight: ["M20 4v16", "M4 6h12", "M8 12h8", "M6 18h10"],
@@ -266,6 +271,10 @@ const PATHS: Record<IconName, string[]> = {
     "M8 20H5a1 1 0 0 1-1-1v-3",
     "M12 12h.01",
   ],
+  link: [
+    "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71",
+    "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71",
+  ],
 };
 
 import type { BlockType } from "../model/document";
@@ -273,6 +282,8 @@ import type { BlockType } from "../model/document";
 export const BLOCK_TYPE_ICON: Record<BlockType, IconName> = {
   paragraph: "paragraph",
   text: "text",
+  data: "database",
+  link: "link",
   list: "list",
   picture: "picture",
   shape: "shape",

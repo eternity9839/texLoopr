@@ -9,7 +9,7 @@
 
 An early UI exposed seven peer top-level modes (Project, Edition, Page, Data, Preview, Settings, About). That flattened hierarchy made Settings/About compete with primary work, duplicated canvas ownership between Edition and Page, and swapped the left rail between tree and toolbox.
 
-texLoopr is a document product. The chrome should read as a calm studio around the project model (ADR 0001), not a prototype tab bar.
+texLooper is a document product. The chrome should read as a calm studio around the project model (ADR 0001), not a prototype tab bar.
 
 Separating Edit and Preview as peer tabs also forced an unnecessary context switch for a mode that is really “the same canvas, resolved against data.”
 
@@ -17,14 +17,14 @@ Separating Edit and Preview as peer tabs also forced an unnecessary context swit
 
 Adopt a **two-view studio** IA:
 
-1. **Edit** — persistent layout: Navigator + Toolbox + Canvas + Inspector. **Preview** is a toggle on this view (not a top-level tab): same canvas, read-only, with row picker; toolbox/inspector hide while previewing.
-2. **Data** — dataset editing as a studio main view
+1. **Edit** — pro layout: **tool palette + Canvas + Inspector**. **Preview** is a toggle on this view (not a top-level tab): same canvas, read-only, with row picker; tools/inspector hide while previewing. Inspector tabs: Layers · Design · Data · Comments · Meta.
+2. **Data** — dataset editing as a studio main view (outline navigator + editor)
 
-**Context bar** holds brand, editable project name, save affordance, studio switcher (Edit | Data), Preview toggle (when Edit is active), and an overflow menu for **Settings**, **Automation**, **Catalog**, **Edition tour**, and **About** (overlays / coach marks, not peer modes).
+**Context bar** holds brand, editable project name, save pill, studio switcher (Edit | Data), Preview toggle (when Edit is active), and an overflow menu for **Settings**, **Automation**, **Catalog**, **Edition tour**, and **About** (overlays / coach marks, not peer modes).
 
-**Edit chrome** (ADR 0006): icon-first toolbox, edit ribbon, and inspector tabs (Properties | Metadata | Comments).
+**Edit chrome** (ADR 0006): fixed left insert palette, contextual selection bar, inspector stack, status strip.
 
-**Project metadata** lives in the Inspector (and/or navigator project section), not as a top-level mode.
+**Project metadata** lives in the Inspector Meta tab, not as a top-level mode.
 
 Ephemeral UI state (`studioView`, `previewMode`, `overlay`, `activeTool`, selection) stays out of the serialized project model.
 

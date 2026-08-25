@@ -45,7 +45,7 @@ export interface WorkflowResult {
 
 function buildContext(opts: RunOptions): RuntimeContext {
   const { output, device } = outputToCtx(opts.output);
-  return {
+  const ctx: RuntimeContext = {
     data: { ...(opts.row as Record<string, ExprValue>) },
     output,
     device,
@@ -55,6 +55,34 @@ function buildContext(opts: RunOptions): RuntimeContext {
       timestamp: Date.now(),
     },
   };
+  attachProjectDatasets(opts.project, ctx, opts.row);
+  return ctx;
+}
+
+/** Expose named datasets + nest matched linked rows onto data.<name>. */
+export function attachProjectDatasets(
+  project: Project,
+  ctx: RuntimeContext,
+  row?: DataRow,
+): void {
+  const map: Record<string, ExprValue> = {};
+  for (const ds of project.datasets ?? []) {
+    const keyField = ds.keyField ?? "id";
+    map[ds.name] = {
+      keyField,
+      rows: ds.rows as ExprValue[],
+    };
+    if (row && keyField) {
+      const want = String(row[keyField] ?? "");
+      if (want) {
+        const hit = ds.rows.find((r) => String(r[keyField] ?? "") === want);
+        if (hit) {
+          ctx.data[ds.name] = hit as ExprValue;
+        }
+      }
+    }
+  }
+  ctx.datasets = map;
 }
 
 function findScript(
@@ -88,6 +116,7 @@ export function enrichPreviewContext(
   vars: Record<string, ExprValue> = {},
 ): RuntimeContext {
   const ctx = previewContext(row, output, vars, true);
+  attachProjectDatasets(project, ctx, row);
   const steps: WorkflowStep[] = (project.workflow ?? []).filter(
     (s) => s.type === "bind" || s.type === "script" || s.type === "condition",
   );

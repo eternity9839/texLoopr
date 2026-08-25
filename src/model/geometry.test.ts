@@ -2,10 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   applyMove,
   applyResize,
+  footerPin,
+  headerPin,
   px,
-  resizeFromHandle,
+  rectsIntersect,
+  resolvePinnedRect,
   snapPx,
 } from "./geometry";
+import { PAGE_HEIGHT, PAGE_WIDTH } from "./document";
 
 describe("geometry", () => {
   it("rounds to integer pixels", () => {
@@ -25,29 +29,75 @@ describe("geometry", () => {
     expect(snapPx(15, 8)).toBe(16);
   });
 
+  it("detects rect overlap for marquee select", () => {
+    expect(rectsIntersect({ x: 0, y: 0, w: 10, h: 10 }, { x: 5, y: 5, w: 10, h: 10 })).toBe(
+      true,
+    );
+    expect(rectsIntersect({ x: 0, y: 0, w: 10, h: 10 }, { x: 20, y: 0, w: 10, h: 10 })).toBe(
+      false,
+    );
+  });
+
   it("enforces minimum size on resize", () => {
     expect(applyResize({ w: 30, h: 30 }, -100, -100, null)).toEqual({
       w: 24,
       h: 24,
     });
   });
+});
 
-  it("keeps opposite edge fixed when resizing west", () => {
-    const next = resizeFromHandle(
-      { x: 100, y: 40, w: 200, h: 100 },
-      "w",
-      20,
-      0,
-    );
-    expect(next.x + next.w).toBe(300);
-    expect(next.w).toBe(180);
-    expect(next.y).toBe(40);
-    expect(next.h).toBe(100);
+describe("resolvePinnedRect", () => {
+  it("leaves unpinned blocks unchanged", () => {
+    expect(
+      resolvePinnedRect({ x: 40, y: 50, w: 100, h: 80 }, { top: 64, left: 56 }),
+    ).toEqual({ x: 40, y: 50, w: 100, h: 80 });
   });
 
-  it("resizes southeast by integer deltas", () => {
-    expect(
-      resizeFromHandle({ x: 10, y: 10, w: 100, h: 80 }, "se", 12.4, 7.6),
-    ).toEqual({ x: 10, y: 10, w: 112, h: 88 });
+  it("pins a header across the content width", () => {
+    const r = resolvePinnedRect(
+      { x: 10, y: 200, w: 50, h: 48, pin: headerPin() },
+      { top: 32, right: 40, bottom: 32, left: 40 },
+    );
+    expect(r.y).toBe(32);
+    expect(r.x).toBe(40);
+    expect(r.w).toBe(PAGE_WIDTH - 80);
+    expect(r.h).toBe(48);
+  });
+
+  it("pins a footer to the bottom margin", () => {
+    const r = resolvePinnedRect(
+      { x: 100, y: 10, w: 200, h: 40, pin: footerPin() },
+      { top: 0, right: 40, bottom: 48, left: 40 },
+    );
+    expect(r.y).toBe(PAGE_HEIGHT - 48 - 40);
+    expect(r.x).toBe(40);
+    expect(r.w).toBe(PAGE_WIDTH - 80);
+  });
+
+  it("stretches origin header bars edge-to-edge", () => {
+    const r = resolvePinnedRect(
+      { x: 0, y: 0, w: 960, h: 72, pin: headerPin() },
+      { top: 64, right: 56, bottom: 72, left: 56 },
+      960,
+      540,
+    );
+    expect(r).toEqual({ x: 0, y: 0, w: 960, h: 72 });
+  });
+
+  it("stretches a left rail full height", () => {
+    const r = resolvePinnedRect(
+      {
+        x: 0,
+        y: 0,
+        w: 220,
+        h: 100,
+        pin: { left: true, top: true, bottom: true },
+      },
+      { top: 0, right: 48, bottom: 40, left: 0 },
+    );
+    expect(r.x).toBe(0);
+    expect(r.y).toBe(0);
+    expect(r.w).toBe(220);
+    expect(r.h).toBe(PAGE_HEIGHT - 40);
   });
 });

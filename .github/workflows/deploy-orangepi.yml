@@ -1,0 +1,77 @@
+name: Deploy orangepi
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.*"
+      - "tsconfig*.json"
+      - "flake.nix"
+      - "flake.lock"
+      - "shell.nix"
+      - "deploy/orangepi/**"
+      - ".github/workflows/deploy-orangepi.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-orangepi
+  cancel-in-progress: true
+
+env:
+  TS_CI_TAG: tag:texloopr-ci
+  # Attic on QNAP, HTTPS via Orange Pi node Tailscale Serve
+  ATTIC_URL: https://orangepi5.tail48a8e.ts.net
+  ATTIC_CACHE: homelab
+  ATTIC_PUBKEY: homelab:cS6tkTk44xYXzOUUWXptlMntjKbRjb+hzab1L76UK1s=
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      # Tailnet first — Attic substituter is only reachable over Tailscale
+      - name: Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: ${{ env.TS_CI_TAG }}
+          ping: orangepi5.tail48a8e.ts.net
+
+      - name: Attic smoke (tailnet)
+        run: |
+          curl -fsS "${ATTIC_URL}/${ATTIC_CACHE}/nix-cache-info" | head -5
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            substituters = https://cache.nixos.org ${{ env.ATTIC_URL }}/${{ env.ATTIC_CACHE }}
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= ${{ env.ATTIC_PUBKEY }}
+
+      - name: Install attic-client
+        run: nix profile install nixpkgs#attic-client
+
+      - name: Build SPA (Nix devShell)
+        run: bash deploy/orangepi/ci-build.sh
+
+      - name: Push devShell to Attic
+        env:
+          ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
+        run: |
+          if [[ -z "${ATTIC_TOKEN:-}" ]]; then
+            echo "ATTIC_TOKEN not configured — skip push"
+            exit 0
+          fi
+          bash deploy/orangepi/ci-attic-push.sh
+
+      - name: Deploy to Pi (Tailscale SSH)
+        run: bash deploy/orangepi/ci-deploy-remote.sh

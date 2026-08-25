@@ -185,8 +185,8 @@ export function Navigator() {
         <button
           type="button"
           class="nav-icon-btn"
-          title="Add page"
-          aria-label="Add page"
+          title="Add surface"
+          aria-label="Add surface"
           onClick={() => addPage()}
         >
           <Icon name="plus" size={14} />
@@ -204,7 +204,7 @@ export function Navigator() {
           placeholder="Filter…"
           value={query}
           aria-label="Filter navigator"
-          title={`${proj.pages.length} pages · ${totalBlocks} blocks`}
+          title={`${proj.pages.length} surfaces · ${totalBlocks} blocks`}
           onInput={(e) => setQuery(e.currentTarget.value)}
         />
         <select
@@ -226,8 +226,8 @@ export function Navigator() {
           type="button"
           class="nav-outline__chip nav-outline__chip--icon"
           onClick={() => setExpanded({ [currentPageId]: true })}
-          title="Focus active page"
-          aria-label="Focus active page"
+          title="Focus active surface"
+          aria-label="Focus active surface"
         >
           <Icon name="focus" size={13} />
         </button>
@@ -239,8 +239,8 @@ export function Navigator() {
             for (const p of proj.pages) all[p.id] = true;
             setExpanded(all);
           }}
-          title="Expand all pages"
-          aria-label="Expand all pages"
+          title="Expand all surfaces"
+          aria-label="Expand all surfaces"
         >
           <Icon name="expand" size={13} />
         </button>
@@ -248,8 +248,8 @@ export function Navigator() {
           <button
             type="button"
             class="nav-outline__chip nav-outline__chip--icon nav-outline__chip--accent"
-            title="Add page or block"
-            aria-label="Add page or block"
+            title="Add surface or block"
+            aria-label="Add surface or block"
             aria-expanded={addOpen}
             aria-haspopup="menu"
             onClick={() => setAddOpen((o) => !o)}
@@ -267,7 +267,7 @@ export function Navigator() {
                 }}
               >
                 <Icon name="file" size={13} />
-                Page
+                Surface
               </button>
               <hr class="nav-add__sep" />
               {BLOCK_TOOLS.map((t) => (
@@ -312,7 +312,7 @@ export function Navigator() {
                     type="button"
                     class="nav-page__twist"
                     aria-expanded={open}
-                    aria-label={open ? "Collapse page" : "Expand page"}
+                    aria-label={open ? "Collapse surface" : "Expand surface"}
                     onClick={() => togglePage(row.page.id)}
                   >
                     <Icon

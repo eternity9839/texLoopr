@@ -1,6 +1,29 @@
 import type { ExprValue } from "./expr";
 
-export type OutputKind = "preview" | "pdf" | "print" | "api" | "image";
+export type OutputKind = "preview" | "pdf" | "print" | "api" | "image" | "email" | "sms" | "mobile";
+
+/** Canonical order for chrome + Automation selectors */
+export const OUTPUT_KINDS: OutputKind[] = [
+  "preview",
+  "pdf",
+  "print",
+  "email",
+  "sms",
+  "mobile",
+  "api",
+  "image",
+];
+
+export const OUTPUT_KIND_LABEL: Record<OutputKind, string> = {
+  preview: "Screen",
+  pdf: "PDF",
+  print: "Print",
+  email: "Email",
+  sms: "SMS",
+  mobile: "Push",
+  api: "API",
+  image: "Image",
+};
 
 export interface OutputDevice {
   id: string;
@@ -74,10 +97,34 @@ export function defaultOutputs(): OutputProfile[] {
       enabled: true,
     },
     {
+      id: "out-email",
+      name: "Email HTML",
+      kind: "email",
+      enabled: true,
+    },
+    {
+      id: "out-sms",
+      name: "SMS notification",
+      kind: "sms",
+      enabled: true,
+    },
+    {
+      id: "out-mobile",
+      name: "Mobile push",
+      kind: "mobile",
+      enabled: true,
+    },
+    {
       id: "out-api",
       name: "API webhook",
       kind: "api",
-      api: { url: "https://example.com/hooks/texloopr", method: "POST" },
+      api: { url: "https://example.com/hooks/texlooper", method: "POST" },
+      enabled: true,
+    },
+    {
+      id: "out-image",
+      name: "Image export",
+      kind: "image",
       enabled: true,
     },
   ];

@@ -1,14 +1,19 @@
-# texLoopr
+# texLooper
 
 Open-source editor for tailored bulk documents via templating and simple data formats. Runs on the web and as a Tauri desktop app.
+
+Hosted demo (Orange Pi): see [deploy/orangepi/README.md](deploy/orangepi/README.md).  
+Public via **Pangolin Newt** (NixOS systemd) → `http://127.0.0.1:8788`.  
+Architecture: [ADR 0011](architecture/adr/0011-hosted-demo-deploy.md).
 
 ## Requirements
 
 Use the Nix flake (recommended):
 
 ```fish
-direnv allow
+direnv allow          # uses flake via .envrc
 # or: nix develop
+# legacy: nix-shell shell.nix
 npm install
 ```
 
@@ -24,13 +29,25 @@ npm run test
 npm run build
 ```
 
+### Hosted demo deploy (Orange Pi)
+
+Build the SPA locally or in CI, rsync to the Pi, path-aware restart (no full stack rebuild). Requires SSH to `orangepi5` (Tailscale) and secrets on the Pi only.
+
+```fish
+nix run .#deploy-orangepi
+# or
+nix develop .#deploy -c bash deploy/orangepi/deploy-from-laptop.sh
+```
+
+Override SSH if needed: `set -x SSH_CFG ~/.ssh/config; set -x HOST orangepi5`.
+
 ### Catalog database
 
-Durable projects, files, filesystem aliases, and variables live in SQLite (`texloopr.db` under the app data directory when using Tauri). Only the **active** project is kept in memory / a temp browser draft. Open **··· → Catalog** to save, switch, and register filesystem roots. Web mode uses a localStorage-backed catalog with the same API.
+Durable projects, files, filesystem aliases, and variables live in SQLite (`texlooper.db` under the app data directory when using Tauri). Only the **active** project is kept in memory / a temp browser draft. Open **··· → Catalog** to save, switch, and register filesystem roots. Web mode uses a localStorage-backed catalog with the same API.
 
 ### Edition chrome
 
-Labeled toolbox + edit ribbon (clipboard, arrange, type, review, view). Comments live on the project and show as page markers. First launch opens a skippable **Edition tour** (··· → Edition tour to restart). The left **navigator** is an embedded virtualized outline (filter, pile/z sort, collapse) ready for thousands of blocks. **··· → Samples** opens nine conventional templates (letter, contract, ad, email, invoice, paper, label, memo, welcome) with matching data.
+Pro studio layout: **left insert palette**, **canvas**, **right inspector** (Layers · Design · Data · Notes · Meta), plus a **contextual selection bar** and thin **status strip**. Preview toggles in place (hides tools/inspector). First launch opens a skippable **Edition tour** (··· → Edition tour to restart). **··· → Samples** opens conventional templates (letter, contract, invoice, email, and more) with matching data.
 
 ### Templating & automation
 

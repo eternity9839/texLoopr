@@ -16,7 +16,7 @@ struct DbState(Arc<CatalogDb>);
 fn db_path(app: &AppHandle) -> Result<std::path::PathBuf, String> {
     let dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-    Ok(dir.join("texloopr.db"))
+    Ok(dir.join("texlooper.db"))
 }
 
 #[tauri::command]

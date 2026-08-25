@@ -1,140 +1,329 @@
 import {
   prefs,
   updatePrefs,
+  updateProjectMeta,
   createProject,
   setOverlay,
   hydrateFromCatalog,
   catalogReady,
   catalogBackend,
   catalogProjectId,
+  settingsSection,
+  type SettingsSection,
 } from "../../state/store";
-import type { UiTheme } from "../../model/document";
+import type { UiTheme, PageViewMode, CanvasPresetId, BindingPreviewMode } from "../../model/document";
+import { CANVAS_PRESETS } from "../../model/document";
 import { Section, SelectField } from "../../ui/controls";
-const THEMES: { value: UiTheme; label: string }[] = [
-  { value: "stone", label: "Stone — warm paper studio (default)" },
-  { value: "nova", label: "Nova — modern zinc, crisp cyan" },
-  { value: "mist", label: "Mist — cool gray chrome, same teal" },
-  { value: "dusk", label: "Dusk — dark chrome around a light page" },
-];
+import { t, localeLabel, type LocaleId } from "../../i18n";
+import { SHORTCUT_SECTIONS } from "../editor/editorShortcuts";
+
+const SECTIONS: { id: SettingsSection; labelKey: "general" | "sectionAppearance" | "sectionPage" | "sectionEditor" }[] =
+  [
+    { id: "general", labelKey: "general" },
+    { id: "appearance", labelKey: "sectionAppearance" },
+    { id: "page", labelKey: "sectionPage" },
+    { id: "editor", labelKey: "sectionEditor" },
+  ];
 
 export function SettingsMode() {
   const p = prefs.value;
+  const section = settingsSection.value;
   const backend = catalogBackend.value;
   const ready = catalogReady.value;
   const linked = catalogProjectId.value;
 
   return (
     <div class="settings-panel">
-      <Section title="Preferences">
-        <SelectField
-          id="settings-theme"
-          label="Theme"
-          value={p.theme ?? "stone"}
-          options={THEMES}
-          onChange={(v) => updatePrefs({ theme: v as UiTheme })}
-        />
-        <SelectField
-          id="settings-density"
-          label="Display size of options"
-          value={p.density}
-          options={[
-            { value: "comfortable", label: "Comfortable — labels on studio switch" },
-            { value: "compact", label: "Compact — icon-only chrome" },
-          ]}
-          onChange={(v) =>
-            updatePrefs({ density: v as "comfortable" | "compact" })
-          }
-          hint="Canvas tools (grid, snapping) live in the editor toolbar."
-        />
-      </Section>
-
-      <Section title="Connections">
-        <div class="settings-conn">
-          <div class="settings-conn__row">
-            <span class="muted">Storage</span>
-            <strong>
-              {!ready
-                ? "Not connected"
-                : backend === "tauri"
-                  ? "Desktop library (Tauri)"
-                  : "Browser library"}
-            </strong>
-          </div>
-          <div class="settings-conn__row">
-            <span class="muted">Linked project</span>
-            <strong>{linked ? `#${linked.slice(0, 8)}` : "—"}</strong>
-          </div>
+      <nav class="settings-nav" aria-label={t("settings")}>
+        {SECTIONS.map((s) => (
           <button
             type="button"
-            class="btn btn--ghost btn--small"
-            onClick={() => void hydrateFromCatalog()}
-          >
-            {ready ? "Refresh connection" : "Connect library"}
-          </button>
-        </div>
-      </Section>
-
-      <Section title="Keyboard shortcuts">
-        <ul class="settings-keys muted">
-          <li>
-            <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>.</kbd> Preview toggle
-          </li>
-          <li>
-            <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>Z</kbd> / <kbd>Shift</kbd>+
-            <kbd>Z</kbd> Undo / Redo
-          </li>
-          <li>
-            <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>X</kbd>
-            <kbd>C</kbd>
-            <kbd>V</kbd>
-            <kbd>D</kbd> Cut / Copy / Paste / Duplicate
-          </li>
-          <li>
-            <kbd>Ctrl</kbd>/<kbd>⌘</kbd>+<kbd>G</kbd> Group ·{" "}
-            <kbd>Shift</kbd>+<kbd>G</kbd> Ungroup
-          </li>
-          <li>
-            <kbd>Delete</kbd> Remove selection · <kbd>Arrows</kbd> Nudge (
-            <kbd>Shift</kbd> = 10px)
-          </li>
-          <li>
-            <kbd>Esc</kbd> Clear selection / close overlay
-          </li>
-        </ul>
-      </Section>
-
-      <Section title="Workspace">
-        <p class="muted settings-hint">
-          Draft autosaves locally. Use Save in the header to write the catalog
-          copy.
-        </p>
-        <div class="field-row">
-          <button
-            type="button"
-            class="btn btn--ghost btn--small"
+            key={s.id}
+            class={
+              section === s.id
+                ? "settings-nav__btn settings-nav__btn--active"
+                : "settings-nav__btn"
+            }
+            aria-current={section === s.id ? "page" : undefined}
             onClick={() => {
-              createProject();
-              setOverlay(null);
+              settingsSection.value = s.id;
             }}
           >
-            New blank project
+            {t(s.labelKey)}
           </button>
-          <button
-            type="button"
-            class="btn btn--ghost btn--small"
-            onClick={() => setOverlay("samples")}
-          >
-            Sample documents…
-          </button>
-          <button
-            type="button"
-            class="btn btn--ghost btn--small"
-            onClick={() => setOverlay("about")}
-          >
-            About texLoopr…
-          </button>
-        </div>
-      </Section>
+        ))}
+      </nav>
+
+      {section === "general" && (
+        <>
+          <Section title={t("preferences")}>
+            <SelectField
+              id="settings-locale"
+              label={t("language")}
+              value={p.locale ?? "fr"}
+              options={[
+                { value: "fr", label: localeLabel("fr") },
+                { value: "en", label: localeLabel("en") },
+              ]}
+              onChange={(v) => updatePrefs({ locale: v as LocaleId })}
+            />
+            <SelectField
+              id="settings-theme"
+              label={t("theme")}
+              value={p.theme ?? "nova"}
+              options={[
+                { value: "nova", label: t("themeNova") },
+                { value: "stone", label: t("themeStone") },
+                { value: "mist", label: t("themeMist") },
+                { value: "dusk", label: t("themeDusk") },
+              ]}
+              onChange={(v) => updatePrefs({ theme: v as UiTheme })}
+            />
+            <SelectField
+              id="settings-density"
+              label={t("displaySize")}
+              value={p.density}
+              options={[
+                { value: "comfortable", label: t("comfortable") },
+                { value: "compact", label: t("compact") },
+              ]}
+              onChange={(v) =>
+                updatePrefs({ density: v as "comfortable" | "compact" })
+              }
+              hint={t("densityHint")}
+            />
+          </Section>
+
+          <Section title={t("connections")}>
+            <div class="settings-conn">
+              <div class="settings-conn__row">
+                <span class="muted">{t("storage")}</span>
+                <strong>
+                  {!ready
+                    ? t("notConnected")
+                    : backend === "tauri"
+                      ? t("desktopLibrary")
+                      : t("browserLibrary")}
+                </strong>
+              </div>
+              <div class="settings-conn__row">
+                <span class="muted">{t("linkedProject")}</span>
+                <strong>{linked ? `#${linked.slice(0, 8)}` : "—"}</strong>
+              </div>
+              <button
+                type="button"
+                class="btn btn--ghost btn--small"
+                onClick={() => void hydrateFromCatalog()}
+              >
+                {ready ? t("refreshConnection") : t("connectLibrary")}
+              </button>
+            </div>
+          </Section>
+
+          <Section title={t("keyboardShortcuts")}>
+            {SHORTCUT_SECTIONS.map((section) => (
+              <div class="settings-keys-group" key={section.titleKey}>
+                <h4 class="settings-keys-group__title">
+                  {t(section.titleKey as Parameters<typeof t>[0])}
+                </h4>
+                <dl class="settings-keys">
+                  {section.rows.map((row) => (
+                    <div class="settings-keys__row" key={row.keys}>
+                      <dt>
+                        <kbd>{row.keys}</kbd>
+                      </dt>
+                      <dd>{t(row.actionKey as Parameters<typeof t>[0])}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            ))}
+          </Section>
+
+          <Section title={t("workspace")}>
+            <p class="muted settings-hint">{t("workspaceHint")}</p>
+            <div class="field-row">
+              <button
+                type="button"
+                class="btn btn--ghost btn--small"
+                onClick={() => {
+                  createProject();
+                  setOverlay(null);
+                }}
+              >
+                {t("newBlankProject")}
+              </button>
+              <button
+                type="button"
+                class="btn btn--ghost btn--small"
+                onClick={() => setOverlay("samples")}
+              >
+                {t("sampleDocuments")}
+              </button>
+              <button
+                type="button"
+                class="btn btn--ghost btn--small"
+                onClick={() => setOverlay("about")}
+              >
+                {t("about")}…
+              </button>
+            </div>
+          </Section>
+        </>
+      )}
+
+      {section === "appearance" && (
+        <Section title={t("sectionAppearance")}>
+          <p class="muted settings-hint">{t("sectionAppearanceHint")}</p>
+          <ToggleRow
+            label={t("tools")}
+            checked={p.showToolsRail !== false}
+            onChange={(v) => updatePrefs({ showToolsRail: v })}
+          />
+          <ToggleRow
+            label={t("inspector")}
+            checked={p.showInspectorRail !== false}
+            onChange={(v) => updatePrefs({ showInspectorRail: v })}
+          />
+          <ToggleRow
+            label={t("statusBar")}
+            checked={p.showStatusBar !== false}
+            onChange={(v) => updatePrefs({ showStatusBar: v })}
+          />
+          <ToggleRow
+            label={t("comments")}
+            checked={p.showComments !== false}
+            onChange={(v) => updatePrefs({ showComments: v })}
+          />
+        </Section>
+      )}
+
+      {section === "page" && (
+        <Section title={t("sectionPage")}>
+          <p class="muted settings-hint">{t("sectionPageHint")}</p>
+          <SelectField
+            id="settings-page-view"
+            label={t("view")}
+            value={p.pageViewMode ?? "single"}
+            options={[
+              { value: "single", label: t("onePage") },
+              { value: "continuous", label: t("continuous") },
+              { value: "spread", label: t("twoUp") },
+            ]}
+            onChange={(v) =>
+              updatePrefs({ pageViewMode: v as PageViewMode })
+            }
+          />
+          <SelectField
+            id="settings-canvas-preset"
+            label={t("canvasPreset")}
+            value={p.canvasPreset ?? "document"}
+            options={(Object.keys(CANVAS_PRESETS) as CanvasPresetId[]).map(
+              (id) => ({
+                value: id,
+                label: CANVAS_PRESETS[id].label,
+              }),
+            )}
+            onChange={(v) => {
+              const next = v as CanvasPresetId;
+              updatePrefs({ canvasPreset: next });
+              updateProjectMeta({ artboard: next });
+            }}
+          />
+          <SelectField
+            id="settings-board-rotate"
+            label={t("boardRotation")}
+            value={String(p.canvasRotate ?? 0)}
+            options={[
+              { value: "0", label: "0°" },
+              { value: "90", label: "90°" },
+              { value: "180", label: "180°" },
+              { value: "270", label: "270°" },
+            ]}
+            onChange={(v) =>
+              updatePrefs({
+                canvasRotate: Number(v) as 0 | 90 | 180 | 270,
+              })
+            }
+          />
+          <ToggleRow
+            label={t("margins")}
+            checked={p.showMarginGuides !== false}
+            onChange={(v) => updatePrefs({ showMarginGuides: v })}
+          />
+          <ToggleRow
+            label={t("rulers")}
+            checked={p.showRulers !== false}
+            onChange={(v) => updatePrefs({ showRulers: v })}
+          />
+          <ToggleRow
+            label="Formats in Layers tree"
+            checked={p.showFormatsInTree === true}
+            onChange={(v) => updatePrefs({ showFormatsInTree: v })}
+          />
+        </Section>
+      )}
+
+      {section === "editor" && (
+        <Section title={t("sectionEditor")}>
+          <p class="muted settings-hint">{t("sectionEditorHint")}</p>
+          <ToggleRow
+            label={t("grid")}
+            checked={Boolean(p.showGrid)}
+            onChange={(v) => updatePrefs({ showGrid: v })}
+          />
+          <ToggleRow
+            label={t("snap")}
+            checked={Boolean(p.snap)}
+            onChange={(v) => updatePrefs({ snap: v })}
+          />
+          <ToggleRow
+            label={t("gridLock")}
+            checked={p.gridLock === true}
+            onChange={(v) => updatePrefs({ gridLock: v })}
+          />
+          <SelectField
+            id="settings-binding-preview"
+            label={t("bindingPreviewMode")}
+            hint={t("bindingPreviewHint")}
+            value={p.bindingPreviewMode ?? "popup"}
+            options={[
+              { value: "popup", label: t("bindingPreviewPopup") },
+              { value: "inline", label: t("bindingPreviewInline") },
+            ]}
+            onChange={(v) =>
+              updatePrefs({ bindingPreviewMode: v as BindingPreviewMode })
+            }
+          />
+          <ToggleRow
+            label={t("textExpansions")}
+            checked={p.textExpansionsEnabled !== false}
+            onChange={(v) => updatePrefs({ textExpansionsEnabled: v })}
+          />
+          <p class="muted settings-hint">{t("textExpansionsHint")}</p>
+        </Section>
+      )}
     </div>
+  );
+}
+
+function ToggleRow({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (next: boolean) => void;
+}) {
+  return (
+    <label class="settings-toggle">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.currentTarget.checked)}
+      />
+      <span>{label}</span>
+    </label>
   );
 }

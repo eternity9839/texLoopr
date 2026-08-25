@@ -8,6 +8,8 @@ export interface RuntimeContext {
   device: Record<string, ExprValue>;
   vars: Record<string, ExprValue>;
   env: Record<string, ExprValue>;
+  /** Named datasets for lookup(name, key[, field]) */
+  datasets?: Record<string, ExprValue>;
 }
 
 export class ExprError extends Error {
@@ -195,7 +197,7 @@ class Parser {
       }
     }
     this.expectOp(")");
-    return callBuiltin(name, args);
+    return callBuiltin(name, args, this.ctx);
   }
 }
 
@@ -263,7 +265,11 @@ function resolvePath(path: string, ctx: RuntimeContext): ExprValue {
   return cur;
 }
 
-function callBuiltin(name: string, args: ExprValue[]): ExprValue {
+function callBuiltin(
+  name: string,
+  args: ExprValue[],
+  ctx: RuntimeContext,
+): ExprValue {
   switch (name) {
     case "empty":
       return !truthy(args[0] ?? null);
@@ -285,6 +291,26 @@ function callBuiltin(name: string, args: ExprValue[]): ExprValue {
       return asNumber(args[0] ?? 0);
     case "str":
       return asString(args[0] ?? "");
+    case "lookup": {
+      // lookup('salary', employee_id) or lookup('salary', employee_id, 'amount')
+      const dsName = asString(args[0] ?? "");
+      const keyVal = args[1] ?? null;
+      const field = args[2] != null ? asString(args[2]) : null;
+      const pack = ctx.datasets?.[dsName];
+      if (!pack || typeof pack !== "object" || Array.isArray(pack)) return null;
+      const rec = pack as Record<string, ExprValue>;
+      const keyField = asString(rec.keyField ?? "id");
+      const rows = rec.rows;
+      if (!Array.isArray(rows)) return null;
+      const want = asString(keyVal);
+      const hit = rows.find((r) => {
+        if (!r || typeof r !== "object" || Array.isArray(r)) return false;
+        return asString((r as Record<string, ExprValue>)[keyField] ?? "") === want;
+      });
+      if (!hit || typeof hit !== "object" || Array.isArray(hit)) return null;
+      if (field) return (hit as Record<string, ExprValue>)[field] ?? null;
+      return hit;
+    }
     default:
       throw new ExprError(`unknown function: ${name}`);
   }

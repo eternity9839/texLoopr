@@ -88,7 +88,7 @@ export function CommentsPanel() {
           rows={2}
           value={draft}
           placeholder={
-            selected ? "Write a note…" : "Select a block on the page first"
+            selected ? "Write a note…" : "Select a block on the surface first"
           }
           disabled={!selected}
           onInput={(e) => setDraft(e.currentTarget.value)}

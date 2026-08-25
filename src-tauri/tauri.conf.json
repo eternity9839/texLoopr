@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "texloopr",
+  "productName": "texlooper",
   "version": "0.2.1",
-  "identifier": "com.texloopr.app",
+  "identifier": "com.texlooper.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -14,7 +14,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "texLoopr",
+        "title": "texLooper",
         "width": 1280,
         "height": 800,
         "minWidth": 960,

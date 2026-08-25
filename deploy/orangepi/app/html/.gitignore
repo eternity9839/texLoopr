@@ -1,0 +1,3 @@
+# Runtime SPA files synced by CI (built dist + config.js). Not committed.
+*
+!.gitignore

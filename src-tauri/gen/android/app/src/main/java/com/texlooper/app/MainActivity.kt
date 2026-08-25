@@ -1,3 +1,3 @@
-package com.texloopr.app
+package com.texlooper.app
 
 class MainActivity : TauriActivity()

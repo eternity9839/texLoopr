@@ -6,15 +6,16 @@ import {
 import {
   activePage,
   activeTool,
+  commitPlaceAt,
   insertBlock,
   select,
   selectBlockToggle,
+  selectBlocks,
   selection,
   selectedBlock,
   selectedIds,
   updateBlock,
   deleteSelection,
-  nudgeSelection,
   previewRow,
   prefs,
   activeOutputProfile,
@@ -28,26 +29,40 @@ import {
   ungroupSelection,
   undoEdit,
   redoEdit,
-  clipboardBlock,
+  clipboardBlocks,
   toggleLockSelected,
   nudgeZOrder,
   addComment,
   inspectorTab,
   updatePrefs,
   dataRows,
+  setActivePage,
+  nudgeCanvasZoom,
+  canvasViewScale,
 } from "../../state/store";
+import { rectsIntersect } from "../../model/geometry";
+import { PageWatermark } from "./PageWatermark";
+import { canvasSizeForSession, gridSpacing } from "../../model/canvasView";
+import type { Page } from "../../model/document";
 import { enrichPreviewContext } from "../../model/runtime";
-import { flattenBlocksForPreview } from "../../model/repeat";
+import { effectiveZ } from "../../model/layerStack";
+import { findBlockDeep, flattenBlocksForPreview } from "../../model/groups";
 import { dataColumnNames } from "../../model/bindings";
 import { evaluateCondition } from "../../model/bindings";
 import { renderBlock } from "./blocks";
 import type { RuntimeContext } from "../../model/expr";
 import type { BlockType } from "../../model/document";
-import { normalizeMargins } from "../../model/document";
+import {
+  cssTransformFromStyle,
+  normalizeMargins,
+} from "../../model/document";
 import { BLOCK_TYPE_ICON } from "../../ui/icons";
 import { BLOCK_TOOLS } from "./Toolbox";
-import { PAGE_WIDTH, PAGE_HEIGHT } from "../../model/document";
-import { fitScale } from "./canvasScale";
+import {
+  formatZoomPercent,
+  resolveCanvasScale,
+  type CanvasZoomMode,
+} from "./canvasScale";
 
 interface EditorCanvasProps {
   preview?: boolean;
@@ -87,32 +102,64 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   const showComments = prefs.value.showComments !== false;
   const output = activeOutputProfile();
   const comments = project.value.comments ?? [];
-  const gridSize = prefs.value.gridSize ?? 16;
+  const spacing = gridSpacing(prefs.value);
+  const canvasSize = canvasSizeForSession(project.value, prefs.value);
+  const pageW = canvasSize.w;
+  const pageH = canvasSize.h;
+  const viewMode = prefs.value.pageViewMode ?? "single";
+  const boardRotate = prefs.value.canvasRotate ?? 0;
+  const zoomMode = (prefs.value.canvasZoomMode ?? "fit") as CanvasZoomMode;
+  const zoomPref = prefs.value.canvasZoom ?? 1;
   const gridLock = prefs.value.gridLock === true;
   const snapStep: number | null = prefs.value.snap
     ? gridLock
-      ? gridSize
+      ? Math.min(spacing.x, spacing.y)
       : 8
     : null;
   const [menu, setMenu] = useState<CanvasMenu | null>(null);
   /** Start positions of every selected block at drag begin (multi-drag) */
   const dragOrigins = useRef<Map<string, { x: number; y: number }>>(new Map());
+  const marqueeRef = useRef<{
+    pointerId: number;
+    pageEl: HTMLElement;
+    x0: number;
+    y0: number;
+    additive: boolean;
+    active: boolean;
+  } | null>(null);
+  const [marquee, setMarquee] = useState<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
 
-  // Uniform fit-to-area scale: the sheet is always rendered at exactly
-  // PAGE_WIDTH × PAGE_HEIGHT and scaled as one unit, so blocks can never
-  // stray outside the page on any viewport.
+  // Uniform fit / manual zoom for the active artboard size.
   const fitAreaRef = useRef<HTMLDivElement>(null);
+  const boardRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
   useEffect(() => {
+    const board = boardRef.current;
     const el = fitAreaRef.current;
-    if (!el) return;
+    if (!board && !el) return;
     let raf = 0;
     const update = () => {
-      // Ignore transient zero-size states (hidden pane mid-animation)
-      const rect = el.getBoundingClientRect();
-      const w = rect.width || el.clientWidth;
-      const h = rect.height || el.clientHeight;
-      if (w > 1 && h > 1) setScale(fitScale(w, h));
+      const box = board ?? el;
+      if (!box) return;
+      const w = box.clientWidth;
+      const h = box.clientHeight;
+      if (w > 1 && h > 1) {
+        const next = resolveCanvasScale({
+          mode: zoomMode,
+          zoom: zoomPref,
+          availW: Math.max(40, w - 48),
+          availH: Math.max(40, h - 48),
+          pageW,
+          pageH,
+        });
+        setScale(next);
+        canvasViewScale.value = next;
+      }
     };
     update();
     raf = requestAnimationFrame(() => {
@@ -121,13 +168,27 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
     });
     const t = window.setTimeout(update, 300);
     const ro = new ResizeObserver(update);
-    ro.observe(el);
+    if (board) ro.observe(board);
+    else if (el) ro.observe(el);
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(t);
       ro.disconnect();
     };
-  }, []);
+  }, [pageW, pageH, viewMode, zoomMode, zoomPref]);
+
+  useEffect(() => {
+    const board = boardRef.current;
+    if (!board || preview) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!(e.ctrlKey || e.metaKey)) return;
+      e.preventDefault();
+      const direction: 1 | -1 = e.deltaY < 0 ? 1 : -1;
+      nudgeCanvasZoom(direction, scale);
+    };
+    board.addEventListener("wheel", onWheel, { passive: false });
+    return () => board.removeEventListener("wheel", onWheel);
+  }, [preview, scale]);
 
   const closeMenu = useCallback(() => setMenu(null), []);
 
@@ -171,89 +232,68 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
 
   useEffect(() => {
     if (preview) return;
-    const onKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement | null;
-      if (
-        target &&
-        (target.tagName === "INPUT" ||
-          target.tagName === "TEXTAREA" ||
-          target.tagName === "SELECT")
-      ) {
-        return;
+    const onMove = (e: PointerEvent) => {
+      const m = marqueeRef.current;
+      if (!m || e.pointerId !== m.pointerId) return;
+      const at = pageCoordsFromEvent(m.pageEl, e, snapStep, scale);
+      const dx = Math.abs(at.x - m.x0);
+      const dy = Math.abs(at.y - m.y0);
+      if (!m.active && (dx > 3 || dy > 3)) {
+        m.active = true;
       }
-      const mod = e.ctrlKey || e.metaKey;
-      if (mod && e.key.toLowerCase() === "z" && !e.shiftKey) {
-        e.preventDefault();
-        undoEdit();
-        return;
-      }
-      if (
-        mod &&
-        (e.key.toLowerCase() === "y" ||
-          (e.key.toLowerCase() === "z" && e.shiftKey))
-      ) {
-        e.preventDefault();
-        redoEdit();
-        return;
-      }
-      if (mod && e.key.toLowerCase() === "c") {
-        e.preventDefault();
-        copySelected();
-        return;
-      }
-      if (mod && e.key.toLowerCase() === "x") {
-        e.preventDefault();
-        cutSelected();
-        return;
-      }
-      if (mod && e.key.toLowerCase() === "v") {
-        e.preventDefault();
-        pasteClipboard();
-        return;
-      }
-      if (mod && e.key.toLowerCase() === "d") {
-        e.preventDefault();
-        duplicateSelected();
-        return;
-      }
-      if (mod && e.key.toLowerCase() === "g") {
-        e.preventDefault();
-        if (e.shiftKey) ungroupSelection();
-        else groupSelection();
-        return;
-      }
-      if (e.key === "Escape") {
-        closeMenu();
-        select(null);
-        return;
-      }
-      if (e.key === "Delete" || e.key === "Backspace") {
-        e.preventDefault();
-        deleteSelection();
-        return;
-      }
-      const step = e.shiftKey ? 10 : 1;
-      if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        nudgeSelection(-step, 0);
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        nudgeSelection(step, 0);
-      } else if (e.key === "ArrowUp") {
-        e.preventDefault();
-        nudgeSelection(0, -step);
-      } else if (e.key === "ArrowDown") {
-        e.preventDefault();
-        nudgeSelection(0, step);
-      }
+      if (!m.active) return;
+      const x = Math.min(m.x0, at.x);
+      const y = Math.min(m.y0, at.y);
+      setMarquee({
+        x,
+        y,
+        w: Math.abs(at.x - m.x0),
+        h: Math.abs(at.y - m.y0),
+      });
     };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [preview, closeMenu]);
+    const onUp = (e: PointerEvent) => {
+      const m = marqueeRef.current;
+      if (!m || e.pointerId !== m.pointerId) return;
+      marqueeRef.current = null;
+      setMarquee(null);
+      try {
+        m.pageEl.releasePointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+      if (m.active) {
+        const at = pageCoordsFromEvent(m.pageEl, e, snapStep, scale);
+        const box = {
+          x: Math.min(m.x0, at.x),
+          y: Math.min(m.y0, at.y),
+          w: Math.abs(at.x - m.x0),
+          h: Math.abs(at.y - m.y0),
+        };
+        const hits = (activePage.value?.blocks ?? [])
+          .filter((b) => !b.locked && rectsIntersect(box, b))
+          .map((b) => b.id);
+        if (m.additive) {
+          selectBlocks([...new Set([...selectedIds.value, ...hits])]);
+        } else {
+          selectBlocks(hits);
+        }
+        return;
+      }
+      select(null);
+    };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+    window.addEventListener("pointercancel", onUp);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+      window.removeEventListener("pointercancel", onUp);
+    };
+  }, [preview, scale, snapStep]);
 
   const block = selectedBlock.value;
   const hasBlock = Boolean(block);
-  const hasClip = Boolean(clipboardBlock.value);
+  const hasClip = clipboardBlocks.value.length > 0;
   const columns = dataColumnNames(dataRows.value);
   const placeAt = menu?.placeAt;
 
@@ -323,6 +363,47 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
             updatePrefs({
               showMarginGuides: prefs.value.showMarginGuides === false,
             }),
+        },
+        { id: "s-view", type: "sep" },
+        {
+          id: "view-single",
+          label: "View · one page",
+          icon: "layout",
+          action: () => updatePrefs({ pageViewMode: "single" }),
+        },
+        {
+          id: "view-cont",
+          label: "View · continuous",
+          icon: "rows",
+          action: () => updatePrefs({ pageViewMode: "continuous" }),
+        },
+        {
+          id: "view-spread",
+          label: "View · two-up",
+          icon: "columns",
+          action: () => updatePrefs({ pageViewMode: "spread" }),
+        },
+        {
+          id: "canvas-mobile",
+          label: "Artboard · mobile",
+          icon: "focus",
+          action: () => updatePrefs({ canvasPreset: "mobile" }),
+        },
+        {
+          id: "canvas-doc",
+          label: "Artboard · document",
+          icon: "file",
+          action: () => updatePrefs({ canvasPreset: "document" }),
+        },
+        {
+          id: "props-page",
+          label: "Surface setup",
+          icon: "sliders",
+          action: () => {
+            select(null);
+            inspectorTab.value = "design";
+            updatePrefs({ inspectorCollapsed: false });
+          },
         },
       ];
     }
@@ -433,7 +514,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
         icon: "sliders",
         disabled: !hasBlock,
         action: () => {
-          inspectorTab.value = "props";
+          inspectorTab.value = "design";
           updatePrefs({ inspectorCollapsed: false });
         },
       },
@@ -451,6 +532,16 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
 
   const onBoardClick = (e: MouseEvent) => {
     if (preview) return;
+    if ((e.target as HTMLElement).closest(".block-frame")) return;
+    if (e.ctrlKey || e.metaKey) {
+      const pageEl = (e.currentTarget as HTMLElement).querySelector(
+        ".editor-page",
+      );
+      if (pageEl) {
+        openPageMenu(e, pageEl);
+        return;
+      }
+    }
     closeMenu();
     const pageEl = (e.currentTarget as HTMLElement).querySelector(
       ".editor-page",
@@ -458,9 +549,9 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
     if (!pageEl) return;
     const at = pageCoordsFromEvent(pageEl, e, snapStep, scale);
     if (tool) {
-      insertBlock(tool, {
-        x: Math.max(0, at.x - 40),
-        y: Math.max(0, at.y - 20),
+      commitPlaceAt({
+        x: Math.max(0, at.x),
+        y: Math.max(0, at.y),
       });
       return;
     }
@@ -471,207 +562,356 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   const boardClass = [
     "editor-board",
     showGrid ? "editor-board--grid" : "",
-    showGrid && prefs.value.gridStyle === "dots" ? "editor-board--grid-dots" : "",
-    showRulers ? "editor-board--rulers" : "",
+    showGrid && prefs.value.gridStyle === "dots"
+      ? "editor-board--grid-dots"
+      : "",
+    tool && !preview ? "editor-board--placing" : "",
+    `editor-board--view-${viewMode}`,
   ]
     .filter(Boolean)
     .join(" ");
 
-  // Paint order: explicit zIndex wins; otherwise decorative layers
-  // (shapes, then pictures) stay beneath content so rules/washes can
-  // never cover text in preview.
-  const layerRank = (t: string | undefined) =>
-    t === "shape" ? 0 : t === "picture" ? 1 : 2;
+  const sorted = [...renderBlocks].sort(
+    (a, b) => effectiveZ(a) - effectiveZ(b) || a.id.localeCompare(b.id),
+  );
 
-  const sorted = [...renderBlocks].sort((a, b) => {
-    const za = a.zIndex ?? layerRank(a.type);
-    const zb = b.zIndex ?? layerRank(b.type);
-    return za - zb;
-  });
+  const allPages = project.value.pages;
+  const activeIdx = Math.max(
+    0,
+    allPages.findIndex((p) => p.id === page?.id),
+  );
+  const pagesToShow: Page[] =
+    viewMode === "continuous"
+      ? allPages
+      : viewMode === "spread"
+        ? allPages.slice(activeIdx, activeIdx + 2)
+        : page
+          ? [page]
+          : [];
+
+  const sheetGap = 28;
+  const sheetsWide = viewMode === "spread" ? Math.min(2, pagesToShow.length) : 1;
+  const sheetsTall =
+    viewMode === "continuous" ? pagesToShow.length : 1;
+  const fitW =
+    pageW * sheetsWide * scale +
+    (sheetsWide > 1 ? sheetGap * (sheetsWide - 1) * scale : 0);
+  const fitH =
+    pageH * sheetsTall * scale +
+    (sheetsTall > 1 ? sheetGap * (sheetsTall - 1) * scale : 0);
+
+  const boardStyle = {
+    "--board-grid-x": `${spacing.x}px`,
+    "--board-grid-y": `${spacing.y}px`,
+    "--board-grid-size": `${spacing.x}px`,
+    "--board-grid-color": prefs.value.gridColor ?? "#c8c2b6",
+    "--page-width": `${pageW}px`,
+    "--page-height": `${pageH}px`,
+  } as Record<string, string>;
+
+  const renderPageSheet = (sheet: Page, interactive: boolean) => {
+    const sheetBlocks = interactive
+      ? sorted
+      : [...sheet.blocks].sort(
+          (a, b) => effectiveZ(a) - effectiveZ(b),
+        );
+    const m = normalizeMargins(sheet.margins);
+    const isActive = sheet.id === page?.id;
+    return (
+      <div
+        key={sheet.id}
+        class="editor-sheet"
+        style={{
+          width: `${pageW * scale}px`,
+          height: `${pageH * scale}px`,
+          marginBottom:
+            viewMode === "continuous" ? `${sheetGap * scale}px` : undefined,
+          marginRight:
+            viewMode === "spread" && sheetsWide > 1
+              ? `${sheetGap * scale}px`
+              : undefined,
+          flexShrink: 0,
+        }}
+      >
+      <div
+        class={[
+          preview || !interactive
+            ? "editor-page editor-page--preview"
+            : "editor-page",
+          tool && interactive && !preview ? "editor-page--placing" : "",
+          !tool && interactive && !preview ? "editor-page--select" : "",
+          isActive ? "editor-page--active" : "editor-page--idle",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        style={{
+          width: `${pageW}px`,
+          height: `${pageH}px`,
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
+        }}
+        onPointerDown={(e) => {
+          if (preview || !interactive || !isActive || tool) return;
+          if (e.button !== 0) return;
+          if ((e.target as HTMLElement).closest(".block-frame")) return;
+          closeMenu();
+          const pageEl = e.currentTarget as HTMLElement;
+          const at = pageCoordsFromEvent(pageEl, e, snapStep, scale);
+          marqueeRef.current = {
+            pointerId: e.pointerId,
+            pageEl,
+            x0: at.x,
+            y0: at.y,
+            additive: e.shiftKey,
+            active: false,
+          };
+          pageEl.setPointerCapture(e.pointerId);
+        }}
+        onClick={(e) => {
+          e.stopPropagation();
+          if (preview) return;
+          if (!isActive) {
+            setActivePage(sheet.id);
+            return;
+          }
+          closeMenu();
+          if ((e.target as HTMLElement).closest(".block-frame") && !tool) {
+            return;
+          }
+          if (e.ctrlKey || e.metaKey) {
+            openPageMenu(e, e.currentTarget as HTMLElement);
+            return;
+          }
+          if (tool) {
+            const at = pageCoordsFromEvent(
+              e.currentTarget as Element,
+              e,
+              snapStep,
+              scale,
+            );
+            commitPlaceAt({
+              x: Math.max(0, at.x),
+              y: Math.max(0, at.y),
+            });
+          }
+        }}
+        onContextMenu={(e) => {
+          if (preview) return;
+          if ((e.target as HTMLElement).closest(".block-frame")) return;
+          if (!isActive) setActivePage(sheet.id);
+          select(null);
+          openPageMenu(e, e.currentTarget as HTMLElement);
+        }}
+      >
+        <div
+          class="editor-page__surface"
+          style={{
+            transform: sheet
+              ? cssTransformFromStyle(sheet) || undefined
+              : undefined,
+            transformOrigin: "center center",
+          }}
+        >
+          <div
+            class="page-bg"
+            aria-hidden="true"
+            style={{ background: sheet.background ?? "#ffffff" }}
+          />
+          {sheet.watermark && (sheet.watermark.layer ?? "behind") !== "front" ? (
+            <PageWatermark
+              watermark={sheet.watermark}
+              pageW={pageW}
+              pageH={pageH}
+            />
+          ) : null}
+          {!preview && prefs.value.showMarginGuides !== false && interactive ? (
+            <>
+              <div
+                class="page-margin-guide page-margin-guide--top"
+                style={{ height: `${m.top}px` }}
+              />
+              <div
+                class="page-margin-guide page-margin-guide--right"
+                style={{ width: `${m.right}px` }}
+              />
+              <div
+                class="page-margin-guide page-margin-guide--bottom"
+                style={{ height: `${m.bottom}px` }}
+              />
+              <div
+                class="page-margin-guide page-margin-guide--left"
+                style={{ width: `${m.left}px` }}
+              />
+            </>
+          ) : null}
+          {interactive && empty && !preview && (
+            <div class="editor-empty">
+              <strong>Empty surface</strong>
+              <p class="muted">
+                Use the pointer tool, drag to select, or pick a block tool to
+                place. Right-click / Ctrl-click for options.
+              </p>
+            </div>
+          )}
+          {marquee && isActive && interactive && (
+            <div
+              class="selection-marquee"
+              aria-hidden="true"
+              style={{
+                left: `${marquee.x}px`,
+                top: `${marquee.y}px`,
+                width: `${marquee.w}px`,
+                height: `${marquee.h}px`,
+              }}
+            />
+          )}
+          {sheetBlocks.map((b) => {
+            const count = comments.filter((c) => c.blockId === b.id).length;
+            const itemCtx = itemContexts.get(b.id);
+            const isInteractive = interactive && !preview;
+            return renderBlock({
+              block: b,
+              selected:
+                isInteractive &&
+                (selectedIds.value.includes(b.id) ||
+                  (sel?.kind === "block" && sel.id === b.id)),
+              preview: !isInteractive,
+              row,
+              runtime: itemCtx ?? runtime,
+              commentCount: showComments ? count : 0,
+              snapStep,
+              scale,
+              onSelect: (id, opts) => {
+                if (!isInteractive) {
+                  setActivePage(sheet.id);
+                  return;
+                }
+                if (opts?.toggle) selectBlockToggle(id);
+                else select({ kind: "block", id });
+              },
+              onContextMenu: isInteractive
+                ? (_id, ev) => openBlockMenu(ev)
+                : undefined,
+              onChangeContent: isInteractive
+                ? (id, content) => updateBlock(id, { content })
+                : undefined,
+              onGestureStart: isInteractive
+                ? () => pushHistoryCheckpoint()
+                : undefined,
+              onMoveResize: isInteractive
+                ? (id, patch, mode) => {
+                    if (mode === "drag") {
+                      const ids =
+                        selectedIds.value.length > 1 &&
+                        selectedIds.value.includes(id)
+                          ? selectedIds.value
+                          : [id];
+                      const origins = dragOrigins.current;
+                      if (ids.length > 1) {
+                        if (origins.size === 0) {
+                          origins.clear();
+                          for (const id of ids) {
+                            const blk = findBlockDeep(page?.blocks ?? [], id);
+                            if (blk) origins.set(id, { x: blk.x, y: blk.y });
+                          }
+                        }
+                        const anchor = origins.get(id);
+                        if (anchor) {
+                          const dx = (patch.x ?? 0) - anchor.x;
+                          const dy = (patch.y ?? 0) - anchor.y;
+                          for (const [oid, o] of origins) {
+                            if (oid === id) continue;
+                            const ob = findBlockDeep(page?.blocks ?? [], oid);
+                            if (ob && !ob.locked) {
+                              updateBlock(oid, { x: o.x + dx, y: o.y + dy });
+                            }
+                          }
+                        }
+                      } else {
+                        origins.clear();
+                      }
+                    }
+                    updateBlock(id, patch);
+                  }
+                : undefined,
+            });
+          })}
+          {sheet.watermark && sheet.watermark.layer === "front" ? (
+            <PageWatermark
+              watermark={sheet.watermark}
+              pageW={pageW}
+              pageH={pageH}
+            />
+          ) : null}
+        </div>
+      </div>
+      </div>
+    );
+  };
 
   return (
     <>
       <div
         class={boardClass}
         role="application"
-        aria-label={preview ? "Document preview" : "Document editor"}
+        aria-label={
+          preview
+            ? "Document preview"
+            : `Document editor · ${formatZoomPercent(scale)}`
+        }
         data-tour="canvas"
-        style={{ "--board-grid-size": `${gridSize}px` } as Record<string, string>}
+        ref={boardRef}
+        style={boardStyle}
         onClick={onBoardClick}
         onContextMenu={(e) => {
           if (preview) return;
           select(null);
           const pageEl = (e.currentTarget as HTMLElement).querySelector(
-            ".editor-page",
+            ".editor-page--active, .editor-page",
           );
           if (pageEl) openPageMenu(e, pageEl);
         }}
       >
-        {showRulers && !preview && (
-          <>
-            <div class="editor-ruler editor-ruler--x" aria-hidden="true" />
-            <div class="editor-ruler editor-ruler--y" aria-hidden="true" />
-          </>
-        )}
-        <div class="editor-fit-area" ref={fitAreaRef}>
-          <div
-            class="editor-fit"
-            style={{
-              width: `${PAGE_WIDTH * scale}px`,
-              height: `${PAGE_HEIGHT * scale}px`,
-            }}
-          >
-            <div
-              class={
-                preview ? "editor-page editor-page--preview" : "editor-page"
-              }
-              style={{ transform: `scale(${scale})` }}
-          onClick={(e) => {
-            e.stopPropagation();
-            if (preview) return;
-            if ((e.target as HTMLElement).closest(".block-frame")) return;
-            select(null);
-            closeMenu();
-          }}
-          onContextMenu={(e) => {
-            if (preview) return;
-            if ((e.target as HTMLElement).closest(".block-frame")) return;
-            select(null);
-            openPageMenu(e, e.currentTarget as HTMLElement);
+        <div
+          class="editor-fit-area"
+          ref={fitAreaRef}
+          style={{
+            transform:
+              boardRotate !== 0 ? `rotate(${boardRotate}deg)` : undefined,
+            transformOrigin: "center center",
           }}
         >
-          {(() => {
-            if (!page) return null;
-            const m = normalizeMargins(page.margins);
-            return (
+          <div
+            class={[
+              "editor-sheet",
+              showRulers && !preview ? "editor-sheet--rulers" : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
+            {showRulers && !preview && (
               <>
-                {page.background ? (
-                  <div
-                    class="page-bg"
-                    aria-hidden="true"
-                    style={{ background: page.background }}
-                  />
-                ) : null}
-                {page.watermark ? (
-                  <div
-                    class="page-watermark"
-                    aria-hidden="true"
-                    style={{
-                      transform: `rotate(${page.watermark.angle ?? -30}deg)`,
-                      opacity: String(page.watermark.opacity ?? 0.08),
-                      color: page.watermark.color ?? "#334155",
-                      fontSize: `${page.watermark.fontSize ?? 96}px`,
-                    }}
-                  >
-                    {page.watermark.kind && page.watermark.kind !== "text"
-                      ? page.watermark.kind.toUpperCase()
-                      : page.watermark.text || ""}
-                  </div>
-                ) : null}
-                {!preview && prefs.value.showMarginGuides !== false ? (
-                  <>
-                    <div
-                      class="page-margin-guide page-margin-guide--top"
-                      style={{ height: `${m.top}px` }}
-                    />
-                    <div
-                      class="page-margin-guide page-margin-guide--right"
-                      style={{ width: `${m.right}px` }}
-                    />
-                    <div
-                      class="page-margin-guide page-margin-guide--bottom"
-                      style={{ height: `${m.bottom}px` }}
-                    />
-                    <div
-                      class="page-margin-guide page-margin-guide--left"
-                      style={{ width: `${m.left}px` }}
-                    />
-                  </>
-                ) : null}
+                <div class="editor-ruler editor-ruler--corner" aria-hidden="true" />
+                <div class="editor-ruler editor-ruler--x" aria-hidden="true" />
+                <div class="editor-ruler editor-ruler--y" aria-hidden="true" />
               </>
-            );
-          })()}
-          {empty && !preview && (
-            <div class="editor-empty">
-              <strong>Empty page</strong>
-              <p class="muted">
-                Right-click to add a block, or use the floating toolbox.
-              </p>
-            </div>
-          )}
-          {sorted.map((b) => {
-            const itemRuntime = itemContexts.get(b.id) ?? runtime;
-            const show =
-              !preview ||
-              evaluateCondition(b.condition, row, itemRuntime);
-            if (!show) return null;
-            return renderBlock({
-              block: b,
-              selected:
-                selectedIds.value.includes(b.id) ||
-                (sel?.kind === "block" && sel.id === b.id),
-              preview,
-              row,
-              runtime: itemRuntime,
-              commentCount: showComments
-                ? comments.filter((c) => c.blockId === b.id && !c.resolved)
-                    .length
-                : 0,
-              onSelect: (id, opts) => {
-                if (opts?.toggle) selectBlockToggle(id);
-                else select({ kind: "block", id });
-              },
-              onContextMenu: (_id, ev) => openBlockMenu(ev),
-              onChangeContent: (id, content) => updateBlock(id, { content }),
-              onGestureStart: pushHistoryCheckpoint,
-              snapStep,
-              scale,
-              onMoveResize: (id, patch, mode) => {
-                if (mode === "drag" && selectedIds.value.length > 1) {
-                  const ids = selectedIds.value;
-                  const origins = dragOrigins.current;
-                  if (!origins.has(id)) {
-                    origins.clear();
-                    for (const b of page?.blocks ?? []) {
-                      if (ids.includes(b.id)) origins.set(b.id, { x: b.x, y: b.y });
-                    }
-                  }
-                  const anchor = origins.get(id);
-                  if (anchor) {
-                    const dx = (patch.x ?? 0) - anchor.x;
-                    const dy = (patch.y ?? 0) - anchor.y;
-                    for (const [oid, o] of origins) {
-                      if (oid === id) continue;
-                      const ob = page?.blocks.find((b) => b.id === oid);
-                      if (ob && !ob.locked) {
-                        updateBlock(oid, { x: o.x + dx, y: o.y + dy });
-                      }
-                    }
-                  }
-                } else if (mode === "drag") {
-                  dragOrigins.current.clear();
-                }
-                updateBlock(id, patch);
-              },
-            });
-            })}
-            {preview && activePage.value?.pageNumber && (() => {
-              const pn = activePage.value.pageNumber!;
-              const pages = project.value.pages;
-              const idx = pages.findIndex((p) => p.id === activePage.value!.id);
-              const n = idx + 1;
-              if (pn.mode === "odd" && n % 2 === 0) return null;
-              if (pn.mode === "even" && n % 2 !== 0) return null;
-              if (pn.skipFirst && idx === 0) return null;
-              if (pn.skipPages?.includes(n)) return null;
-              const total = pages.length;
-              const fmt = (pn.format || "{n}")
-                .replace(/\{n\}/g, String(n))
-                .replace(/\{total\}/g, String(total));
-              return (
-                <div class="page-number" aria-hidden="true">{fmt}</div>
-              );
-            })()}
+            )}
+            <div
+              class={
+                viewMode === "spread"
+                  ? "editor-fit editor-fit--spread"
+                  : viewMode === "continuous"
+                    ? "editor-fit editor-fit--continuous"
+                    : "editor-fit"
+              }
+              style={{
+                width: `${fitW}px`,
+                height: `${fitH}px`,
+              }}
+            >
+              {pagesToShow.map((sheet) =>
+                renderPageSheet(sheet, sheet.id === page?.id),
+              )}
             </div>
           </div>
         </div>

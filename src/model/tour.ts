@@ -22,80 +22,150 @@ export interface TourStep {
   overlay?: "automation" | null;
 }
 
-export const TOUR_STORAGE_KEY = "texloopr.tour.done.v1";
+export const TOUR_STORAGE_KEY = "texlooper.tour.done.v1";
 
-export const TOUR_STEPS: TourStep[] = [
+type Locale = "en" | "fr";
+
+type TourCopy = Record<TourStepId, { title: string; body: string }>;
+
+const COPY: Record<Locale, TourCopy> = {
+  fr: {
+    welcome: {
+      title: "Bienvenue dans l’atelier d’édition",
+      body: "Cette visite couvre la palette, le canevas, la barre contextuelle, l’inspecteur, les données, l’aperçu et l’automatisation. Vous pouvez quitter à tout moment.",
+    },
+    toolbox: {
+      title: "Palette d’outils — insérer des blocs",
+      body: "La bande gauche insère Paragraphe, Texte, Liste, Tableau, etc. Les objets personnalisés s’ouvrent via l’icône cube. Utilisez Apparence (curseurs) pour afficher ou masquer le chrome.",
+    },
+    place: {
+      title: "Canevas — placer, déplacer, redimensionner",
+      body: "Cliquez un outil pour placer. Faites glisser pour déplacer ; utilisez les poignées pour redimensionner. Flèches pour décaler ; Maj + flèches = 10 px. Clic droit sur une surface vide pour le menu de création.",
+    },
+    ribbon: {
+      title: "Barre de sélection — arrangez et révisez",
+      body: "Quand un bloc est sélectionné, la fine barre au-dessus du canevas propose presse-papiers, groupe, alignement, empilement, verrouillage et commentaires.",
+    },
+    inspector: {
+      title: "Inspecteur — calques, design, données",
+      body: "Calques montre la hiérarchie. Design édite l’apparence et la géométrie. Données lie les {{champs}} et conditions. Méta contient les métadonnées du projet.",
+    },
+    comments: {
+      title: "Commentaires — revue façon Word",
+      body: "Sélectionnez un bloc, ajoutez un commentaire depuis la barre de sélection, et laissez une note. Les marqueurs apparaissent sur la surface ; résolvez-les une fois terminé.",
+    },
+    data: {
+      title: "Données — lignes pour le remplissage en masse",
+      body: "Collez du CSV ou du JSON ici. Chaque ligne peut piloter un document rendu. L’aperçu choisit quelle ligne résoudre.",
+    },
+    preview: {
+      title: "Aperçu — résoudre contre une sortie",
+      body: "Basculez l’aperçu pour résoudre les champs de fusion sur le même canevas. Choisissez une ligne de données et un type de sortie (seuls ceux configurés dans Automatisation sont actifs).",
+    },
+    automation: {
+      title: "Automatisation — essai à blanc du flux",
+      body: "Ouvrez ··· → Automatisation pour éditer les sorties, les étapes et les scripts, puis lancez un essai sur la ligne courante.",
+    },
+    done: {
+      title: "Vous êtes prêt",
+      body: "Ouvrez Exemples pour des modèles complets, ou partez d’une surface vide. Relancez cette visite à tout moment via ··· → Visite guidée.",
+    },
+  },
+  en: {
+    welcome: {
+      title: "Welcome to the edition studio",
+      body: "This short tour covers the insert palette, canvas, contextual bar, inspector tabs, data, preview, and automation. Skip anytime.",
+    },
+    toolbox: {
+      title: "Tool palette — insert blocks",
+      body: "The left strip inserts Paragraph, Text, List, Table, and more. Custom objects open from the cube icon. Use Appearance (sliders) to show or hide chrome.",
+    },
+    place: {
+      title: "Canvas — place, move, resize",
+      body: "Click a tool to insert. Drag to move; use corner handles to resize. Arrow keys nudge; Shift + arrows move by 10px. Right-click an empty surface for the create menu.",
+    },
+    ribbon: {
+      title: "Selection bar — arrange & review",
+      body: "When a block is selected, the thin bar above the canvas offers clipboard, group, align, stacking, lock, and comments.",
+    },
+    inspector: {
+      title: "Inspector — layers, design, data",
+      body: "Layers shows hierarchy. Design edits appearance and geometry. Data binds {{fields}} and conditions. Meta holds project metadata.",
+    },
+    comments: {
+      title: "Comments — review like Word",
+      body: "Select a block, add a comment from the selection bar, and leave a note. Markers appear on the surface; resolve them when done.",
+    },
+    data: {
+      title: "Data — rows for bulk fill",
+      body: "Paste CSV or JSON here. Each row can drive a rendered document. Preview picks which row to resolve.",
+    },
+    preview: {
+      title: "Preview — resolve against output",
+      body: "Toggle Preview to resolve merge fields on the same canvas. Pick a data row and an output kind (only kinds configured in Automation are enabled).",
+    },
+    automation: {
+      title: "Automation — workflow dry-run",
+      body: "Open ··· → Automation to edit outputs, workflow steps, and scripts, then dry-run against the current row.",
+    },
+    done: {
+      title: "You're ready",
+      body: "Open Samples for full templates, or start from a blank surface. Restart this tour anytime from ··· → Edition tour.",
+    },
+  },
+};
+
+const STRUCTURE: Omit<TourStep, "title" | "body">[] = [
   {
     id: "welcome",
-    title: "Welcome to the edition studio",
-    body: "This short tour walks through placing blocks, the edit ribbon, comments, data binding, preview, and automation. You can skip anytime.",
     target: null,
     view: "edit",
     preview: false,
   },
   {
     id: "toolbox",
-    title: "Toolbox — pick a block type",
-    body: "Choose Paragraph, Text, List, Table, and more. The selected tool stays active until you place it or click it again.",
     target: '[data-tour="toolbox"]',
     view: "edit",
   },
   {
     id: "place",
-    title: "Canvas — place, move, resize",
-    body: "Click the page to drop the active tool. Drag a block to move; use corner handles to resize. Arrow keys nudge; Shift + arrows move by 10px.",
     target: '[data-tour="canvas"]',
     view: "edit",
   },
   {
     id: "ribbon",
-    title: "Edit ribbon — arrange & review",
-    body: "Align to the page, change stacking order, duplicate, undo, lock, and add comments. Labels mirror Word / Designer habits.",
     target: '[data-tour="ribbon"]',
     view: "edit",
   },
   {
     id: "inspector",
-    title: "Inspector — content & conditions",
-    body: "Edit text, geometry, style, and conditions like data.role or output.kind == 'print'. Use {{field|upper}} filters in text.",
     target: '[data-tour="inspector"]',
     view: "edit",
   },
   {
     id: "comments",
-    title: "Comments — review like Word",
-    body: "Select a block, click Comment on the ribbon, and leave a note. Markers appear on the page; resolve them when done.",
-    target: '[data-tour="comments"]',
+    target: '[data-tour="inspector"]',
     view: "edit",
   },
   {
     id: "data",
-    title: "Data — rows for bulk fill",
-    body: "Paste CSV or JSON here. Each row can drive a rendered document. Preview picks which row to resolve.",
     target: '[data-tour="data-studio"]',
     view: "data",
   },
   {
     id: "preview",
-    title: "Preview — resolve against output",
-    body: "Toggle Preview on Edit. Pick a data row and an output profile (screen, PDF, label printer, API) to see conditions fire.",
     target: '[data-tour="preview-toggle"]',
     view: "edit",
     preview: true,
   },
   {
     id: "automation",
-    title: "Automation — workflow & scripts",
-    body: "Open ··· → Automation for outputs, workflow steps, and sandboxed scripts. Dry-run builds an emit payload without sending it.",
     target: null,
     view: "edit",
-    preview: false,
     overlay: "automation",
   },
   {
     id: "done",
-    title: "You’re set",
-    body: "Restart this tour anytime from ··· → Edition tour. Happy templating.",
     target: null,
     view: "edit",
     preview: false,
@@ -103,9 +173,28 @@ export const TOUR_STEPS: TourStep[] = [
   },
 ];
 
+/** Localized tour steps (defaults to French). */
+export function getTourSteps(locale: Locale = "fr"): TourStep[] {
+  const copy = COPY[locale] ?? COPY.fr;
+  return STRUCTURE.map((step) => ({
+    ...step,
+    title: copy[step.id].title,
+    body: copy[step.id].body,
+  }));
+}
+
+/** @deprecated Prefer getTourSteps(locale) — kept for tests / length checks. */
+export const TOUR_STEPS: TourStep[] = getTourSteps("fr");
+
 export function isTourCompleted(): boolean {
   try {
-    return localStorage.getItem(TOUR_STORAGE_KEY) === "1";
+    if (typeof window !== "undefined" && window.__TEXLOOPER__?.ephemeral) {
+      return false;
+    }
+    return (
+      localStorage.getItem(TOUR_STORAGE_KEY) === "1" ||
+      localStorage.getItem("texloopr.tour.done.v1") === "1"
+    );
   } catch {
     return false;
   }
@@ -113,6 +202,7 @@ export function isTourCompleted(): boolean {
 
 export function markTourCompleted(): void {
   try {
+    if (typeof window !== "undefined" && window.__TEXLOOPER__?.ephemeral) return;
     localStorage.setItem(TOUR_STORAGE_KEY, "1");
   } catch {
     /* ignore */

@@ -62,23 +62,21 @@ describe("HierarchyPanel", () => {
       (n) => n.textContent,
     );
     expect(names).toEqual(["Card group", "Item label", "Badge", "Price list"]);
-    const depths = [...container.querySelectorAll(".nav-block")].map((b) =>
-      (b as HTMLElement).style.paddingLeft,
+    const depths = [...container.querySelectorAll(".nav-block-row")].map(
+      (b) => (b as HTMLElement).style.paddingLeft,
     );
-    expect(depths).toEqual(["8px", "20px", "20px", "8px"]);
+    expect(depths).toEqual(["28px", "38px", "38px", "28px"]);
   });
 
   it("search matches component name or type and keeps ancestors", () => {
     project.value = nestedProject();
     const { getByLabelText, container } = render(<HierarchyPanel />);
     const input = getByLabelText("Search hierarchy") as HTMLInputElement;
-    // by type: only the table hits, but the page stays expanded
     fireEvent.input(input, { target: { value: "table" } });
     let names = [...container.querySelectorAll(".nav-block__name")].map(
       (n) => n.textContent,
     );
     expect(names).toEqual(["Price list"]);
-    // by name: the shape inside the group keeps its parent visible
     fireEvent.input(input, { target: { value: "badge" } });
     names = [...container.querySelectorAll(".nav-block__name")].map(
       (n) => n.textContent,
@@ -98,10 +96,29 @@ describe("HierarchyPanel", () => {
     expect(studioView.value).toBe("edit");
   });
 
-  it("shows container child counts", () => {
+  it("shows group twisty for containers", () => {
     project.value = nestedProject();
     const { container } = render(<HierarchyPanel />);
-    const counts = [...container.querySelectorAll(".nav-block__z")];
-    expect(counts[0].textContent).toBe("2");
+    const twisties = container.querySelectorAll(
+      `.nav-page__twist--inline[aria-expanded="true"]`,
+    );
+    expect(twisties.length).toBeGreaterThan(0);
+    expect(
+      container.querySelector(`button[aria-expanded="true"]`),
+    ).toBeTruthy();
+  });
+
+  it("collapses group children when twisty is toggled", () => {
+    project.value = nestedProject();
+    const { container } = render(<HierarchyPanel />);
+    const groupTwisty = container.querySelector(
+      `.nav-block-row button.nav-page__twist--inline`,
+    ) as HTMLButtonElement;
+    expect(groupTwisty).toBeTruthy();
+    fireEvent.click(groupTwisty);
+    const names = [...container.querySelectorAll(".nav-block__name")].map(
+      (n) => n.textContent,
+    );
+    expect(names).toEqual(["Card group", "Price list"]);
   });
 });

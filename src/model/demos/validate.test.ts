@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { parseDataInput, resolveTemplate, evaluateCondition } from "../bindings";
-import { PAGE_HEIGHT, PAGE_WIDTH, ensureProjectAutomation } from "../document";
+import {
+  CANVAS_PRESETS,
+  ensureProjectAutomation,
+  type CanvasPresetId,
+} from "../document";
 import { flattenBlocksForPreview } from "../groups";
 import { enrichPreviewContext } from "../runtime";
 import { DEMO_LIBRARY } from "./library";
@@ -15,6 +19,15 @@ function collectText(block: { content: Record<string, unknown> }): string[] {
     out.push(...(block.content.cells as string[][]).flat().map(String));
   }
   return out;
+}
+
+function artboardSize(
+  demo: (typeof DEMO_LIBRARY)[number],
+  project: { artboard?: CanvasPresetId },
+) {
+  const id = (demo.artboard ?? project.artboard ?? "document") as CanvasPresetId;
+  const preset = CANVAS_PRESETS[id] ?? CANVAS_PRESETS.document;
+  return { w: preset.w, h: preset.h };
 }
 
 describe("DEMO_LIBRARY preview validation", () => {
@@ -33,6 +46,7 @@ describe("DEMO_LIBRARY preview validation", () => {
       });
       expect(ctx).toBeTruthy();
 
+      const { w, h } = artboardSize(demo, project);
       for (const page of project.pages) {
         const { blocks } = flattenBlocksForPreview(page.blocks, row, ctx);
         for (const block of blocks) {
@@ -46,8 +60,8 @@ describe("DEMO_LIBRARY preview validation", () => {
             });
             expect(resolved).not.toMatch(/\{\{[^}]+\}\}/);
           }
-          expect(block.x + block.w).toBeLessThanOrEqual(PAGE_WIDTH + 1);
-          expect(block.y + block.h).toBeLessThanOrEqual(PAGE_HEIGHT + 1);
+          expect(block.x + block.w).toBeLessThanOrEqual(w + 1);
+          expect(block.y + block.h).toBeLessThanOrEqual(h + 1);
         }
       }
     });

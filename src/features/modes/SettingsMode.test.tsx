@@ -2,19 +2,28 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render } from "@testing-library/preact";
 import { SettingsMode } from "./SettingsMode";
-import { catalogBackend, catalogReady, createProject, prefs } from "../../state/store";
+import {
+  catalogBackend,
+  catalogReady,
+  createProject,
+  prefs,
+  settingsSection,
+  updatePrefs,
+} from "../../state/store";
 
 beforeEach(() => {
   cleanup();
   createProject();
+  settingsSection.value = "general";
+  updatePrefs({ locale: "fr" });
 });
 
 describe("SettingsMode", () => {
   it("shows the product-level sections only (no canvas options)", () => {
     const { getByText } = render(<SettingsMode />);
-    expect(getByText("Preferences")).toBeTruthy();
-    expect(getByText("Connections")).toBeTruthy();
-    // grid/snap controls belong to the editor toolbar, not settings
+    expect(getByText("Préférences")).toBeTruthy();
+    expect(getByText("Connexions")).toBeTruthy();
+    // grid/snap controls belong to the editor section, not general
     expect(document.body.innerHTML.includes("Snap to grid")).toBe(false);
   });
 
@@ -32,13 +41,13 @@ describe("SettingsMode", () => {
     catalogReady.value = true;
     catalogBackend.value = "tauri";
     const { getByText } = render(<SettingsMode />);
-    expect(getByText("Desktop library (Tauri)")).toBeTruthy();
+    expect(getByText("Bibliothèque bureau (Tauri)")).toBeTruthy();
   });
 
   it("reports browser storage when no backend is present", () => {
     catalogReady.value = true;
     catalogBackend.value = "web";
     const { getByText } = render(<SettingsMode />);
-    expect(getByText("Browser library")).toBeTruthy();
+    expect(getByText("Bibliothèque navigateur")).toBeTruthy();
   });
 });
