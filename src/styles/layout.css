@@ -848,6 +848,13 @@ body.is-resizing-panes .pane-resizer--north {
 }
 
 /* ---- Prebuild recipe picker (floating over the canvas) ---- */
+.prebuild-picker__scrim {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-rail-scrim);
+  background: transparent;
+}
+
 .prebuild-picker {
   position: absolute;
   top: calc(var(--bar-height) + var(--space-4));
