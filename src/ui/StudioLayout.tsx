@@ -5,7 +5,7 @@ import { Icon, type IconName } from "./icons";
 
 const NARROW_QUERY = "(max-width: 880px)";
 
-/** True while the viewport fits the phone/tablet drawer layout */
+/** True while the viewport fits the phone/tablet layout */
 function useNarrow(): boolean {
   const [narrow, setNarrow] = useState(
     () =>
@@ -37,11 +37,10 @@ const MIN_NAV = 160;
 const MAX_NAV = 420;
 const MIN_INSPECTOR = 180;
 const MAX_INSPECTOR = 480;
-const MIN_PROPS = 120;
-const MAX_PROPS = 520;
 const COLLAPSED = 44;
 
-type ResizeTarget = "nav" | "inspector" | "props";
+type ResizeTarget = "nav" | "inspector";
+type PaneId = "nav" | "inspector";
 
 export function StudioLayout({
   variant = "edit",
@@ -56,8 +55,16 @@ export function StudioLayout({
   const previewChrome = !aux && !showInspector;
   const narrow = useNarrow();
 
-  const navCollapsed = Boolean(p.navCollapsed);
-  const inspectorCollapsed = Boolean(p.inspectorCollapsed);
+  // Narrow screens: canvas first, rails collapsed to header bars that
+  // slide open (one at a time). Desktop: prefs-driven side rails.
+  const [openPane, setOpenPane] = useState<PaneId | null>(null);
+
+  const navCollapsed = narrow
+    ? openPane !== "nav"
+    : Boolean(p.navCollapsed);
+  const inspectorCollapsed = narrow
+    ? openPane !== "inspector"
+    : Boolean(p.inspectorCollapsed);
 
   const navW = navCollapsed
     ? COLLAPSED
@@ -70,8 +77,6 @@ export function StudioLayout({
           MAX_INSPECTOR,
           Math.max(MIN_INSPECTOR, p.inspectorWidth ?? 280),
         );
-  const propsH = Math.min(MAX_PROPS, Math.max(MIN_PROPS, p.propsHeight ?? 240));
-
   const dragRef = useRef<{
     target: ResizeTarget;
     startX: number;
@@ -88,11 +93,6 @@ export function StudioLayout({
         updatePrefs({
           navWidth: Math.min(MAX_NAV, Math.max(MIN_NAV, d.startW + dx)),
           navCollapsed: false,
-        });
-      } else if (d.target === "props") {
-        updatePrefs({
-          propsHeight: Math.min(MAX_PROPS, Math.max(MIN_PROPS, d.startY - e.clientY)),
-          propsCollapsed: false,
         });
       } else {
         updatePrefs({
@@ -129,113 +129,23 @@ export function StudioLayout({
       document.body.classList.add("is-resizing-panes");
     };
 
+  const togglePane = (id: PaneId, prefKey: "navCollapsed" | "inspectorCollapsed") => {
+    if (narrow) {
+      setOpenPane((cur) => (cur === id ? null : id));
+    } else {
+      updatePrefs({ [prefKey]: !p[prefKey] });
+    }
+  };
+
   const layoutClass = [
     "studio-layout",
     aux ? "studio-layout--aux" : "",
     previewChrome ? "studio-layout--preview" : "",
+    narrow ? "studio-layout--stack" : "",
     "studio-layout--resizable",
   ]
     .filter(Boolean)
     .join(" ");
-
-  // Phone/tablet: rails become overlay drawers instead of grid columns
-  if (!aux && narrow) {
-    const anyDrawer = !navCollapsed || (showInspector && !inspectorCollapsed);
-    const closeDrawers = () =>
-      updatePrefs({
-        navCollapsed: true,
-        inspectorCollapsed: showInspector ? true : p.inspectorCollapsed,
-      });
-    return (
-      <div class="studio-layout studio-layout--narrow">
-        {anyDrawer && (
-          <div class="drawer-scrim" aria-hidden="true" onClick={closeDrawers} />
-        )}
-        {!navCollapsed && (
-          <div class="studio-drawer studio-drawer--left" aria-label="Navigator">
-            <RailChrome
-              collapsed={false}
-              label="Outline"
-              icon="panelLeft"
-              expandIcon="chevronRight"
-              collapseIcon="chevronLeft"
-              onToggle={() => updatePrefs({ navCollapsed: true })}
-            />
-            <div class="studio-rail__body">{navigator}</div>
-          </div>
-        )}
-
-        <section class="studio-main">
-          <div class="studio-main__content">{main}</div>
-          {asideBottom && (
-            <div
-              class={
-                p.propsCollapsed ? "prop-dock prop-dock--collapsed" : "prop-dock"
-              }
-              style={{ height: p.propsCollapsed ? undefined : `${propsH}px` }}
-            >
-              {!p.propsCollapsed && (
-                <div
-                  class="pane-resizer pane-resizer--north"
-                  role="separator"
-                  aria-orientation="horizontal"
-                  aria-label="Resize properties dock"
-                  onPointerDown={startResize("props", propsH)}
-                />
-              )}
-              <div class="prop-dock__body">{asideBottom}</div>
-              <button
-                type="button"
-                class="prop-dock__toggle"
-                title={p.propsCollapsed ? "Expand properties" : "Collapse properties"}
-                aria-expanded={!p.propsCollapsed}
-                onClick={() => updatePrefs({ propsCollapsed: !p.propsCollapsed })}
-              >
-                <Icon name={p.propsCollapsed ? "chevronUp" : "chevronDown"} size={12} />
-              </button>
-            </div>
-          )}
-        </section>
-
-        {showInspector && !inspectorCollapsed && (
-          <div class="studio-drawer studio-drawer--right" aria-label="Inspector">
-            <RailChrome
-              collapsed={false}
-              label="Inspect"
-              icon="sliders"
-              expandIcon="chevronRight"
-              collapseIcon="chevronRight"
-              onToggle={() => updatePrefs({ inspectorCollapsed: true })}
-            />
-            <div class="studio-rail__body">{inspector}</div>
-          </div>
-        )}
-
-        {navCollapsed && (
-          <button
-            type="button"
-            class="drawer-tab drawer-tab--left"
-            title="Open outline"
-            aria-label="Open outline"
-            onClick={() => updatePrefs({ navCollapsed: false })}
-          >
-            <Icon name="panelLeft" size={14} />
-          </button>
-        )}
-        {showInspector && inspectorCollapsed && (
-          <button
-            type="button"
-            class="drawer-tab drawer-tab--right"
-            title="Open inspector"
-            aria-label="Open inspector"
-            onClick={() => updatePrefs({ inspectorCollapsed: false })}
-          >
-            <Icon name="sliders" size={14} />
-          </button>
-        )}
-      </div>
-    );
-  }
 
   const columns =
     aux || previewChrome
@@ -243,21 +153,26 @@ export function StudioLayout({
       : `${navW}px minmax(0, 1fr) ${inspW}px`;
 
   return (
-    <div class={layoutClass} style={{ gridTemplateColumns: columns }}>
+    <div
+      class={layoutClass}
+      style={narrow ? undefined : { gridTemplateColumns: columns }}
+    >
       <aside
         class={navCollapsed ? "studio-nav studio-rail--collapsed" : "studio-nav"}
         aria-label="Navigator"
         data-collapsed={navCollapsed || undefined}
       >
-        <RailChrome
-          collapsed={navCollapsed}
+        <RailHead
           label="Outline"
-          icon="panelLeft"
-          expandIcon="chevronRight"
+          compact={!narrow && navCollapsed}
+          collapsed={navCollapsed}
           collapseIcon="chevronLeft"
-          onToggle={() => updatePrefs({ navCollapsed: !navCollapsed })}
+          expandIcon="chevronRight"
+          onToggle={() => togglePane("nav", "navCollapsed")}
         />
-        <div class="studio-rail__body">{navigator}</div>
+        <div class="rail-reveal">
+          <div class="studio-rail__body">{navigator}</div>
+        </div>
         {!navCollapsed && (
           <div
             class="pane-resizer pane-resizer--east"
@@ -271,32 +186,7 @@ export function StudioLayout({
 
       <section class="studio-main">
         <div class="studio-main__content">{main}</div>
-        {asideBottom && (
-          <div
-            class={p.propsCollapsed ? "prop-dock prop-dock--collapsed" : "prop-dock"}
-            style={{ height: p.propsCollapsed ? undefined : `${propsH}px` }}
-          >
-            {!p.propsCollapsed && (
-              <div
-                class="pane-resizer pane-resizer--north"
-                role="separator"
-                aria-orientation="horizontal"
-                aria-label="Resize properties dock"
-                onPointerDown={startResize("props", propsH)}
-              />
-            )}
-            <div class="prop-dock__body">{asideBottom}</div>
-            <button
-              type="button"
-              class="prop-dock__toggle"
-              title={p.propsCollapsed ? "Expand properties" : "Collapse properties"}
-              aria-expanded={!p.propsCollapsed}
-              onClick={() => updatePrefs({ propsCollapsed: !p.propsCollapsed })}
-            >
-              <Icon name={p.propsCollapsed ? "chevronUp" : "chevronDown"} size={12} />
-            </button>
-          </div>
-        )}
+        {asideBottom}
       </section>
 
       {showInspector && (
@@ -309,17 +199,17 @@ export function StudioLayout({
           aria-label="Inspector"
           data-collapsed={inspectorCollapsed || undefined}
         >
-          <RailChrome
-            collapsed={inspectorCollapsed}
+          <RailHead
             label="Inspect"
-            icon="sliders"
-            expandIcon="chevronLeft"
+            compact={!narrow && inspectorCollapsed}
+            collapsed={inspectorCollapsed}
             collapseIcon="chevronRight"
-            onToggle={() =>
-              updatePrefs({ inspectorCollapsed: !inspectorCollapsed })
-            }
+            expandIcon="chevronLeft"
+            onToggle={() => togglePane("inspector", "inspectorCollapsed")}
           />
-          <div class="studio-rail__body">{inspector}</div>
+          <div class="rail-reveal">
+            <div class="studio-rail__body">{inspector}</div>
+          </div>
           {!inspectorCollapsed && (
             <div
               class="pane-resizer pane-resizer--west"
@@ -335,33 +225,43 @@ export function StudioLayout({
   );
 }
 
-function RailChrome({
-  collapsed,
+function RailHead({
   label,
-  onToggle,
-  expandIcon,
+  collapsed,
+  compact,
   collapseIcon,
+  expandIcon,
+  onToggle,
 }: {
-  collapsed: boolean;
   label: string;
-  onToggle: () => void;
-  icon: IconName;
-  expandIcon: IconName;
+  collapsed: boolean;
+  /** Slim strip mode (desktop collapsed rail): icon only */
+  compact?: boolean;
   collapseIcon: IconName;
+  expandIcon: IconName;
+  onToggle: () => void;
 }) {
   return (
-    <div class="rail-chrome">
+    <header
+      class={
+        collapsed && compact
+          ? "rail-head rail-head--compact"
+          : collapsed
+            ? "rail-head rail-head--closed"
+            : "rail-head"
+      }
+    >
+      {!compact && <span class="rail-head__label">{label}</span>}
       <button
         type="button"
-        class={collapsed ? "rail-toggle rail-toggle--collapsed" : "rail-toggle"}
+        class={compact ? "rail-head__btn rail-head__btn--solo" : "rail-head__btn"}
         title={collapsed ? `Expand ${label}` : `Collapse ${label}`}
         aria-expanded={!collapsed}
         aria-label={collapsed ? `Expand ${label}` : `Collapse ${label}`}
         onClick={onToggle}
       >
-        <Icon name={collapsed ? expandIcon : collapseIcon} size={12} />
-        {!collapsed && <span class="rail-toggle__label">{label}</span>}
+        <Icon name={compact ? expandIcon : collapsed ? "chevronDown" : collapseIcon} size={12} />
       </button>
-    </div>
+    </header>
   );
 }

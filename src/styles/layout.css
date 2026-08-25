@@ -1,8 +1,7 @@
 .app-shell {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  min-height: 100%;
+  min-height: 100dvh;
   background: var(--chrome);
   container-type: inline-size;
   container-name: studio;
@@ -222,7 +221,16 @@
 .studio-layout {
   display: grid;
   flex: 1;
-  min-height: 0;
+  align-items: start;
+}
+
+/* Rails slide open/closed by interpolating the track sizes */
+.studio-layout--resizable {
+  transition: grid-template-columns var(--motion-panel) var(--ease-out);
+}
+
+body.is-resizing-panes .studio-layout--resizable {
+  transition: none;
 }
 
 .overflow-menu__sep {
@@ -246,9 +254,7 @@ body.is-resizing-panes {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 0;
   min-width: 0;
-  overflow: hidden;
 }
 
 .studio-nav {
@@ -262,43 +268,32 @@ body.is-resizing-panes {
   overflow: hidden;
 }
 
-.studio-rail__body {
-  flex: 1;
-  min-height: 0;
-  min-width: 0;
-  overflow: auto;
+/* Rail header: title + collapse control live inside the panel flow,
+   so nothing floats over the content below. */
+.rail-head {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
+  border-bottom: 1px solid var(--border);
 }
 
-.studio-rail--collapsed .studio-rail__body {
-  overflow: hidden;
+.studio-inspector .rail-head {
+  padding: 0.3rem 0.75rem 0.3rem 0.5rem;
 }
 
-/* Discreet collapse affordance: a quiet chevron on the canvas-facing
-   edge; the text label stays in the DOM for assistive tech only. */
-.rail-chrome {
-  position: absolute;
-  top: 4px;
-  z-index: 7;
-  display: flex;
-  justify-content: flex-end;
-  width: 1.75rem;
-  border: 0;
-  background: transparent;
+.rail-head__label {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  user-select: none;
 }
 
-.studio-nav .rail-chrome {
-  right: 6px;
-}
-
-.studio-inspector .rail-chrome {
-  right: auto;
-  left: 6px;
-  justify-content: flex-start;
-}
-
-.rail-toggle {
+.rail-head__btn {
   display: grid;
   place-items: center;
   width: 1.5rem;
@@ -308,7 +303,7 @@ body.is-resizing-panes {
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--ink-faint);
-  opacity: 0.55;
+  opacity: 0.7;
   cursor: pointer;
   transition:
     opacity var(--motion-fast) var(--ease-out),
@@ -316,32 +311,28 @@ body.is-resizing-panes {
     color var(--motion-fast) var(--ease-out);
 }
 
-.rail-toggle:hover,
-.rail-toggle:focus-visible {
+.rail-head__btn:hover,
+.rail-head__btn:focus-visible {
   opacity: 1;
   border-color: var(--border);
   background: var(--surface-hover);
   color: var(--ink);
 }
 
-.rail-toggle__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
+/* Collapsed desktop rail: the expand button stands alone */
+.rail-head--compact {
+  justify-content: center;
+  padding-inline: 0.25rem;
 }
 
-/* rails need headroom for the floating toggle */
 .studio-rail__body {
-  padding-top: 1.9rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .studio-rail--collapsed .studio-rail__body {
-  padding-top: 1.9rem;
+  overflow: hidden;
 }
 
 .pane-resizer {
@@ -455,8 +446,8 @@ body.is-resizing-panes {
 .studio-main {
   display: flex;
   flex-direction: column;
-  min-height: 0;
   min-width: 0;
+  min-height: max(24rem, 62dvh);
   animation: mode-fade var(--motion-mode) var(--ease-out);
 }
 
@@ -531,6 +522,7 @@ body.is-resizing-panes {
   position: fixed;
   inset: 0;
   z-index: var(--z-overlay);
+  overflow-y: auto;
   display: grid;
   place-items: center;
   padding: var(--space-4);
@@ -578,8 +570,7 @@ body.is-resizing-panes {
 
 .overlay-dialog {
   width: min(28rem, 100%);
-  max-height: min(88vh, 40rem);
-  overflow: auto;
+    overflow: auto;
   padding: var(--space-4) var(--space-5);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -591,8 +582,7 @@ body.is-resizing-panes {
 
 .overlay-dialog--wide {
   width: min(48rem, 100%);
-  max-height: min(88vh, 52rem);
-}
+  }
 
 .automation-panel .studio-switch {
   margin-left: 0;
@@ -624,8 +614,6 @@ body.is-resizing-panes {
   border: 1px solid var(--border);
   font-size: 0.8rem;
   white-space: pre-wrap;
-  max-height: 16rem;
-  overflow: auto;
 }
 
 .overlay-dialog__header {
@@ -666,8 +654,6 @@ body.is-resizing-panes {
 
 .view-body {
   flex: 1;
-  min-height: 0;
-  overflow: auto;
   padding: clamp(0.75rem, 0.5rem + 1vw, 1rem);
 }
 
@@ -793,43 +779,19 @@ body.is-resizing-panes {
   animation: mode-fade var(--motion-fast) var(--ease-out);
 }
 
-.prop-dock--collapsed {
-  height: auto;
-}
-
-.prop-dock__body {
-  flex: 1;
-  min-height: 0;
-  overflow: auto;
-}
-
-.prop-dock__toggle {
-  position: absolute;
-  top: 4px;
-  right: var(--space-3);
-  z-index: 2;
+/* Rails slide open/closed via the grid-rows trick (auto-height aware) */
+.rail-reveal {
   display: grid;
-  place-items: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  padding: 0;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  color: var(--ink-faint);
-  opacity: 0.55;
-  transition:
-    opacity var(--motion-fast) var(--ease-out),
-    background var(--motion-fast) var(--ease-out),
-    color var(--motion-fast) var(--ease-out);
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--motion-panel) var(--ease-out);
 }
 
-.prop-dock__toggle:hover,
-.prop-dock__toggle:focus-visible {
-  opacity: 1;
-  background: var(--surface-hover);
-  border-color: var(--border);
-  color: var(--ink);
+.studio-rail--collapsed .rail-reveal {
+  grid-template-rows: 0fr;
+}
+
+.rail-reveal > .studio-rail__body {
+  min-height: 0;
 }
 
 .pane-resizer--north {
@@ -905,8 +867,6 @@ body.is-resizing-panes .pane-resizer--north {
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 15rem;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1005,77 +965,32 @@ body {
 
 .pane-resizer,
 .resize-handle,
-.prop-dock__toggle {
+.rail-head__btn {
   touch-action: none;
 }
 
-/* ── Narrow viewports only: rails become overlay drawers ────────────
-   Everything below is gated behind the media query so the desktop
-   layout can never see drawer/scrim/tab styles, even if the JS
-   narrow-branch renders. */
+/* ── Narrow viewports: canvas first, rails as sliding sections ──────
+   The grid stacks to one column with the stage ordered before the
+   rails. Rails start collapsed to their header bar and slide open
+   (one at a time) via .rail-reveal — no drawers, scrims or overlays. */
 
 @media (max-width: 880px) {
-  .studio-layout--narrow {
-    position: relative;
-    display: block;
+  .studio-layout {
+    grid-template-columns: 1fr !important;
   }
 
-  .studio-drawer {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    z-index: var(--z-rail-drawer);
-    display: flex;
-    flex-direction: column;
-    width: min(85vw, 20rem);
-    background: var(--chrome);
-    box-shadow: var(--shadow-lg);
+  .studio-layout--stack .studio-main {
+    order: -1;
   }
 
-  .studio-drawer--left {
-    left: 0;
-    border-right: 1px solid var(--border);
+  .studio-layout--stack .pane-resizer {
+    display: none;
   }
 
-  .studio-drawer--right {
-    right: 0;
-    border-left: 1px solid var(--border);
-  }
-
-  .drawer-scrim {
-    position: absolute;
-    inset: 0;
-    z-index: var(--z-rail-scrim);
-    background: var(--scrim);
-  }
-
-  .drawer-tab {
-    position: absolute;
-    top: 0.75rem;
-    z-index: var(--z-rail-scrim);
-    display: grid;
-    place-items: center;
-    width: 2rem;
-    height: 2rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    background: color-mix(in srgb, var(--surface) 92%, transparent);
-    backdrop-filter: blur(8px);
-    color: var(--ink-faint);
-    cursor: pointer;
-  }
-
-  .drawer-tab:hover {
-    color: var(--ink);
-    border-color: var(--border-strong);
-  }
-
-  .drawer-tab--left {
-    left: 0.5rem;
-  }
-
-  .drawer-tab--right {
-    right: 0.5rem;
+  .studio-layout--stack .studio-nav,
+  .studio-layout--stack .studio-inspector {
+    border-inline: 0;
+    border-top: 1px solid var(--border);
   }
 
   .context-bar__meta,
@@ -1085,15 +1000,6 @@ body {
 
   .overlay-dialog {
     max-width: min(94vw, 40rem);
-    max-height: min(86dvh, 52rem);
-  }
-
-  .settings-panel {
-    padding: var(--space-4);
-  }
-
-  .prop-dock:not(.prop-dock--collapsed) {
-    max-height: 44dvh;
   }
 }
 
@@ -1104,12 +1010,5 @@ body {
       padding-right: max(0.5rem, env(safe-area-inset-right));
     }
 
-    .drawer-tab--left {
-      left: max(0.5rem, env(safe-area-inset-left));
-    }
-
-    .drawer-tab--right {
-      right: max(0.5rem, env(safe-area-inset-right));
-    }
   }
 }

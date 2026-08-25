@@ -201,11 +201,8 @@
   --z-overlay: 60;
   --z-menu: 70;
 
-  /* Canvas floats (toolbox, peek button) sit below chrome menus;
-     rail drawers/scrim only exist under the narrow media query */
+  /* Canvas floats (toolbox, peek button) sit below chrome menus */
   --z-canvas-float: 12;
-  --z-rail-scrim: calc(var(--z-nav) - 2);
-  --z-rail-drawer: calc(var(--z-nav) + 4);
 
   --motion-fast: 120ms;
   --motion-mode: 180ms;
