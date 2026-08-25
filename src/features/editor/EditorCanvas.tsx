@@ -477,9 +477,17 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
     .filter(Boolean)
     .join(" ");
 
-  const sorted = [...renderBlocks].sort(
-    (a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0),
-  );
+  // Paint order: explicit zIndex wins; otherwise decorative layers
+  // (shapes, then pictures) stay beneath content so rules/washes can
+  // never cover text in preview.
+  const layerRank = (t: string | undefined) =>
+    t === "shape" ? 0 : t === "picture" ? 1 : 2;
+
+  const sorted = [...renderBlocks].sort((a, b) => {
+    const za = a.zIndex ?? layerRank(a.type);
+    const zb = b.zIndex ?? layerRank(b.type);
+    return za - zb;
+  });
 
   return (
     <>
@@ -647,6 +655,23 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               },
             });
             })}
+            {preview && activePage.value?.pageNumber && (() => {
+              const pn = activePage.value.pageNumber!;
+              const pages = project.value.pages;
+              const idx = pages.findIndex((p) => p.id === activePage.value!.id);
+              const n = idx + 1;
+              if (pn.mode === "odd" && n % 2 === 0) return null;
+              if (pn.mode === "even" && n % 2 !== 0) return null;
+              if (pn.skipFirst && idx === 0) return null;
+              if (pn.skipPages?.includes(n)) return null;
+              const total = pages.length;
+              const fmt = (pn.format || "{n}")
+                .replace(/\{n\}/g, String(n))
+                .replace(/\{total\}/g, String(total));
+              return (
+                <div class="page-number" aria-hidden="true">{fmt}</div>
+              );
+            })()}
             </div>
           </div>
         </div>

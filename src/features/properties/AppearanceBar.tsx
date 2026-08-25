@@ -93,8 +93,128 @@ function ComponentProps() {
             fallback="#ffffff"
             onValue={(v) => applyStyle({ background: v }, ids)}
           />
+          <NumField
+            id="prop-padding"
+            label="Padding"
+            value={style.padding ?? 0}
+            min={0}
+            max={200}
+            onValue={(v) => applyStyle({ padding: clamp0(v) }, ids)}
+          />
+          <NumField
+            id="prop-margin"
+            label="Margin"
+            value={style.margin ?? 0}
+            min={0}
+            max={200}
+            onValue={(v) => applyStyle({ margin: clamp0(v) }, ids)}
+          />
+          <NumField
+            id="prop-opacity"
+            label="Opacity"
+            value={style.opacity ?? 1}
+            min={0}
+            max={1}
+            step={0.05}
+            onValue={(v) => applyStyle({ opacity: Math.min(1, Math.max(0, v)) }, ids)}
+          />
+          <NumField
+            id="prop-border"
+            label="Border"
+            value={style.borderWidth ?? 0}
+            min={0}
+            max={40}
+            onValue={(v) => applyStyle({ borderWidth: clamp0(v) }, ids)}
+          />
+          <ColorField
+            id="prop-border-color"
+            label="Border color"
+            value={style.borderColor ?? "#000000"}
+            fallback="#000000"
+            onValue={(v) => applyStyle({ borderColor: v }, ids)}
+          />
+          <NumField
+            id="prop-radius"
+            label="Radius"
+            value={style.borderRadius ?? 0}
+            min={0}
+            max={120}
+            onValue={(v) => applyStyle({ borderRadius: clamp0(v) }, ids)}
+          />
         </div>
       </section>
+
+      {(sel.type === "group" || sel.type === "repeat") && (
+        <section class="prop-section">
+          <p class="prop-section__label">Arrange children</p>
+          <div class="prop-grid">
+            <Field label="Mode">
+              <SegmentedControl
+                ariaLabel="Child layout"
+                value={style.layout === "flex" ? "flex" : "absolute"}
+                options={[
+                  { value: "absolute", label: "Absolute" },
+                  { value: "flex", label: "Flex" },
+                ]}
+                onChange={(v) => applyStyle({ layout: v === "flex" ? "flex" : undefined }, ids)}
+              />
+            </Field>
+          </div>
+          {style.layout === "flex" && (
+            <>
+              <div class="prop-grid">
+                <Field label="Direction">
+                  <SegmentedControl
+                    ariaLabel="Flex direction"
+                    value={style.direction ?? "column"}
+                    options={[
+                      { value: "column", label: "Col" },
+                      { value: "row", label: "Row" },
+                    ]}
+                    onChange={(v) => applyStyle({ direction: v as BlockStyle["direction"] }, ids)}
+                  />
+                </Field>
+                <Field label="Items">
+                  <SegmentedControl
+                    ariaLabel="Flex alignment"
+                    value={style.alignItems ?? "stretch"}
+                    options={[
+                      { value: "stretch", label: "Fill" },
+                      { value: "start", label: "Top" },
+                      { value: "center", label: "Mid" },
+                      { value: "end", label: "Bot" },
+                    ]}
+                    onChange={(v) => applyStyle({ alignItems: v as BlockStyle["alignItems"] }, ids)}
+                  />
+                </Field>
+              </div>
+              <div class="prop-grid">
+                <Field label="Distribute">
+                  <SegmentedControl
+                    ariaLabel="Flex distribution"
+                    value={style.justify ?? "start"}
+                    options={[
+                      { value: "start", label: "Start" },
+                      { value: "center", label: "Center" },
+                      { value: "end", label: "End" },
+                      { value: "space-between", label: "Space" },
+                    ]}
+                    onChange={(v) => applyStyle({ justify: v as BlockStyle["justify"] }, ids)}
+                  />
+                </Field>
+                <NumField
+                  id="flex-gap"
+                  label="Gap"
+                  value={style.gap ?? 8}
+                  min={0}
+                  max={120}
+                  onValue={(v) => applyStyle({ gap: clamp0(v) }, ids)}
+                />
+              </div>
+            </>
+          )}
+        </section>
+      )}
 
       {sel.type === "list" && (
         <section class="prop-section prop-section--type">

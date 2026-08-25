@@ -296,9 +296,20 @@
 .editor-empty strong {
   display: block;
   margin-bottom: var(--space-1);
-  color: var(--ink);
-  font-size: var(--text-lg);
-  letter-spacing: -0.02em;
+  font-size: var(--text-sm);
+  color: var(--ink-faint);
+}
+
+.page-number {
+  position: absolute;
+  bottom: 48px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 9px;
+  color: var(--ink-faint);
+  pointer-events: none;
 }
 
 .block-frame {
@@ -451,7 +462,6 @@
 }
 
 .block-picture,
-.block-shape,
 .block-files,
 .block-prebuild {
   display: grid;
@@ -464,12 +474,28 @@
   font-size: var(--text-xs);
 }
 
+/* Shapes are simple filled surfaces: no placeholder chrome, no inner
+   inset box — the fill covers the whole frame edge to edge. */
+.block-shape {
+  display: block;
+  height: 100%;
+  background: transparent;
+}
+
 .block-shape__rect {
-  width: 70%;
-  height: 60%;
-  background: var(--accent-muted);
-  border: 2px solid var(--accent);
-  border-radius: var(--radius-sm);
+  width: 100%;
+  height: 100%;
+}
+
+.block-shape--ellipse {
+  display: grid;
+  place-items: center;
+  height: 100%;
+}
+
+.block-shape--ellipse .block-shape__rect {
+  width: 100%;
+  height: 100%;
 }
 
 .block-list {

@@ -115,6 +115,18 @@ export interface BlockStyle {
   verticalAlign?: VerticalAlign;
   /** Soft drop shadow under the block surface */
   shadow?: boolean;
+  /** Outer margin in px on all sides (offsets an absolutely placed block) */
+  margin?: number;
+  /** Flex arrangement for a container's child blocks; unset = absolute */
+  layout?: "flex";
+  /** Flex main axis direction */
+  direction?: "row" | "column";
+  /** Distribution of children along the main axis */
+  justify?: "start" | "center" | "end" | "space-between";
+  /** Cross-axis alignment of children */
+  alignItems?: "start" | "center" | "end" | "stretch";
+  /** Gap between children along the main axis, px */
+  gap?: number;
 }
 
 export interface Block {
@@ -188,6 +200,24 @@ export interface Page {
   background?: string;
   /** Draft/confidential watermark rendered under blocks */
   watermark?: Watermark;
+  /** Page numbering display rule */
+  pageNumber?: PageNumber;
+}
+
+/** Configures automatic page numbering in preview / print */
+export interface PageNumber {
+  /** "all" – every page, "odd" – O pages only, "even" – E pages only */
+  mode?: "all" | "odd" | "even";
+  /** Skip page number on the very first physical page */
+  skipFirst?: boolean;
+  /** Physical pages (1-based) that must never show a number */
+  skipPages?: number[];
+  /**
+   * Template for the printed number.
+   * Tokens: {n} current number, {total} total eligible pages.
+   * Example: "Page {n} of {total}"
+   */
+  format?: string;
 }
 
 /** Word-style review note anchored to a block (ADR 0006) */

@@ -2055,7 +2055,7 @@ function advancedInvoice(): Project {
 }
 
 
-const ACCENT = "#31547a";
+const ACCENT = "#2383e2";
 const INK = "#232a33";
 const MUTED = "#5c6570";
 
@@ -2116,9 +2116,9 @@ function jobEntry(
     b("list", {
       name: `Job bullets ${f.company}`,
       x: 164,
-      y: y + 24,
+      y: y + 26,
       w: 292,
-      h: 54,
+      h: 108,
       content: {
         items: [f.p1, f.p2, f.p3],
         markerColor: ACCENT,
@@ -2171,7 +2171,7 @@ function resume(): Project {
         b("text", {
           name: "Role line",
           x: 56,
-          y: 108,
+          y: 104,
           w: 480,
           h: 22,
           content: { text: "{{role}}" },
@@ -2188,7 +2188,7 @@ function resume(): Project {
         b("text", {
           name: "Contact block",
           x: 56,
-          y: 136,
+          y: 130,
           w: 400,
           h: 40,
           content: {
@@ -2204,7 +2204,7 @@ function resume(): Project {
         b("shape", {
           name: "Header rule",
           x: 56,
-          y: 188,
+          y: 172,
           w: 608,
           h: 3,
           content: { variant: "rect" },
@@ -2212,18 +2212,18 @@ function resume(): Project {
         }),
 
         // ---- Main column ----
-        sectionHeading("Profile", 56, 212, 200),
+        sectionHeading("Profile", 56, 192, 200),
         b("paragraph", {
           name: "Summary",
           x: 56,
-          y: 236,
+          y: 214,
           w: 400,
-          h: 92,
+          h: 84,
           content: { text: "{{summary}}" },
           style: { fontSize: 11.5, lineHeight: 1.55, color: INK },
         }),
-        sectionHeading("Experience", 56, 344, 200),
-        ...jobEntry(368, {
+        sectionHeading("Experience", 56, 318, 200),
+        ...jobEntry(342, {
           period: "{{j1_period}}",
           title: "{{j1_title}} — {{j1_company}}",
           company: "j1",
@@ -2231,7 +2231,7 @@ function resume(): Project {
           p2: "{{j1_p2}}",
           p3: "{{j1_p3}}",
         }),
-        ...jobEntry(452, {
+        ...jobEntry(478, {
           period: "{{j2_period}}",
           title: "{{j2_title}} — {{j2_company}}",
           company: "j2",
@@ -2239,7 +2239,7 @@ function resume(): Project {
           p2: "{{j2_p2}}",
           p3: "{{j2_p3}}",
         }),
-        ...jobEntry(536, {
+        ...jobEntry(614, {
           period: "{{j3_period}}",
           title: "{{j3_title}} — {{j3_company}}",
           company: "j3",
@@ -2254,22 +2254,21 @@ function resume(): Project {
           x: 488,
           y: 212,
           w: 176,
-          h: 420,
+          h: 556,
           content: { variant: "rect" },
           style: {
-            background: "#f2f4f7",
+            background: "#f3f6fa",
             borderRadius: 8,
-            padding: 10,
             shadow: true,
           },
         }),
-        sectionHeading("Skills", 500, 226, 152),
+        sectionHeading("Skills", 500, 228, 152),
         b("list", {
           name: "Skills list",
           x: 502,
-          y: 250,
+          y: 252,
           w: 150,
-          h: 118,
+          h: 150,
           content: {
             items: [
               "{{skill1}}",
@@ -2288,25 +2287,25 @@ function resume(): Project {
             listStyle: "square",
           },
         }),
-        sectionHeading("Education", 500, 384, 152),
+        sectionHeading("Education", 500, 430, 152),
         b("text", {
           name: "Education entries",
           x: 500,
-          y: 408,
+          y: 454,
           w: 152,
-          h: 88,
+          h: 120,
           content: {
             text: "{{edu1_degree}}\n{{edu1_school}}, {{edu1_years}}\n\n{{edu2_degree}}\n{{edu2_school}}, {{edu2_years}}",
           },
           style: { fontSize: 10.5, lineHeight: 1.45, color: INK },
         }),
-        sectionHeading("Languages", 500, 512, 152),
+        sectionHeading("Languages", 500, 600, 152),
         b("text", {
           name: "Languages line",
           x: 500,
-          y: 536,
+          y: 624,
           w: 152,
-          h: 56,
+          h: 70,
           content: { text: "{{languages}}" },
           style: { fontSize: 10.5, lineHeight: 1.5, color: INK },
         }),
@@ -2315,7 +2314,7 @@ function resume(): Project {
         b("shape", {
           name: "Footer rule",
           x: 56,
-          y: 668,
+          y: 772,
           w: 608,
           h: 1,
           content: { variant: "line" },
@@ -2324,7 +2323,7 @@ function resume(): Project {
         b("text", {
           name: "Footer refs",
           x: 56,
-          y: 678,
+          y: 784,
           w: 608,
           h: 18,
           content: {

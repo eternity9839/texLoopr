@@ -15,7 +15,7 @@ import {
 } from "../../state/store";
 import { MIN_BLOCK_H, MIN_BLOCK_W, px } from "../../model/geometry";
 import { dataColumnNames } from "../../model/bindings";
-import { LIST_STYLES, FONT_OPTIONS, type Block, type BlockStyle } from "../../model/document";
+import { LIST_STYLES, FONT_OPTIONS, type Block, type BlockStyle, type PageNumber } from "../../model/document";
 import { defaultRepeatChildren } from "../../model/repeat";
 import { Icon } from "../../ui/icons";
 import {
@@ -134,6 +134,70 @@ export function MetadataPanel() {
               }
             />
           </Field>
+        )}
+        {page && (
+          <>
+            <SelectField
+              id="pn-mode"
+              label="Page number"
+              value={page.pageNumber?.mode ?? "all"}
+              options={[
+                { value: "off", label: "Off" },
+                { value: "all", label: "All pages" },
+                { value: "odd", label: "Odd pages only" },
+                { value: "even", label: "Even pages only" },
+              ]}
+              onChange={(v) =>
+                v === "off"
+                  ? updatePage(page.id, { pageNumber: undefined })
+                  : updatePage(page.id, {
+                      pageNumber: { ...(page.pageNumber ?? {}), mode: v as PageNumber["mode"] },
+                    })
+              }
+            />
+            {page.pageNumber?.mode && (
+              <>
+                <CheckRow
+                  checked={Boolean(page.pageNumber?.skipFirst)}
+                  onChange={(skipFirst) =>
+                    updatePage(page.id, {
+                      pageNumber: { ...(page.pageNumber ?? {}), skipFirst },
+                    })
+                  }
+                >
+                  Skip first page
+                </CheckRow>
+                <Field label="Skip pages (comma list)" forId="pn-skip">
+                  <input
+                    id="pn-skip"
+                    value={(page.pageNumber?.skipPages ?? []).join(", ")}
+                    onInput={(e) => {
+                      const skipPages = e.currentTarget.value
+                        .split(",")
+                        .map((s) => Number(s.trim()))
+                        .filter((n) => n > 0 && Number.isFinite(n));
+                      updatePage(page.id, {
+                        pageNumber: { ...(page.pageNumber ?? {}), skipPages },
+                      });
+                    }}
+                  />
+                </Field>
+                <Field label="Format" forId="pn-format">
+                  <input
+                    id="pn-format"
+                    value={page.pageNumber?.format ?? ""}
+                    placeholder="Page {n} of {total}"
+                    onInput={(e) => {
+                      const format = e.currentTarget.value || undefined;
+                      updatePage(page.id, {
+                        pageNumber: { ...(page.pageNumber ?? {}), format },
+                      });
+                    }}
+                  />
+                </Field>
+              </>
+            )}
+          </>
         )}
       </Section>
 
@@ -624,6 +688,98 @@ export function PropertiesPanel() {
               onValue={styleNum("padding", 0, 48)}
             />
           </Grid2>
+          <NumField
+            id="margin"
+            label="Margin (all sides)"
+            value={block.style.margin ?? 0}
+            min={0}
+            max={96}
+            onValue={styleNum("margin", 0, 96)}
+          />
+          {(block.type === "group" || block.type === "repeat") && (
+            <>
+              <SelectField
+                id="child-layout"
+                label="Arrange children"
+                value={block.style.layout ?? "absolute"}
+                options={[
+                  { value: "absolute", label: "Absolute (free drag)" },
+                  { value: "flex", label: "Flex stack" },
+                ]}
+                onChange={(v) =>
+                  updateBlock(block.id, {
+                    style: {
+                      layout: v === "flex" ? "flex" : undefined,
+                    },
+                  })
+                }
+              />
+              {block.style.layout === "flex" && (
+                <>
+                  <SelectField
+                    id="flex-direction"
+                    label="Direction"
+                    value={block.style.direction ?? "column"}
+                    options={[
+                      { value: "column", label: "Vertical" },
+                      { value: "row", label: "Horizontal" },
+                    ]}
+                    onChange={(v) =>
+                      updateBlock(block.id, {
+                        style: {
+                          direction: v as BlockStyle["direction"],
+                        },
+                      })
+                    }
+                  />
+                  <SelectField
+                    id="flex-justify"
+                    label="Distribute"
+                    value={block.style.justify ?? "start"}
+                    options={[
+                      { value: "start", label: "Start" },
+                      { value: "center", label: "Center" },
+                      { value: "end", label: "End" },
+                      { value: "space-between", label: "Space between" },
+                    ]}
+                    onChange={(v) =>
+                      updateBlock(block.id, {
+                        style: {
+                          justify: v as BlockStyle["justify"],
+                        },
+                      })
+                    }
+                  />
+                  <SelectField
+                    id="flex-align"
+                    label="Align items"
+                    value={block.style.alignItems ?? "stretch"}
+                    options={[
+                      { value: "stretch", label: "Stretch" },
+                      { value: "start", label: "Start" },
+                      { value: "center", label: "Center" },
+                      { value: "end", label: "End" },
+                    ]}
+                    onChange={(v) =>
+                      updateBlock(block.id, {
+                        style: {
+                          alignItems: v as BlockStyle["alignItems"],
+                        },
+                      })
+                    }
+                  />
+                  <NumField
+                    id="flex-gap"
+                    label="Gap"
+                    value={block.style.gap ?? 0}
+                    min={0}
+                    max={96}
+                    onValue={styleNum("gap", 0, 96)}
+                  />
+                </>
+              )}
+            </>
+          )}
           <SelectField
             id="valign"
             label="Vertical align"
