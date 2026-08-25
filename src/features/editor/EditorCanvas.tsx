@@ -477,9 +477,17 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
     .filter(Boolean)
     .join(" ");
 
-  const sorted = [...renderBlocks].sort(
-    (a, b) => (a.zIndex ?? 0) - (b.zIndex ?? 0),
-  );
+  // Paint order: explicit zIndex wins; otherwise decorative layers
+  // (shapes, then pictures) stay beneath content so rules/washes can
+  // never cover text in preview.
+  const layerRank = (t: string | undefined) =>
+    t === "shape" ? 0 : t === "picture" ? 1 : 2;
+
+  const sorted = [...renderBlocks].sort((a, b) => {
+    const za = a.zIndex ?? layerRank(a.type);
+    const zb = b.zIndex ?? layerRank(b.type);
+    return za - zb;
+  });
 
   return (
     <>
