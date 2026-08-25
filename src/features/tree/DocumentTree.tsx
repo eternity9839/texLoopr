@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import type { Block, BlockType, Page } from "../../model/document";
-import { flattenOutline, isContainerBlock } from "../../model/groups";
+import { flattenOutline, isContainerBlock, matchesQuery } from "../../model/groups";
 import { VirtualList } from "../../ui/VirtualList";
 import { Icon, BLOCK_TYPE_ICON } from "../../ui/icons";
 import { BLOCK_TOOLS } from "../editor/Toolbox";
@@ -26,11 +26,6 @@ type OutlineRow =
 const PAGE_ROW_H = 28;
 const BLOCK_ROW_H = 24;
 const ROW_H = 26;
-
-function matchesQuery(block: Block, q: string): boolean {
-  if (!q) return true;
-  return `${block.name} ${block.type}`.toLowerCase().includes(q);
-}
 
 function countBlocksDeep(blocks: Block[]): number {
   let n = 0;

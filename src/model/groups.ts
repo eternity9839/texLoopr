@@ -10,6 +10,13 @@ export function isContainerBlock(block: Block): boolean {
   return block.type === "group" || block.type === "repeat";
 }
 
+/** Case-insensitive match on a block's name and type. */
+export function matchesQuery(block: Block, query: string): boolean {
+  const q = query.trim().toLowerCase();
+  if (!q) return true;
+  return `${block.name} ${block.type}`.toLowerCase().includes(q);
+}
+
 export function getChildBlocks(block: Block): Block[] {
   const raw = block.content.blocks;
   return Array.isArray(raw) ? (raw as Block[]) : [];
