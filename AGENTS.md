@@ -19,6 +19,12 @@ Allowed types: `feat`, `fix`, `refactor`, `perf`, `docs`, `test`, `build`,
 - Breaking changes: add `!` after type (`feat!:`) or a `BREAKING CHANGE:`
   footer line.
 
+**Minor bumps are rare.** Reserve `feat` for milestone capabilities that
+were explicitly agreed for a minor release. Enhancements, UX polish,
+layout changes and sample/template additions are `fix` (behavior or
+content change) or `refactor`/`style` (no behavior change) so the next
+bump stays a patch.
+
 ## Automatic Versioning (policy)
 
 The app version is **derived from conventional commits**, never hand-picked:
