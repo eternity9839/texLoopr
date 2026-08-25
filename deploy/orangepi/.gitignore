@@ -1,0 +1,8 @@
+.env
+traefik/crowdsec-bouncer.key
+traefik/certs/*.crt
+traefik/certs/*.key
+!traefik/certs/.gitignore
+.deploy-stamps/
+app/html/**
+!app/html/.gitignore

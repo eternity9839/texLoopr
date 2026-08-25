@@ -1,0 +1,21 @@
+// Tailscale ACL snippet for texLoopr GitHub Actions CI.
+// Merge into your tailnet policy (Admin → Access controls → JSON).
+// OAuth client must be allowed to assign tag:texloopr-ci only.
+
+{
+  "tagOwners": {
+    // Keep existing owners; add:
+    "tag:texloopr-ci": ["autogroup:admin"]
+  },
+
+  "acls": [
+    // Existing rules …
+
+    // texLoopr CI: Attic (HTTPS :443 on Pi node serve) + deploy (SSH :22)
+    {
+      "action": "accept",
+      "src": ["tag:texloopr-ci"],
+      "dst": ["tag:homelab:443", "tag:homelab:22"]
+    }
+  ]
+}

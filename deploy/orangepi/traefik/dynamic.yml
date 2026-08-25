@@ -1,0 +1,58 @@
+# Local Traefik only — Pangolin terminates public HTTPS and tunnels here via Newt.
+http:
+  middlewares:
+    crowdsec:
+      plugin:
+        bouncer:
+          enabled: true
+          crowdsecMode: stream
+          updateIntervalSeconds: 15
+          crowdsecLapiScheme: http
+          crowdsecLapiHost: crowdsec:8080
+          crowdsecLapiKeyFile: /etc/traefik/crowdsec-bouncer.key
+          forwardedHeadersTrustedIPs:
+            - 127.0.0.1/32
+            - 10.0.0.0/8
+            - 172.16.0.0/12
+            - 192.168.0.0/16
+            - 100.64.0.0/10
+          clientTrustedIPs:
+            - 127.0.0.1/32
+            - 100.64.0.0/10
+
+    texlooper-auth:
+      forwardAuth:
+        address: http://auth:3000/auth/verify
+        trustForwardHeader: true
+        authResponseHeaders:
+          - X-Forwarded-User
+
+  routers:
+    texlooper-login:
+      rule: PathPrefix(`/login`) || PathPrefix(`/logout`) || PathPrefix(`/auth/logout`) || PathPrefix(`/auth/verify`) || PathPrefix(`/healthz`)
+      entryPoints:
+        - web
+      middlewares:
+        - crowdsec
+      service: auth
+      priority: 100
+
+    texlooper-app:
+      rule: PathPrefix(`/`)
+      entryPoints:
+        - web
+      middlewares:
+        - crowdsec
+        - texlooper-auth
+      service: app
+      priority: 1
+
+  services:
+    auth:
+      loadBalancer:
+        servers:
+          - url: http://auth:3000
+    app:
+      loadBalancer:
+        servers:
+          - url: http://app:80
