@@ -224,6 +224,15 @@
   align-items: start;
 }
 
+/* Rails slide open/closed by interpolating the track sizes */
+.studio-layout--resizable {
+  transition: grid-template-columns var(--motion-panel) var(--ease-out);
+}
+
+body.is-resizing-panes .studio-layout--resizable {
+  transition: none;
+}
+
 .overflow-menu__sep {
   margin: 0.25rem 0;
   border: 0;
@@ -259,40 +268,32 @@ body.is-resizing-panes {
   overflow: hidden;
 }
 
-.studio-rail__body {
-  min-width: 0;
+/* Rail header: title + collapse control live inside the panel flow,
+   so nothing floats over the content below. */
+.rail-head {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  padding: 0.3rem 0.5rem 0.3rem 0.75rem;
+  border-bottom: 1px solid var(--border);
 }
 
-.studio-rail--collapsed .studio-rail__body {
-  overflow: hidden;
+.studio-inspector .rail-head {
+  padding: 0.3rem 0.75rem 0.3rem 0.5rem;
 }
 
-/* Discreet collapse affordance: a quiet chevron on the canvas-facing
-   edge; the text label stays in the DOM for assistive tech only. */
-.rail-chrome {
-  position: absolute;
-  top: 4px;
-  z-index: 7;
-  display: flex;
-  justify-content: flex-end;
-  width: 1.75rem;
-  border: 0;
-  background: transparent;
+.rail-head__label {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  user-select: none;
 }
 
-.studio-nav .rail-chrome {
-  right: 6px;
-}
-
-.studio-inspector .rail-chrome {
-  right: auto;
-  left: 6px;
-  justify-content: flex-start;
-}
-
-.rail-toggle {
+.rail-head__btn {
   display: grid;
   place-items: center;
   width: 1.5rem;
@@ -302,7 +303,7 @@ body.is-resizing-panes {
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--ink-faint);
-  opacity: 0.55;
+  opacity: 0.7;
   cursor: pointer;
   transition:
     opacity var(--motion-fast) var(--ease-out),
@@ -310,32 +311,28 @@ body.is-resizing-panes {
     color var(--motion-fast) var(--ease-out);
 }
 
-.rail-toggle:hover,
-.rail-toggle:focus-visible {
+.rail-head__btn:hover,
+.rail-head__btn:focus-visible {
   opacity: 1;
   border-color: var(--border);
   background: var(--surface-hover);
   color: var(--ink);
 }
 
-.rail-toggle__label {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
+/* Collapsed rail: the expand button stands alone */
+[data-collapsed] .rail-head {
+  justify-content: center;
+  padding-inline: 0.25rem;
 }
 
-/* rails need headroom for the floating toggle */
 .studio-rail__body {
-  padding-top: 1.9rem;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .studio-rail--collapsed .studio-rail__body {
-  padding-top: 1.9rem;
+  overflow: hidden;
 }
 
 .pane-resizer {
@@ -782,41 +779,45 @@ body.is-resizing-panes {
   animation: mode-fade var(--motion-fast) var(--ease-out);
 }
 
-.prop-dock--collapsed {
-  height: auto;
+.prop-dock__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0.25rem 0.5rem 0.25rem 0.75rem;
 }
 
-.prop-dock__body {
-  min-width: 0;
-}
-
-.prop-dock__toggle {
-  position: absolute;
-  top: 4px;
-  right: var(--space-3);
-  z-index: 2;
-  display: grid;
-  place-items: center;
-  width: 1.5rem;
-  height: 1.5rem;
-  padding: 0;
-  border: 1px solid transparent;
-  border-radius: var(--radius-sm);
-  background: transparent;
+.prop-dock__title {
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
   color: var(--ink-faint);
-  opacity: 0.55;
-  transition:
-    opacity var(--motion-fast) var(--ease-out),
-    background var(--motion-fast) var(--ease-out),
-    color var(--motion-fast) var(--ease-out);
+  user-select: none;
 }
 
-.prop-dock__toggle:hover,
-.prop-dock__toggle:focus-visible {
-  opacity: 1;
-  background: var(--surface-hover);
-  border-color: var(--border);
-  color: var(--ink);
+.prop-dock--collapsed .prop-dock__title {
+  display: none;
+}
+
+.prop-dock--collapsed .prop-dock__head {
+  justify-content: center;
+}
+
+/* Body slides open/closed via the grid-rows trick (auto-height aware) */
+.prop-dock__reveal {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--motion-panel) var(--ease-out);
+}
+
+.prop-dock--collapsed .prop-dock__reveal {
+  grid-template-rows: 0fr;
+}
+
+.prop-dock__reveal > .prop-dock__body {
+  min-height: 0;
+  overflow: hidden;
 }
 
 .pane-resizer--north {
@@ -990,7 +991,7 @@ body {
 
 .pane-resizer,
 .resize-handle,
-.prop-dock__toggle {
+.rail-head__btn {
   touch-action: none;
 }
 

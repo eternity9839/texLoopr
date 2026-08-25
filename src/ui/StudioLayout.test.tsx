@@ -75,6 +75,27 @@ describe("StudioLayout — desktop grid", () => {
     expect(nav?.getAttribute("data-collapsed")).toBeNull();
   });
 
+  it("keeps rail controls inside the panel flow, not floating", () => {
+    stubMatchMedia(false);
+    const asideBottom = <div class="appearance-bar">bar</div>;
+    const { container } = render(
+      <StudioLayout {...ui} variant="edit" asideBottom={asideBottom} />,
+    );
+    // No absolutely-positioned chrome remnants
+    expect(container.querySelector(".rail-chrome")).toBeNull();
+    expect(container.querySelector(".rail-toggle")).toBeNull();
+    expect(container.querySelector(".prop-dock__toggle")).toBeNull();
+    // Headers live inside their panels
+    expect(container.querySelector(".studio-nav .rail-head")).toBeTruthy();
+    expect(
+      container.querySelector(".studio-inspector .rail-head"),
+    ).toBeTruthy();
+    const dock = container.querySelector(".prop-dock");
+    expect(dock?.querySelector(".prop-dock__head .rail-head__btn")).toBeTruthy();
+    expect(dock?.querySelector(".prop-dock__reveal .prop-dock__body"))
+      .toBeTruthy();
+  });
+
   it("reacts to viewport changes without remount", () => {
     stubMatchMedia(false);
     const { container } = render(<StudioLayout {...ui} variant="edit" />);

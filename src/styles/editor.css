@@ -1386,8 +1386,7 @@
 
   .tool,
   .ribbon-btn,
-  .rail-toggle,
-  .prop-dock__toggle,
+  .rail-head__btn,
   .prebuild-picker__close {
     min-width: 40px;
     min-height: 40px;
