@@ -1,6 +1,6 @@
 import type { IconName } from "../../ui/icons";
 
-export type InspectorTabId = "props" | "tree" | "meta" | "comments";
+export type InspectorTabId = "props" | "meta" | "comments";
 
 export const INSPECTOR_TABS: {
   id: InspectorTabId;
@@ -8,7 +8,6 @@ export const INSPECTOR_TABS: {
   icon: IconName;
 }[] = [
   { id: "props", label: "Properties", icon: "sliders" },
-  { id: "tree", label: "Hierarchy", icon: "list" },
   { id: "meta", label: "Metadata", icon: "tags" },
   { id: "comments", label: "Notes", icon: "messages" },
 ];
