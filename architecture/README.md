@@ -1,6 +1,6 @@
 # Architecture
 
-Decision records for texLoopr. Prefer short, dated ADRs over long living docs.
+Decision records for texLooper. Prefer short, dated ADRs over long living docs.
 
 ## Layout
 
@@ -28,3 +28,6 @@ Decision records for texLoopr. Prefer short, dated ADRs over long living docs.
 | [0006](adr/0006-edition-chrome-comments-tour.md) | Edition chrome, comments, and guided tour | accepted |
 | [0007](adr/0007-navigator-virtualized-outline.md) | Navigator as a dense, virtualized outline | accepted |
 | [0008](adr/0008-advanced-templates.md) | Advanced templates — repeaters, filters, prebuild, preview vars | accepted |
+| [0009](adr/0009-rust-runtime-backbone.md) | Rust runtime backbone (Tauri catalog + engines) | accepted |
+| [0010](adr/0010-project-artboard-datasets.md) | Project artboard + named datasets / lookup | accepted |
+| [0011](adr/0011-hosted-demo-deploy.md) | Hosted demo deploy (Pangolin + incremental CI) | accepted |
