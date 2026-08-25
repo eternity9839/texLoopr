@@ -247,11 +247,30 @@
   background-color: var(--board);
 }
 
+/* Fit area locks to the page's intrinsic aspect ratio so the sheet is
+   always rendered at exact page size, uniformly scaled (WYSIWYG: pane
+   or viewport size must never distort the page or let blocks stray).
+   Width-bound scale; short panes simply scroll the board. */
+.editor-fit-area {
+  position: relative;
+  width: 100%;
+  margin-inline: auto;
+  aspect-ratio: var(--page-width) / var(--page-height);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.editor-fit {
+  flex: none;
+}
+
 .editor-page {
   position: relative;
-  width: min(100%, var(--page-width));
-  min-height: var(--page-min-height);
-  margin: 0 auto;
+  width: var(--page-width);
+  height: var(--page-height);
+  overflow: hidden;
+  transform-origin: top left;
   background: var(--paper);
   border: 1px solid var(--paper-edge);
   border-radius: 2px;
@@ -267,10 +286,10 @@
   inset: 0;
   display: grid;
   place-content: center;
-  gap: var(--space-2);
+  gap: var(--space-1);
   padding: var(--space-6);
   text-align: center;
-  color: var(--ink-muted);
+  color: var(--ink-faint);
   pointer-events: none;
 }
 

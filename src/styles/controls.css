@@ -47,20 +47,28 @@ button:not([class]):disabled {
   min-height: var(--control-h);
   padding: var(--btn-pad-y) var(--btn-pad-x);
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   background: var(--accent);
   color: var(--accent-text);
   font-weight: 600;
   font-size: var(--text-sm);
+  letter-spacing: 0.01em;
   transition:
     background var(--motion-fast) var(--ease-out),
     border-color var(--motion-fast) var(--ease-out),
     color var(--motion-fast) var(--ease-out),
-    box-shadow var(--motion-fast) var(--ease-out);
+    box-shadow var(--motion-fast) var(--ease-out),
+    transform var(--motion-fast) var(--ease-out);
 }
 
 .btn:hover {
   background: var(--accent-hover);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn:active {
+  transform: scale(0.98);
+  box-shadow: none;
 }
 
 .btn--ghost {
@@ -73,6 +81,11 @@ button:not([class]):disabled {
   border-color: var(--border-strong);
   background: var(--accent-muted);
   color: var(--accent);
+}
+
+/* Canva-style full-round treatment for hero CTAs */
+.btn--pill {
+  border-radius: var(--radius-pill);
 }
 
 /* Low-emphasis sibling for dense toolbars — borderless until hovered */

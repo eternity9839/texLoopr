@@ -46,6 +46,8 @@ import type { BlockType } from "../../model/document";
 import { normalizeMargins } from "../../model/document";
 import { BLOCK_TYPE_ICON } from "../../ui/icons";
 import { BLOCK_TOOLS } from "./Toolbox";
+import { PAGE_WIDTH, PAGE_HEIGHT } from "../../model/document";
+import { fitScale } from "./canvasScale";
 
 interface EditorCanvasProps {
   preview?: boolean;
@@ -62,10 +64,12 @@ function pageCoordsFromEvent(
   pageEl: Element,
   e: MouseEvent,
   step: number | null,
+  scale: number,
 ): { x: number; y: number } {
   const rect = pageEl.getBoundingClientRect();
-  let x = Math.max(0, e.clientX - rect.left);
-  let y = Math.max(0, e.clientY - rect.top);
+  const k = scale || 1;
+  let x = Math.max(0, (e.clientX - rect.left) / k);
+  let y = Math.max(0, (e.clientY - rect.top) / k);
   if (step != null && step > 1) {
     x = Math.round(x / step) * step;
     y = Math.round(y / step) * step;
@@ -94,6 +98,37 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   /** Start positions of every selected block at drag begin (multi-drag) */
   const dragOrigins = useRef<Map<string, { x: number; y: number }>>(new Map());
 
+  // Uniform fit-to-area scale: the sheet is always rendered at exactly
+  // PAGE_WIDTH × PAGE_HEIGHT and scaled as one unit, so blocks can never
+  // stray outside the page on any viewport.
+  const fitAreaRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  useEffect(() => {
+    const el = fitAreaRef.current;
+    if (!el) return;
+    let raf = 0;
+    const update = () => {
+      // Ignore transient zero-size states (hidden pane mid-animation)
+      const rect = el.getBoundingClientRect();
+      const w = rect.width || el.clientWidth;
+      const h = rect.height || el.clientHeight;
+      if (w > 1 && h > 1) setScale(fitScale(w, h));
+    };
+    update();
+    raf = requestAnimationFrame(() => {
+      update();
+      raf = requestAnimationFrame(update);
+    });
+    const t = window.setTimeout(update, 300);
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => {
+      cancelAnimationFrame(raf);
+      window.clearTimeout(t);
+      ro.disconnect();
+    };
+  }, []);
+
   const closeMenu = useCallback(() => setMenu(null), []);
 
   const openBlockMenu = useCallback((e: MouseEvent) => {
@@ -105,14 +140,14 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   const openPageMenu = useCallback((e: MouseEvent, pageEl: Element) => {
     e.preventDefault();
     e.stopPropagation();
-    const placeAt = pageCoordsFromEvent(pageEl, e, snapStep);
+    const placeAt = pageCoordsFromEvent(pageEl, e, snapStep, scale);
     setMenu({
       x: e.clientX,
       y: e.clientY,
       scope: "page",
       placeAt,
     });
-  }, [snapStep]);
+  }, [snapStep, scale]);
 
   const runtime: RuntimeContext | undefined = useMemo(() => {
     if (!preview || !output) return undefined;
@@ -421,7 +456,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
       ".editor-page",
     );
     if (!pageEl) return;
-    const at = pageCoordsFromEvent(pageEl, e, snapStep);
+    const at = pageCoordsFromEvent(pageEl, e, snapStep, scale);
     if (tool) {
       insertBlock(tool, {
         x: Math.max(0, at.x - 40),
@@ -470,8 +505,19 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
             <div class="editor-ruler editor-ruler--y" aria-hidden="true" />
           </>
         )}
-        <div
-          class={preview ? "editor-page editor-page--preview" : "editor-page"}
+        <div class="editor-fit-area" ref={fitAreaRef}>
+          <div
+            class="editor-fit"
+            style={{
+              width: `${PAGE_WIDTH * scale}px`,
+              height: `${PAGE_HEIGHT * scale}px`,
+            }}
+          >
+            <div
+              class={
+                preview ? "editor-page editor-page--preview" : "editor-page"
+              }
+              style={{ transform: `scale(${scale})` }}
           onClick={(e) => {
             e.stopPropagation();
             if (preview) return;
@@ -571,6 +617,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               onChangeContent: (id, content) => updateBlock(id, { content }),
               onGestureStart: pushHistoryCheckpoint,
               snapStep,
+              scale,
               onMoveResize: (id, patch, mode) => {
                 if (mode === "drag" && selectedIds.value.length > 1) {
                   const ids = selectedIds.value;
@@ -599,7 +646,9 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
                 updateBlock(id, patch);
               },
             });
-          })}
+            })}
+            </div>
+          </div>
         </div>
         {!preview && selectedBlock.value && (
           <span class="visually-hidden">
