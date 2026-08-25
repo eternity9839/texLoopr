@@ -147,3 +147,53 @@ button:not([class]):disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ---- Shared appearance controls (properties panel + ribbon) ---- */
+.appearance-font select {
+  max-width: 11rem;
+  min-height: calc(var(--control-h) - 4px);
+}
+
+.appearance-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.appearance-size input {
+  width: 3rem;
+  min-height: calc(var(--control-h) - 4px);
+  padding: 0 0.25rem;
+  text-align: center;
+}
+
+.appearance-biu,
+.appearance-align {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.appearance-biu .btn[aria-pressed="true"],
+.appearance-align .btn[aria-pressed="true"] {
+  background: var(--accent-muted);
+  color: var(--accent);
+}
+
+.appearance-swatch input[type="color"] {
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: none;
+  cursor: pointer;
+}
+
+.ribbon-typography {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
