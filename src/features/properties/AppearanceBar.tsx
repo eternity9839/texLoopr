@@ -299,10 +299,10 @@ export function AppearanceBar() {
           class="prop-bar__head prop-bar__head--btn"
           onClick={() => updatePrefs({ propsCollapsed: false })}
           aria-expanded={false}
-          title="Show properties"
+          title="Show appearance controls"
         >
           <Icon name="sliders" size={13} />
-          <span>Properties</span>
+          <span>Appearance</span>
           <Icon name="chevronUp" size={12} />
         </button>
       </div>
@@ -314,7 +314,7 @@ export function AppearanceBar() {
     : "Page setup";
 
   return (
-    <div class="prop-dock" aria-label="Properties">
+    <div class="prop-dock" aria-label="Appearance">
       <div class="prop-bar__head prop-bar__head--static">
         <Icon name="sliders" size={13} />
         <span class="prop-bar__title">{title}</span>
@@ -323,7 +323,7 @@ export function AppearanceBar() {
           class="prop-bar__fold"
           onClick={() => updatePrefs({ propsCollapsed: true })}
           aria-expanded={true}
-          title="Collapse properties"
+          title="Collapse appearance controls"
         >
           <Icon name="chevronDown" size={12} />
         </button>

@@ -85,15 +85,17 @@ describe("StudioLayout — desktop grid", () => {
     expect(container.querySelector(".rail-chrome")).toBeNull();
     expect(container.querySelector(".rail-toggle")).toBeNull();
     expect(container.querySelector(".prop-dock__toggle")).toBeNull();
-    // Headers live inside their panels
+    // Headers live inside their panels and bodies slide via reveal
     expect(container.querySelector(".studio-nav .rail-head")).toBeTruthy();
     expect(
       container.querySelector(".studio-inspector .rail-head"),
     ).toBeTruthy();
-    const dock = container.querySelector(".prop-dock");
-    expect(dock?.querySelector(".prop-dock__head .rail-head__btn")).toBeTruthy();
-    expect(dock?.querySelector(".prop-dock__reveal .prop-dock__body"))
-      .toBeTruthy();
+    expect(
+      container.querySelector(".studio-nav .rail-reveal .studio-rail__body"),
+    ).toBeTruthy();
+    // Bottom content renders bare, without a duplicate dock chrome
+    expect(container.querySelector(".appearance-bar")).toBeTruthy();
+    expect(container.querySelector(".prop-dock")).toBeNull();
   });
 
   it("reacts to viewport changes without remount", () => {
@@ -127,9 +129,61 @@ describe("StudioLayout — narrow stacked flow", () => {
     // No inline column template — the media query stacks the grid
     const layout = container.querySelector(".studio-layout") as HTMLElement;
     expect(layout.getAttribute("style")).toBeNull();
+    expect(layout.className).toContain("studio-layout--stack");
   });
 
-  it("collapse toggles mark their section collapsed", () => {
+  it("starts canvas-first with both rails collapsed to header bars", () => {
+    const { container } = render(<StudioLayout {...ui} variant="edit" />);
+    expect(
+      container
+        .querySelector(".studio-nav")
+        ?.getAttribute("data-collapsed"),
+    ).toBe("true");
+    expect(
+      container
+        .querySelector(".studio-inspector")
+        ?.getAttribute("data-collapsed"),
+    ).toBe("true");
+    // Closed rails keep their labelled header as the tap target
+    expect(container.querySelector(".studio-nav .rail-head__label")?.textContent).toBe("Outline");
+    expect(container.querySelector(".studio-inspector .rail-head__label")?.textContent).toBe("Inspect");
+    // Prefs stay untouched by the narrow accordion state
+    expect(prefs.value.navCollapsed).toBe(false);
+  });
+
+  it("slides one pane open at a time without touching prefs", () => {
+    const { getByLabelText, container } = render(
+      <StudioLayout {...ui} variant="edit" />,
+    );
+    fireEvent.click(getByLabelText("Expand Outline"));
+    expect(
+      container
+        .querySelector(".studio-nav")
+        ?.getAttribute("data-collapsed"),
+    ).toBeNull();
+    expect(
+      container
+        .querySelector(".studio-inspector")
+        ?.getAttribute("data-collapsed"),
+    ).toBe("true");
+    // Opening the inspector closes the outline (single-open accordion)
+    fireEvent.click(getByLabelText("Expand Inspect"));
+    expect(
+      container
+        .querySelector(".studio-nav")
+        ?.getAttribute("data-collapsed"),
+    ).toBe("true");
+    expect(
+      container
+        .querySelector(".studio-inspector")
+        ?.getAttribute("data-collapsed"),
+    ).toBeNull();
+    expect(prefs.value.navCollapsed).toBe(false);
+    expect(prefs.value.inspectorCollapsed).toBe(false);
+  });
+
+  it("collapse toggles mark their section collapsed on desktop", () => {
+    stubMatchMedia(false);
     const { getByLabelText, container } = render(
       <StudioLayout {...ui} variant="edit" />,
     );
@@ -142,7 +196,7 @@ describe("StudioLayout — narrow stacked flow", () => {
     ).toBe("true");
   });
 
-  it("prop dock grows with its content instead of a fixed height", () => {
+  it("bottom content renders bare and grows with its content", () => {
     const asideBottom = (
       <div class="appearance-bar" style={{ height: "333px" }}>
         controls
@@ -151,9 +205,7 @@ describe("StudioLayout — narrow stacked flow", () => {
     const { container } = render(
       <StudioLayout {...ui} variant="edit" asideBottom={asideBottom} />,
     );
-    const dock = container.querySelector(".prop-dock") as HTMLElement;
-    expect(dock).toBeTruthy();
-    expect(dock.style.height).toBe("");
+    expect(container.querySelector(".appearance-bar")).toBeTruthy();
     expect(container.querySelector(".pane-resizer--north")).toBeNull();
   });
 });

@@ -5,7 +5,7 @@ import { Icon, type IconName } from "./icons";
 
 const NARROW_QUERY = "(max-width: 880px)";
 
-/** True while the viewport fits the phone/tablet drawer layout */
+/** True while the viewport fits the phone/tablet layout */
 function useNarrow(): boolean {
   const [narrow, setNarrow] = useState(
     () =>
@@ -40,6 +40,7 @@ const MAX_INSPECTOR = 480;
 const COLLAPSED = 44;
 
 type ResizeTarget = "nav" | "inspector";
+type PaneId = "nav" | "inspector";
 
 export function StudioLayout({
   variant = "edit",
@@ -54,8 +55,16 @@ export function StudioLayout({
   const previewChrome = !aux && !showInspector;
   const narrow = useNarrow();
 
-  const navCollapsed = Boolean(p.navCollapsed);
-  const inspectorCollapsed = Boolean(p.inspectorCollapsed);
+  // Narrow screens: canvas first, rails collapsed to header bars that
+  // slide open (one at a time). Desktop: prefs-driven side rails.
+  const [openPane, setOpenPane] = useState<PaneId | null>(null);
+
+  const navCollapsed = narrow
+    ? openPane !== "nav"
+    : Boolean(p.navCollapsed);
+  const inspectorCollapsed = narrow
+    ? openPane !== "inspector"
+    : Boolean(p.inspectorCollapsed);
 
   const navW = navCollapsed
     ? COLLAPSED
@@ -120,10 +129,19 @@ export function StudioLayout({
       document.body.classList.add("is-resizing-panes");
     };
 
+  const togglePane = (id: PaneId, prefKey: "navCollapsed" | "inspectorCollapsed") => {
+    if (narrow) {
+      setOpenPane((cur) => (cur === id ? null : id));
+    } else {
+      updatePrefs({ [prefKey]: !p[prefKey] });
+    }
+  };
+
   const layoutClass = [
     "studio-layout",
     aux ? "studio-layout--aux" : "",
     previewChrome ? "studio-layout--preview" : "",
+    narrow ? "studio-layout--stack" : "",
     "studio-layout--resizable",
   ]
     .filter(Boolean)
@@ -146,12 +164,15 @@ export function StudioLayout({
       >
         <RailHead
           label="Outline"
+          compact={!narrow && navCollapsed}
           collapsed={navCollapsed}
           collapseIcon="chevronLeft"
           expandIcon="chevronRight"
-          onToggle={() => updatePrefs({ navCollapsed: !navCollapsed })}
+          onToggle={() => togglePane("nav", "navCollapsed")}
         />
-        <div class="studio-rail__body">{navigator}</div>
+        <div class="rail-reveal">
+          <div class="studio-rail__body">{navigator}</div>
+        </div>
         {!navCollapsed && (
           <div
             class="pane-resizer pane-resizer--east"
@@ -165,27 +186,7 @@ export function StudioLayout({
 
       <section class="studio-main">
         <div class="studio-main__content">{main}</div>
-        {asideBottom && (
-          <div
-            class={p.propsCollapsed ? "prop-dock prop-dock--collapsed" : "prop-dock"}
-          >
-            <div class="prop-dock__head">
-              <span class="prop-dock__title">Properties</span>
-              <button
-                type="button"
-                class="rail-head__btn"
-                title={p.propsCollapsed ? "Expand properties" : "Collapse properties"}
-                aria-expanded={!p.propsCollapsed}
-                onClick={() => updatePrefs({ propsCollapsed: !p.propsCollapsed })}
-              >
-                <Icon name={p.propsCollapsed ? "chevronUp" : "chevronDown"} size={12} />
-              </button>
-            </div>
-            <div class="prop-dock__reveal">
-              <div class="prop-dock__body">{asideBottom}</div>
-            </div>
-          </div>
-        )}
+        {asideBottom}
       </section>
 
       {showInspector && (
@@ -200,14 +201,15 @@ export function StudioLayout({
         >
           <RailHead
             label="Inspect"
+            compact={!narrow && inspectorCollapsed}
             collapsed={inspectorCollapsed}
             collapseIcon="chevronRight"
             expandIcon="chevronLeft"
-            onToggle={() =>
-              updatePrefs({ inspectorCollapsed: !inspectorCollapsed })
-            }
+            onToggle={() => togglePane("inspector", "inspectorCollapsed")}
           />
-          <div class="studio-rail__body">{inspector}</div>
+          <div class="rail-reveal">
+            <div class="studio-rail__body">{inspector}</div>
+          </div>
           {!inspectorCollapsed && (
             <div
               class="pane-resizer pane-resizer--west"
@@ -226,30 +228,39 @@ export function StudioLayout({
 function RailHead({
   label,
   collapsed,
+  compact,
   collapseIcon,
   expandIcon,
   onToggle,
 }: {
   label: string;
   collapsed: boolean;
+  /** Slim strip mode (desktop collapsed rail): icon only */
+  compact?: boolean;
   collapseIcon: IconName;
   expandIcon: IconName;
   onToggle: () => void;
 }) {
   return (
-    <header class="rail-head">
-      {!collapsed && <span class="rail-head__label">{label}</span>}
+    <header
+      class={
+        collapsed && compact
+          ? "rail-head rail-head--compact"
+          : collapsed
+            ? "rail-head rail-head--closed"
+            : "rail-head"
+      }
+    >
+      {!compact && <span class="rail-head__label">{label}</span>}
       <button
         type="button"
-        class={
-          collapsed ? "rail-head__btn rail-head__btn--solo" : "rail-head__btn"
-        }
+        class={compact ? "rail-head__btn rail-head__btn--solo" : "rail-head__btn"}
         title={collapsed ? `Expand ${label}` : `Collapse ${label}`}
         aria-expanded={!collapsed}
         aria-label={collapsed ? `Expand ${label}` : `Collapse ${label}`}
         onClick={onToggle}
       >
-        <Icon name={collapsed ? expandIcon : collapseIcon} size={12} />
+        <Icon name={compact ? expandIcon : collapsed ? "chevronDown" : collapseIcon} size={12} />
       </button>
     </header>
   );

@@ -319,8 +319,8 @@ body.is-resizing-panes {
   color: var(--ink);
 }
 
-/* Collapsed rail: the expand button stands alone */
-[data-collapsed] .rail-head {
+/* Collapsed desktop rail: the expand button stands alone */
+.rail-head--compact {
   justify-content: center;
   padding-inline: 0.25rem;
 }
@@ -779,45 +779,19 @@ body.is-resizing-panes {
   animation: mode-fade var(--motion-fast) var(--ease-out);
 }
 
-.prop-dock__head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2);
-  padding: 0.25rem 0.5rem 0.25rem 0.75rem;
-}
-
-.prop-dock__title {
-  font-size: 0.66rem;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-  user-select: none;
-}
-
-.prop-dock--collapsed .prop-dock__title {
-  display: none;
-}
-
-.prop-dock--collapsed .prop-dock__head {
-  justify-content: center;
-}
-
-/* Body slides open/closed via the grid-rows trick (auto-height aware) */
-.prop-dock__reveal {
+/* Rails slide open/closed via the grid-rows trick (auto-height aware) */
+.rail-reveal {
   display: grid;
   grid-template-rows: 1fr;
   transition: grid-template-rows var(--motion-panel) var(--ease-out);
 }
 
-.prop-dock--collapsed .prop-dock__reveal {
+.studio-rail--collapsed .rail-reveal {
   grid-template-rows: 0fr;
 }
 
-.prop-dock__reveal > .prop-dock__body {
+.rail-reveal > .studio-rail__body {
   min-height: 0;
-  overflow: hidden;
 }
 
 .pane-resizer--north {
@@ -995,14 +969,28 @@ body {
   touch-action: none;
 }
 
-/* ── Narrow viewports: same flow, stacked full-width sections ───────
-   No drawers, scrims or floating containers: the grid collapses to a
-   single column and every rail grows with its content. The page
-   scrolls as one document. */
+/* ── Narrow viewports: canvas first, rails as sliding sections ──────
+   The grid stacks to one column with the stage ordered before the
+   rails. Rails start collapsed to their header bar and slide open
+   (one at a time) via .rail-reveal — no drawers, scrims or overlays. */
 
 @media (max-width: 880px) {
   .studio-layout {
     grid-template-columns: 1fr !important;
+  }
+
+  .studio-layout--stack .studio-main {
+    order: -1;
+  }
+
+  .studio-layout--stack .pane-resizer {
+    display: none;
+  }
+
+  .studio-layout--stack .studio-nav,
+  .studio-layout--stack .studio-inspector {
+    border-inline: 0;
+    border-top: 1px solid var(--border);
   }
 
   .context-bar__meta,
