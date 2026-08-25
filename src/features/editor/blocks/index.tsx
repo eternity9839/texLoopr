@@ -27,6 +27,8 @@ export interface BlockViewProps {
   runtime?: RuntimeContext;
   commentCount?: number;
   snapStep?: number | null;
+  /** Canvas zoom factor — pointer deltas arrive in screen px */
+  scale?: number;
   onSelect: (id: string, opts?: { toggle?: boolean }) => void;
   onContextMenu?: (id: string, e: MouseEvent) => void;
   onChangeContent?: (id: string, content: Record<string, unknown>) => void;
@@ -105,6 +107,7 @@ export function BlockFrame(
     row,
     runtime,
     snapStep = null,
+    scale = 1,
     onSelect,
     onContextMenu,
     onMoveResize,
@@ -139,8 +142,8 @@ export function BlockFrame(
       const g = gestureRef.current;
       if (!g || !onMoveResize) return;
       if (e.pointerId !== g.pointerId) return;
-      const dx = e.clientX - g.ox;
-      const dy = e.clientY - g.oy;
+      const dx = (e.clientX - g.ox) / scale;
+      const dy = (e.clientY - g.oy) / scale;
       if (!g.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
       g.moved = true;
       e.preventDefault();
@@ -202,7 +205,7 @@ export function BlockFrame(
       window.removeEventListener("pointerup", onUp);
       window.removeEventListener("pointercancel", onUp);
     };
-  }, [onMoveResize, snapStep, selected]);
+  }, [onMoveResize, snapStep, selected, scale]);
 
   if (!evaluateCondition(block.condition, row, runtime) && preview) {
     return null;

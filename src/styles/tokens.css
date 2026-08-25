@@ -219,7 +219,7 @@
   --tools-width: clamp(4.75rem, 4.25rem + 1.2vw, 5.75rem);
   --inspector-width: clamp(14rem, 13rem + 4vw, 18rem);
   --page-width: 720px;
-  --page-min-height: 960px;
+  --page-height: 960px;
   --handle-size: 8px;
 }
 
