@@ -44,8 +44,8 @@ import {
   LINK_HOOK_LABEL,
 } from "../../../model/linkHook";
 import { BindingPreview } from "../BindingPreview";
+import { MergeAwareText } from "../MergeAwareText";
 import { RichText } from "../../../model/richText";
-import { onTextExpansionKeyDown } from "../textExpansionField";
 import {
   activePage,
   dataRows,
@@ -83,6 +83,7 @@ const DRAG_THRESHOLD = 3;
 
 export function styleFromBlock(
   block: Block,
+  opts?: { preview?: boolean },
 ): Record<string, string | number | undefined> {
   const s = block.style;
   // Flex groups use padding as layout inset in computeFlexRects — skip CSS
@@ -90,19 +91,25 @@ export function styleFromBlock(
   const cssPadding =
     s.layout === "flex" ? 0 : (s.padding ?? 0);
   const radius = s.borderRadius ?? 0;
+  let color = s.color ?? "#2a2622";
+  const background = s.background ?? "transparent";
+  // Edit: light ink on transparent frames is unreadable — force body ink.
+  if (!opts?.preview && isLightInk(color) && !isOpaqueFill(background)) {
+    color = "var(--ink)";
+  }
   return {
     fontSize: s.fontSize ?? 14,
     fontWeight: s.fontWeight ?? 400,
     fontStyle: s.fontStyle ?? "normal",
     textDecoration: s.textDecoration ?? "none",
     fontFamily: s.fontFamily ? FONT_STACKS[s.fontFamily] : undefined,
-    color: s.color ?? "#2a2622",
+    color,
     textAlign: s.textAlign ?? "left",
     textIndent: `${s.textIndent ?? 0}px`,
     lineHeight: s.lineHeight && s.lineHeight > 0 ? String(s.lineHeight) : "1.4",
     letterSpacing: `${s.letterSpacing ?? 0}px`,
     textTransform: s.textTransform ?? "none",
-    background: s.background ?? "transparent",
+    background,
     borderRadius: radius,
     // Clip fills to rounded / circular corners (badges, pills, …)
     overflow: radius > 0 ? "hidden" : undefined,
@@ -116,6 +123,29 @@ export function styleFromBlock(
         ? `${s.borderWidth}px solid ${s.borderColor ?? "#2a2622"}`
         : "none",
   };
+}
+
+function isOpaqueFill(bg: string): boolean {
+  const t = bg.trim().toLowerCase();
+  if (!t || t === "transparent" || t === "none") return false;
+  if (t.startsWith("rgba") && /,\s*0\s*\)$/.test(t)) return false;
+  return true;
+}
+
+function isLightInk(color: string): boolean {
+  const hex = color.trim();
+  const m = hex.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
+  if (!m) return false;
+  let h = m[1]!;
+  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
+  const r = parseInt(h.slice(0, 2), 16) / 255;
+  const g = parseInt(h.slice(2, 4), 16) / 255;
+  const b = parseInt(h.slice(4, 6), 16) / 255;
+  // Relative luminance (sRGB)
+  const lin = (c: number) =>
+    c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  return L > 0.72;
 }
 
 /** CSS filter() string built from a picture block's filter params */
@@ -406,7 +436,7 @@ export function BlockFrame(
         ]
           .filter(Boolean)
           .join(" ")}
-        style={styleFromBlock(block)}
+        style={styleFromBlock(block, { preview })}
       >
         {children}
       </div>
@@ -429,7 +459,7 @@ export function BlockFrame(
 }
 
 export function ParagraphBlock(props: BlockViewProps) {
-  const { block, preview, row, runtime, onChangeContent } = props;
+  const { block, preview, row, runtime, selected, onChangeContent } = props;
   const value = textValue(block, row, preview, runtime);
   return (
     <BlockFrame {...props}>
@@ -438,20 +468,14 @@ export function ParagraphBlock(props: BlockViewProps) {
           <RichText text={value} />
         </div>
       ) : (
-        <textarea
-          value={String(block.content.text ?? "")}
-          onInput={(e) =>
-            onChangeContent?.(block.id, { text: e.currentTarget.value })
-          }
-          onKeyDown={(e) =>
-            onTextExpansionKeyDown(e, (text, cursor) => {
-              onChangeContent?.(block.id, { text });
-              queueMicrotask(() => {
-                e.currentTarget.setSelectionRange(cursor, cursor);
-              });
-            })
-          }
-          aria-label={`${block.name} text`}
+        <MergeAwareText
+          text={String(block.content.text ?? "")}
+          blockId={block.id}
+          blockName={block.name}
+          row={row}
+          runtime={runtime}
+          selected={selected}
+          onChangeContent={onChangeContent}
         />
       )}
     </BlockFrame>
@@ -593,7 +617,7 @@ export function LinkBlock(props: BlockViewProps) {
 }
 
 export function ListBlock(props: BlockViewProps) {
-  const { block, preview, row, runtime } = props;
+  const { block, preview, row, runtime, selected, onChangeContent } = props;
   const items = (block.content.items as string[]) ?? [];
   const style = ORDERED.includes(
     (block.style.listStyle ?? "disc") as ListStyle,
@@ -609,12 +633,28 @@ export function ListBlock(props: BlockViewProps) {
       >
         {items.map((item, i) => (
           <li key={i}>
-            <RichText
-              text={resolveTemplate(item, row, {
-                missingAsEmpty: preview,
-                ctx: runtime,
-              })}
-            />
+            {preview ? (
+              <RichText
+                text={resolveTemplate(item, row, {
+                  missingAsEmpty: true,
+                  ctx: runtime,
+                })}
+              />
+            ) : (
+              <MergeAwareText
+                text={item}
+                blockId={block.id}
+                blockName={`${block.name} item ${i + 1}`}
+                row={row}
+                runtime={runtime}
+                selected={selected}
+                onChangeContent={(_id, content) => {
+                  const next = [...items];
+                  next[i] = String(content.text ?? "");
+                  onChangeContent?.(block.id, { items: next });
+                }}
+              />
+            )}
           </li>
         ))}
       </Tag>
@@ -761,7 +801,7 @@ export function ShapeBlock(props: BlockViewProps) {
 }
 
 export function TableBlock(props: BlockViewProps) {
-  const { block, preview, row, runtime } = props;
+  const { block, preview, row, runtime, selected, onChangeContent } = props;
   const cells = (block.content.cells as string[][]) ?? [];
   const header = Boolean(block.content.header);
   const datasetName = String(block.content.datasetName ?? "").trim();
@@ -791,6 +831,32 @@ export function TableBlock(props: BlockViewProps) {
     ? dataRows.map((r) => mapTableItemToCells(r, templates, preview, runtime))
     : cells.slice(header ? 1 : 0);
 
+  const renderEditCell = (cell: string, ri: number, ci: number, isHeader: boolean) => {
+    if (preview || bound) {
+      return resolveTemplate(String(cell), row, {
+        missingAsEmpty: preview,
+        ctx: runtime,
+      });
+    }
+    return (
+      <MergeAwareText
+        text={String(cell)}
+        blockId={block.id}
+        blockName={`${block.name} cell`}
+        row={row}
+        runtime={runtime}
+        selected={selected}
+        onChangeContent={(_id, content) => {
+          const next = cells.map((r) => [...r]);
+          const rowIdx = isHeader ? 0 : header ? ri + 1 : ri;
+          if (!next[rowIdx]) return;
+          next[rowIdx]![ci] = String(content.text ?? "");
+          onChangeContent?.(block.id, { cells: next });
+        }}
+      />
+    );
+  };
+
   return (
     <BlockFrame {...props}>
       <table
@@ -811,10 +877,12 @@ export function TableBlock(props: BlockViewProps) {
             <tr>
               {(cells[0] ?? []).map((cell, ci) => (
                 <th key={ci} style={headerBg ? { background: headerBg } : undefined}>
-                  {resolveTemplate(cell, row, {
-                    missingAsEmpty: preview,
-                    ctx: runtime,
-                  })}
+                  {bound
+                    ? resolveTemplate(cell, row, {
+                        missingAsEmpty: preview,
+                        ctx: runtime,
+                      })
+                    : renderEditCell(cell, 0, ci, true)}
                 </th>
               ))}
             </tr>
@@ -827,10 +895,7 @@ export function TableBlock(props: BlockViewProps) {
                 <td key={ci}>
                   {bound
                     ? String(cell)
-                    : resolveTemplate(String(cell), row, {
-                        missingAsEmpty: preview,
-                        ctx: runtime,
-                      })}
+                    : renderEditCell(String(cell), ri, ci, false)}
                 </td>
               ))}
             </tr>
