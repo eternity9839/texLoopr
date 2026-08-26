@@ -32,6 +32,7 @@ import {
   setInsertPlacement,
   undoEdit,
   updateBlock,
+  updatePage,
 } from "../state/store";
 import { PREBUILD_RECIPES } from "../model/prebuild/library";
 import { normalizeMargins, PAGE_HEIGHT, PAGE_WIDTH } from "../model/document";
@@ -333,5 +334,20 @@ describe("feature: edit history", () => {
     expect(historyActionLog()).toEqual([
       { label: "Current state", kind: "current" },
     ]);
+  });
+});
+
+describe("feature: page margins", () => {
+  it("merges one-side patches without resetting the others", () => {
+    const page = activePage.value!;
+    updatePage(page.id, { margins: { top: 10, right: 20, bottom: 30, left: 40 } });
+    updatePage(page.id, { margins: { bottom: 0 } });
+    updatePage(page.id, { margins: { left: 12 } });
+    expect(normalizeMargins(activePage.value?.margins)).toEqual({
+      top: 10,
+      right: 20,
+      bottom: 0,
+      left: 12,
+    });
   });
 });

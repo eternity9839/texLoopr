@@ -15,7 +15,6 @@ import {
   nudgeZOrder,
 } from "../../state/store";
 import {
-  DEFAULT_MARGINS,
   LIST_STYLES,
   SHAPE_VARIANTS,
   normalizeMargins,
@@ -1057,10 +1056,8 @@ function MarginFields({
           value={margins[key]}
           onValue={(v) =>
             updatePage(pageId, {
-              margins: {
-                ...(DEFAULT_MARGINS as PageMargins),
-                [key]: Math.max(0, v),
-              },
+              // Partial only — updatePage merges onto current margins.
+              margins: { [key]: Math.max(0, v) },
             })
           }
         />
