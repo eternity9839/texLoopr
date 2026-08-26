@@ -66,6 +66,12 @@ fi
 
 echo "plan: app=$need_app auth=$need_auth proxy=$need_proxy"
 
+# Legacy compose project name stole :8788 after rename to texlooper — drop if present.
+if docker ps -a --format '{{.Names}}' | grep -qx 'texloopr-traefik'; then
+  echo "removing legacy compose project texloopr (frees 127.0.0.1:8788)"
+  docker compose -p texloopr down --remove-orphans || true
+fi
+
 if [[ "$need_auth" == "1" ]]; then
   docker compose build auth
   docker compose up -d --no-deps --force-recreate auth
