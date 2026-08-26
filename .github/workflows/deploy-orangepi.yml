@@ -37,23 +37,32 @@ jobs:
       - uses: actions/checkout@v4
 
       # Tailnet first — Attic substituter is only reachable over Tailscale.
-      # v4 supports `ping` (v3 ignored it and raced the peer netmap).
+      # Stay on v3 (v4 rejected this OAuth client with "invalid key"); ping manually.
       - name: Tailscale
-        uses: tailscale/github-action@v4
+        uses: tailscale/github-action@v3
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: ${{ env.TS_CI_TAG }}
-          ping: orangepi5
 
-      - name: Tailnet identity
+      - name: Wait for orangepi5 peer
         run: |
+          set -euo pipefail
           echo "self:"
-          tailscale status --self
-          echo "tags:"
-          tailscale status --json | jq -r '.Self.Tags // empty'
-          echo "ping orangepi5:"
-          tailscale ping -c 3 orangepi5
+          tailscale status --self || true
+          echo "tags: $(tailscale status --json | jq -r '.Self.Tags // empty | join(",")')"
+          for i in $(seq 1 30); do
+            if tailscale ping -c 1 --timeout 3s orangepi5 >/dev/null 2>&1; then
+              echo "orangepi5 reachable after ${i} attempt(s)"
+              tailscale ping -c 3 orangepi5
+              exit 0
+            fi
+            echo "waiting for orangepi5 (${i}/30)…"
+            sleep 2
+          done
+          echo "error: orangepi5 never answered ping" >&2
+          tailscale status || true
+          exit 1
 
       - name: Attic smoke (tailnet)
         run: |
