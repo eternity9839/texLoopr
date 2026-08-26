@@ -1,0 +1,47 @@
+# Validate Conventional Commits (AGENTS.md) on PR + main pushes.
+name: Commitlint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: commitlint-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  commitlint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install commitlint
+        run: |
+          npm install --no-save \
+            @commitlint/cli@19.8.1 \
+            @commitlint/config-conventional@19.8.1
+
+      - name: Lint commit messages
+        run: |
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            FROM="${{ github.event.pull_request.base.sha }}"
+            TO="${{ github.event.pull_request.head.sha }}"
+          else
+            # Push to main: lint the pushed range (before..after). Full history if forced/create.
+            FROM="${{ github.event.before }}"
+            TO="${{ github.sha }}"
+            if [[ -z "$FROM" || "$FROM" =~ ^0+$ ]]; then
+              FROM="$(git rev-list --max-parents=0 HEAD | tail -1)"
+            fi
+          fi
+          echo "commitlint range: ${FROM}..${TO}"
+          npx commitlint --from "$FROM" --to "$TO" --verbose

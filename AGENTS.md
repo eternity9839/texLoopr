@@ -35,10 +35,23 @@ The app version is **derived from conventional commits**, never hand-picked:
 | only `fix` / `perf` / `refactor` etc. | patch  |
 | any breaking change                   | major  |
 
-Run the bump before publishing/building release artifacts:
+### CI (source of truth)
+
+- **Commitlint** (`.github/workflows/commitlint.yml`) — rejects non-conventional
+  commit subjects on PRs and pushes to `main`.
+- **Release** (`.github/workflows/release.yml`) — on `main` (and
+  `workflow_dispatch`), runs `npm run release:bump`, commits
+  `chore(release): v<version>`, and pushes tag `v<version>`. Skips when HEAD
+  is already tagged or the push is itself a release commit. Does **not**
+  deploy.
+
+Synced manifests: `package.json`, `package-lock.json`,
+`src-tauri/tauri.conf.json`, `src-tauri/Cargo.toml`, `src-tauri/Cargo.lock`.
+
+### Local (optional)
 
 ```fish
-npm run release:bump    # rewrites version in package.json + src-tauri/tauri.conf.json
+npm run release:bump    # rewrite manifests from commits since last v* tag
 git add -A && git commit -m "chore(release): v<version>" && git tag v<version>
 ```
 
@@ -47,7 +60,7 @@ Rules:
 1. One logical concern per commit; features are committed as `feat(...)` so
    the next bump picks them up.
 2. Never bump manually with `npm version`; always via `npm run release:bump`
-   so both manifests stay in sync.
+   (or the Release workflow) so all manifests stay in sync.
 3. Android/desktop builds must be produced from a tagged commit
    (`tauri.android.versionCode/Name` derive from `src-tauri/tauri.conf.json`).
 4. APK artifacts: debug builds may ride on untagged heads; release builds
