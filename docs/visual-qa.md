@@ -9,6 +9,11 @@
 - [ ] Options bar: view mode, **artboard** (writes `project.artboard`), **zoom** (Fit / % / ±), grid
 - [ ] Landscape sample (`landscape-slide`) opens 960×540; Screen/PDF/Email hide different blocks
 - [ ] Preview kinds include Image; hint explains condition filtering; Edit hides pure output.kind layouts (SMS/mobile) unless that output is active
+- [ ] Continuous Edit: idle pages stay in edit chrome ({{}} / chips), not preview-resolved; click activates page
+- [ ] Per-page rulers hug each artboard (not outer pasteboard); continuous gaps are pasteboard-only
+- [ ] Language: Settings → General; default English; inspector/toolbox/Surface setup follow locale
+- [ ] Edit contrast: transparent block frames; light sample ink forced to --ink when no fill; muted footers readable
+- [ ] Merge herestrings in text/list/table show green chips until double-click edit (literal {{}})
 - [ ] Data studio: empty editable table by default; + Dataset tabs; key field; nested tabs for JSON arrays (line_items, product_files); optional Paste CSV
 - [ ] `lookup('dataset', key, 'field')` resolves in Preview when datasets are linked
 - [ ] Studio switch: Edit ↔ Data; Preview toggle / `Ctrl+.`; preview row `[` `]` / Alt+←→; output Shift+`[` `]`
