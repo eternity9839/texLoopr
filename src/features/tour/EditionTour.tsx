@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import { getTourSteps } from "../../model/tour";
 import {
   nextTourStep,
@@ -9,6 +9,7 @@ import {
   tourStepIndex,
 } from "../../state/store";
 import { t } from "../../i18n";
+import { clampToViewport } from "../../ui/viewportClamp";
 
 interface Rect {
   top: number;
@@ -24,6 +25,10 @@ export function EditionTour() {
   const steps = getTourSteps(locale);
   const step = steps[index];
   const [spot, setSpot] = useState<Rect | null>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [cardPos, setCardPos] = useState<{ top: number; left: number } | null>(
+    null,
+  );
 
   useLayoutEffect(() => {
     if (!active || !step?.target) {
@@ -43,6 +48,28 @@ export function EditionTour() {
       height: r.height,
     });
   }, [active, index, step?.target, step?.view, step?.preview, step?.overlay]);
+
+  useLayoutEffect(() => {
+    if (!active || !spot) {
+      setCardPos(null);
+      return;
+    }
+    const card = cardRef.current;
+    const pad = 12;
+    const w = card?.offsetWidth ?? 352;
+    const h = card?.offsetHeight ?? 220;
+    const preferredTop = spot.top + spot.height + pad;
+    const preferredLeft = spot.left;
+    const { left, top } = clampToViewport(preferredLeft, preferredTop, w, h, pad);
+    // If clamped onto the spotlight, prefer above the target when there is room.
+    if (top < spot.top + spot.height && spot.top - h - pad >= pad) {
+      setCardPos(
+        clampToViewport(preferredLeft, spot.top - h - pad, w, h, pad),
+      );
+      return;
+    }
+    setCardPos({ left, top });
+  }, [active, spot, index, step?.title, step?.body]);
 
   useEffect(() => {
     if (!active) return;
@@ -64,15 +91,14 @@ export function EditionTour() {
 
   if (!active || !step) return null;
 
-  const cardStyle = spot
-    ? {
-        top: Math.min(
-          window.innerHeight - 220,
-          Math.max(12, spot.top + spot.height + 12),
-        ),
-        left: Math.min(window.innerWidth - 360, Math.max(12, spot.left)),
-      }
-    : { top: "30%", left: "50%", transform: "translateX(-50%)" };
+  const cardStyle = cardPos
+    ? { top: cardPos.top, left: cardPos.left }
+    : spot
+      ? {
+          top: Math.max(12, spot.top + spot.height + 12),
+          left: Math.max(12, spot.left),
+        }
+      : { top: "30%", left: "50%", transform: "translateX(-50%)" };
 
   return (
     <div
@@ -95,6 +121,7 @@ export function EditionTour() {
       )}
       <div
         class="tour-card"
+        ref={cardRef}
         style={cardStyle as Record<string, string | number>}
       >
         <p class="tour-card__step">

@@ -13,6 +13,36 @@ describe("DEMO_LIBRARY", () => {
     expect(DEMO_LIBRARY.map((d) => d.id)).toContain("email");
     expect(DEMO_LIBRARY.map((d) => d.id)).toContain("landscape-slide");
     expect(DEMO_LIBRARY.map((d) => d.id)).toContain("a5-handout");
+    expect(DEMO_LIBRARY.map((d) => d.id)).toContain("wedding");
+  });
+
+  it("assigns every demo a catalog bucket", () => {
+    for (const entry of DEMO_LIBRARY) {
+      expect(entry.bucket).toBeTruthy();
+      expect(["business", "mass-publication", "personal", "ads"]).toContain(
+        entry.bucket,
+      );
+    }
+  });
+
+  it("seeds Northline styles on branded samples", () => {
+    for (const id of ["letter", "email", "welcome", "wedding", "advertisement"]) {
+      const project = getDemo(id)!.build();
+      expect(project.textStyles?.some((s) => s.id === "nl-h1")).toBe(true);
+      expect(project.documentStyles?.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("letter exposes EN/FR language rows and gated body blocks", () => {
+    const entry = getDemo("letter")!;
+    const rows = parseDataInput(entry.sampleCsv);
+    expect(rows.some((r) => r.language === "fr")).toBe(true);
+    expect(rows.some((r) => r.language === "en")).toBe(true);
+    const project = entry.build();
+    const bodies = project.pages[0]!.blocks.filter((b) =>
+      /Body (EN|FR)/.test(b.name),
+    );
+    expect(bodies.length).toBe(2);
   });
 
   it("builds projects with pages and blocks", () => {
@@ -164,6 +194,18 @@ describe("DEMO_LIBRARY", () => {
     const entry = getDemo("letter")!;
     expect(entry.artboard).toBe("letter");
     expect(entry.build().artboard).toBe("letter");
+  });
+
+  it("letter seeds project page chrome header and footer", () => {
+    const project = getDemo("letter")!.build();
+    expect(project.pageChrome?.header?.enabled).toBe(true);
+    expect(project.pageChrome?.footer?.enabled).toBe(true);
+    expect(project.pageChrome?.header?.blocks.length).toBeGreaterThan(0);
+    expect(project.pageChrome?.footer?.blocks.length).toBeGreaterThan(0);
+    // Letterhead lives in chrome, not duplicated on each page body.
+    for (const page of project.pages) {
+      expect(page.blocks.some((b) => b.name === "Letterhead")).toBe(false);
+    }
   });
 
   it("a5-handout matches the a5 preset size", () => {

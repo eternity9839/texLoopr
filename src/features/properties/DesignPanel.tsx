@@ -13,6 +13,9 @@ import {
   setStudioView,
   updateProject,
   nudgeZOrder,
+  updatePageChromeBand,
+  clearPageChromeBand,
+  promoteSelectionToChrome,
 } from "../../state/store";
 import {
   LIST_STYLES,
@@ -23,6 +26,7 @@ import {
   type PageMargins,
   type ShapeVariant,
 } from "../../model/document";
+import { ensurePageChrome } from "../../model/pageChrome";
 import { MIN_BLOCK_H, MIN_BLOCK_W, px } from "../../model/geometry";
 import { effectiveZ, stackIndexAmongSiblings } from "../../model/layerStack";
 import { dataColumnNames } from "../../model/bindings";
@@ -60,6 +64,11 @@ import {
   TextStyleLibrary,
 } from "./StyleLibraryControls";
 import { LANGUAGE_CONDITION_PRESETS } from "../../model/documentLanguage";
+import {
+  conditionHasClause,
+  toggleConditionClause,
+} from "../../model/conditionCompose";
+import { OUTPUT_KINDS, OUTPUT_KIND_LABEL } from "../../model/workflow";
 
 const TYPE_LABELS: Record<string, string> = {
   paragraph: "Paragraph",
@@ -107,7 +116,7 @@ export function ComponentProps() {
   return (
     <>
       <BlockAssociations compact />
-      <Section title="Identity" defaultOpen>
+      <Section title="Identity">
         <Field label="Name" forId="design-block-name" compact>
           <input
             id="design-block-name"
@@ -119,7 +128,7 @@ export function ComponentProps() {
         </Field>
       </Section>
 
-      <Section title="Stack" defaultOpen={false}>
+      <Section title="Stack">
         <div class="prop-grid prop-grid--2">
           <NumField
             id="design-z-index"
@@ -169,7 +178,7 @@ export function ComponentProps() {
         </div>
       </Section>
 
-      <Section title="Geometry" defaultOpen>
+      <Section title="Geometry">
         <div class="prop-grid prop-grid--2">
           {(
             [
@@ -233,10 +242,10 @@ export function ComponentProps() {
         </div>
       </Section>
 
-      <Section title="Pin to surface" defaultOpen={false}>
+      <Section title="Pin to surface">
         <p class="muted prop-hint">
-          Glue edges to the page (and margins). Header / Footer stretch full
-          width. Unpin to drag freely.
+          Glue edges for one-off rails. For repeating letterhead/footer use{" "}
+          <strong>Page chrome</strong> below (or promote selection).
         </p>
         <div class="pin-presets">
           <button
@@ -250,7 +259,7 @@ export function ComponentProps() {
               }
             }}
           >
-            Header
+            Pin top
           </button>
           <button
             type="button"
@@ -263,7 +272,7 @@ export function ComponentProps() {
               }
             }}
           >
-            Footer
+            Pin bottom
           </button>
           <button
             type="button"
@@ -333,7 +342,7 @@ export function ComponentProps() {
       </Section>
 
       {showTypo && (
-        <Section title="Typography" defaultOpen>
+        <Section title="Typography">
           <TextStyleLibrary />
           <div class="design-typo">
             <FontFamilySelect ctx={typoCtx} />
@@ -368,11 +377,34 @@ export function ComponentProps() {
             <Field label="Case" compact>
               <TransformSelect ctx={typoCtx} />
             </Field>
+            <SelectField
+              id="prop-whitespace"
+              label="Line returns"
+              value={String(style.whiteSpace ?? "pre-wrap")}
+              options={[
+                { value: "pre-wrap", label: "Keep returns + wrap" },
+                { value: "normal", label: "Collapse returns" },
+                { value: "nowrap", label: "Single line" },
+                { value: "pre", label: "Keep returns, no wrap" },
+              ]}
+              onChange={(v) =>
+                applyStyle(
+                  {
+                    whiteSpace: v as
+                      | "pre-wrap"
+                      | "normal"
+                      | "nowrap"
+                      | "pre",
+                  },
+                  ids,
+                )
+              }
+            />
           </div>
         </Section>
       )}
 
-      <Section title="Fill" defaultOpen>
+      <Section title="Fill">
         <div class="prop-grid prop-grid--2">
           <ColorField
             id="prop-color"
@@ -393,7 +425,7 @@ export function ComponentProps() {
         </div>
       </Section>
 
-      <Section title="Stroke" defaultOpen={false}>
+      <Section title="Stroke">
         <div class="prop-grid prop-grid--2">
           <NumField
             id="prop-border"
@@ -435,7 +467,7 @@ export function ComponentProps() {
       </Section>
 
       {sel.type === "shape" && (
-        <Section title="Shape" defaultOpen>
+        <Section title="Shape">
           <SelectField
             id="prop-shape-form"
             label="Form"
@@ -511,7 +543,7 @@ export function ComponentProps() {
         </Section>
       )}
 
-      <Section title="Spacing" defaultOpen>
+      <Section title="Spacing">
         <div class="prop-grid prop-grid--2">
           <NumField
             id="prop-padding"
@@ -570,7 +602,7 @@ export function ComponentProps() {
       </Section>
 
       {isContainer && (
-        <Section title="Layout" defaultOpen>
+        <Section title="Layout">
           <Field label="Mode" compact>
             <SegmentedControl
               ariaLabel="Child layout"
@@ -659,7 +691,7 @@ export function ComponentProps() {
       )}
 
       {sel.type === "list" && (
-        <Section title="List" defaultOpen={false}>
+        <Section title="List">
           <SelectField
             id="prop-list-style"
             label="Marker"
@@ -676,7 +708,7 @@ export function ComponentProps() {
       )}
 
       {sel.type === "table" && (
-        <Section title="Table" defaultOpen>
+        <Section title="Table">
           <Grid2>
             <NumField
               id="table-rows"
@@ -747,6 +779,50 @@ export function ComponentProps() {
           >
             Header row
           </CheckRow>
+          <SelectField
+            id="table-height-mode"
+            label="Row height"
+            value={String(sel.content.heightMode ?? "fixed")}
+            options={[
+              { value: "fixed", label: "Fixed (stretch in frame)" },
+              { value: "auto", label: "Auto (fit content)" },
+            ]}
+            onChange={(v) => {
+              updateBlock(sel.id, { content: { heightMode: v } });
+              if (v === "auto") {
+                // Nudge measure on next paint via tiny height bump trigger
+                updateBlock(sel.id, { h: sel.h });
+              }
+            }}
+          />
+          <Grid2>
+            <NumField
+              id="table-row-min"
+              label="Min row"
+              compact
+              value={Number(sel.content.rowMinHeight ?? 28)}
+              min={16}
+              max={200}
+              onValue={(v) =>
+                updateBlock(sel.id, {
+                  content: { rowMinHeight: Math.round(v) },
+                })
+              }
+            />
+            <NumField
+              id="table-row-max"
+              label="Max row (0=∞)"
+              compact
+              value={Number(sel.content.rowMaxHeight ?? 0)}
+              min={0}
+              max={800}
+              onValue={(v) =>
+                updateBlock(sel.id, {
+                  content: { rowMaxHeight: Math.round(v) },
+                })
+              }
+            />
+          </Grid2>
           <CheckRow
             checked={Boolean(sel.content.zebra)}
             onChange={(v) => updateBlock(sel.id, { content: { zebra: v } })}
@@ -1339,10 +1415,115 @@ export function PageSetup() {
 
   return (
     <>
-      <Section title={t("documentStyles")} defaultOpen>
+      <Section title={t("documentStyles")}>
         <DocumentStyleLibrary />
       </Section>
-      <Section title={t("pageVisibility")} defaultOpen={false}>
+      <Section title="Page chrome">
+        {(() => {
+          const chrome = ensurePageChrome(project.value.pageChrome);
+          const header = chrome.header!;
+          const footer = chrome.footer!;
+          return (
+            <>
+              <p class="muted prop-hint">
+                Shared header/footer on every page. Promote selection to move
+                body blocks into a band.
+              </p>
+              <CheckRow
+                checked={header.enabled}
+                onChange={(v) => updatePageChromeBand("header", { enabled: v })}
+              >
+                Header band
+              </CheckRow>
+              <NumField
+                id="chrome-header-h"
+                label="Header height"
+                compact
+                value={header.height}
+                min={24}
+                max={400}
+                onValue={(v) =>
+                  updatePageChromeBand("header", { height: Math.round(v) })
+                }
+              />
+              <ColorField
+                id="chrome-header-bg"
+                label="Header fill"
+                compact
+                value={header.background ?? ""}
+                fallback="#ffffff"
+                onValue={(v) =>
+                  updatePageChromeBand("header", { background: v })
+                }
+              />
+              <div class="pin-presets">
+                <button
+                  type="button"
+                  class="btn btn--ghost btn--small"
+                  onClick={() => promoteSelectionToChrome("header")}
+                >
+                  Promote → header
+                </button>
+                <button
+                  type="button"
+                  class="btn btn--ghost btn--small"
+                  onClick={() => clearPageChromeBand("header")}
+                >
+                  Clear header
+                </button>
+              </div>
+              <CheckRow
+                checked={footer.enabled}
+                onChange={(v) => updatePageChromeBand("footer", { enabled: v })}
+              >
+                Footer band
+              </CheckRow>
+              <NumField
+                id="chrome-footer-h"
+                label="Footer height"
+                compact
+                value={footer.height}
+                min={24}
+                max={400}
+                onValue={(v) =>
+                  updatePageChromeBand("footer", { height: Math.round(v) })
+                }
+              />
+              <ColorField
+                id="chrome-footer-bg"
+                label="Footer fill"
+                compact
+                value={footer.background ?? ""}
+                fallback="#ffffff"
+                onValue={(v) =>
+                  updatePageChromeBand("footer", { background: v })
+                }
+              />
+              <div class="pin-presets">
+                <button
+                  type="button"
+                  class="btn btn--ghost btn--small"
+                  onClick={() => promoteSelectionToChrome("footer")}
+                >
+                  Promote → footer
+                </button>
+                <button
+                  type="button"
+                  class="btn btn--ghost btn--small"
+                  onClick={() => clearPageChromeBand("footer")}
+                >
+                  Clear footer
+                </button>
+              </div>
+              <p class="muted prop-hint">
+                Header blocks: {header.blocks.length} · Footer blocks:{" "}
+                {footer.blocks.length}
+              </p>
+            </>
+          );
+        })()}
+      </Section>
+      <Section title={t("pageVisibility")}>
         <Field
           label={t("pageCondition")}
           forId="page-condition"
@@ -1351,7 +1532,7 @@ export function PageSetup() {
         >
           <input
             id="page-condition"
-            placeholder="vars.language == 'fr'"
+            placeholder="vars.language == 'fr' && output.kind == 'pdf'"
             value={page.condition ?? ""}
             onInput={(e) =>
               updatePage(page.id, {
@@ -1361,17 +1542,37 @@ export function PageSetup() {
           />
         </Field>
         <div class="condition-presets" role="group" aria-label={t("pageCondition")}>
-          {LANGUAGE_CONDITION_PRESETS.map((p) => (
-            <button
-              type="button"
-              key={p.value}
-              class="condition-presets__btn"
-              title={p.value}
-              onClick={() => updatePage(page.id, { condition: p.value })}
-            >
-              {p.label}
-            </button>
-          ))}
+          {[
+            ...LANGUAGE_CONDITION_PRESETS,
+            ...OUTPUT_KINDS.map((kind) => ({
+              label: OUTPUT_KIND_LABEL[kind],
+              value: `output.kind == '${kind}'`,
+            })),
+          ].map((p) => {
+            const on = conditionHasClause(page.condition, p.value);
+            return (
+              <button
+                type="button"
+                key={p.value}
+                class={
+                  on
+                    ? "condition-presets__btn condition-presets__btn--on"
+                    : "condition-presets__btn"
+                }
+                title={`${on ? "Remove" : "Add"}: ${p.value}`}
+                aria-pressed={on}
+                onClick={() =>
+                  updatePage(page.id, {
+                    condition:
+                      toggleConditionClause(page.condition, p.value) ||
+                      undefined,
+                  })
+                }
+              >
+                {p.label}
+              </button>
+            );
+          })}
           <button
             type="button"
             class="condition-presets__btn"
@@ -1381,7 +1582,7 @@ export function PageSetup() {
           </button>
         </div>
       </Section>
-      <Section title={t("margins")} defaultOpen>
+      <Section title={t("margins")}>
         <div class="prop-grid prop-grid--2">
           <MarginFields margins={margins} pageId={page.id} />
         </div>
@@ -1395,7 +1596,7 @@ export function PageSetup() {
         />
       </Section>
 
-      <Section title={t("transform")} defaultOpen={false}>
+      <Section title={t("transform")}>
         <div class="prop-grid prop-grid--2">
           <NumField
             id="page-rotate"
@@ -1433,7 +1634,7 @@ export function PageSetup() {
         </p>
       </Section>
 
-      <Section title={t("watermark")} defaultOpen={false}>
+      <Section title={t("watermark")}>
         <SelectField
           id="wm-kind"
           label="Preset"
@@ -1571,7 +1772,7 @@ export function PageSetup() {
         </button>
       </Section>
 
-      <Section title={t("gridGuides")} defaultOpen={false}>
+      <Section title={t("gridGuides")}>
         <CheckRow
           checked={Boolean(prefs.value.gridLock)}
           onChange={(v) => updatePrefs({ gridLock: v })}

@@ -44,10 +44,19 @@ export type BlockType =
   | "shape"
   | "table"
   | "files"
+  | "date"
+  | "signature"
+  | "qrcode"
   | "prebuild"
   | "group"
   /** @deprecated Prefer group + itemsPath; kept for demo documents */
   | "repeat";
+
+/** How a date block picks its value. */
+export type DateBlockSource = "today" | "fixed" | "field";
+
+/** Display format for date blocks (maps to |date:* filters). */
+export type DateBlockFormat = "short" | "long" | "iso";
 
 /** Marker/numbering outlook for list blocks */
 export type ListStyle =
@@ -137,6 +146,11 @@ export interface BlockStyle {
   shadow?: boolean;
   /** Outer margin in px on all sides (offsets an absolutely placed block) */
   margin?: number;
+  /**
+   * CSS white-space for text/paragraph (and similar).
+   * Default when unset: pre-wrap (keep returns + soft wrap).
+   */
+  whiteSpace?: "pre-wrap" | "normal" | "nowrap" | "pre";
   /** Flex arrangement for a container's child blocks; unset = absolute */
   layout?: "flex";
   /** Flex main axis direction */
@@ -348,6 +362,24 @@ export interface PageNumber {
   format?: string;
 }
 
+/** Repeating header or footer band shared across pages (project chrome). */
+export interface PageChromeBand {
+  enabled: boolean;
+  /** Reserved band height in px */
+  height: number;
+  /** Blocks with coordinates relative to the band (y=0 = top of band) */
+  blocks: Block[];
+  background?: string;
+}
+
+/** Project-level page chrome — headers/footers that repeat on every page. */
+export interface ProjectPageChrome {
+  header?: PageChromeBand;
+  footer?: PageChromeBand;
+}
+
+export type PageChromeSlot = "header" | "footer";
+
 /** Word-style review note anchored to a block (ADR 0006) */
 export interface Comment {
   id: string;
@@ -399,6 +431,8 @@ export interface Project {
   textStyles?: import("./styleLibrary").TextStylePreset[];
   /** User-saved document / surface presets */
   documentStyles?: import("./styleLibrary").DocumentStylePreset[];
+  /** Repeating header/footer bands for every page */
+  pageChrome?: ProjectPageChrome;
 }
 
 export interface ProjectDataset {
@@ -486,6 +520,11 @@ export interface EditorPrefs {
    * Preview / export stay authored. Default on.
    */
   editContrastAssist?: boolean;
+  /**
+   * Edit only: show blocks that fail their condition as low-opacity ghosts
+   * instead of hiding them (helps edit language/output alternates).
+   */
+  showInactiveBranches?: boolean;
   /** Emmet-style text expansions in paragraph / text fields */
   textExpansionsEnabled?: boolean;
 }
@@ -574,6 +613,9 @@ export const BLOCK_DEFAULTS: Record<
       borderHorizontal: true,
       borderVertical: true,
       showBorders: true,
+      heightMode: "fixed",
+      rowMinHeight: 28,
+      rowMaxHeight: 0,
       cells: [
         ["A1", "B1", "C1"],
         ["A2", "B2", "C2"],
@@ -592,6 +634,39 @@ export const BLOCK_DEFAULTS: Record<
       fileSize: 0,
       mimeType: "",
       dataUrl: "",
+    },
+  },
+  date: {
+    name: "Date",
+    w: 140,
+    h: 28,
+    content: {
+      source: "today",
+      fixed: "",
+      path: "date",
+      format: "short",
+    },
+  },
+  signature: {
+    name: "Signature",
+    w: 200,
+    h: 96,
+    content: {
+      src: "",
+      label: "Signature",
+      caption: "{{name}}\n{{role}}",
+      showLine: true,
+    },
+  },
+  qrcode: {
+    name: "QR code",
+    w: 96,
+    h: 96,
+    content: {
+      value: "{{tracking}}",
+      ecc: "M",
+      dark: "#1c2430",
+      light: "#ffffff",
     },
   },
   prebuild: {

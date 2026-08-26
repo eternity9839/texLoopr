@@ -48,4 +48,21 @@ describe("buildPlaceDraft", () => {
     expect(d.content.path).toBe("field");
     expect(d.style.color).toBe("#2f7d5c");
   });
+
+  it("builds today / fixed / field date presets", () => {
+    const today = buildPlaceDraft("date", "date-today", { x: 0, y: 0 });
+    expect(today.content.source).toBe("today");
+    const fixed = buildPlaceDraft("date", "date-fixed", { x: 0, y: 0 });
+    expect(fixed.content.source).toBe("fixed");
+    expect(String(fixed.content.fixed)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    const field = buildPlaceDraft("date", "date-field", { x: 0, y: 0 });
+    expect(field.content.source).toBe("field");
+  });
+
+  it("defaults signature and qrcode drafts", () => {
+    const sig = buildPlaceDraft("signature", null, { x: 10, y: 10 });
+    expect(sig.content.showLine).toBe(true);
+    const qr = buildPlaceDraft("qrcode", null, { x: 10, y: 10 });
+    expect(qr.content.value).toContain("tracking");
+  });
 });

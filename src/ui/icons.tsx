@@ -79,7 +79,10 @@ export type IconName =
   | "focus"
   | "link"
   | "history"
-  | "pointer";
+  | "pointer"
+  | "calendar"
+  | "signature"
+  | "qrcode";
 
 /** One or more path `d` values in a 24×24 viewBox. */
 const PATHS: Record<IconName, string[]> = {
@@ -281,6 +284,27 @@ const PATHS: Record<IconName, string[]> = {
     "M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71",
     "M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71",
   ],
+  calendar: [
+    "M8 2v4",
+    "M16 2v4",
+    "M3 10h18",
+    "M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z",
+  ],
+  signature: [
+    "M3 17c3-4 5-6 8-6s4 3 7 1",
+    "M14 20h7",
+    "M17 3l4 4",
+    "M14 6l4-4 4 4-4 4z",
+  ],
+  qrcode: [
+    "M3 3h7v7H3z",
+    "M14 3h7v7h-7z",
+    "M3 14h7v7H3z",
+    "M14 14h3v3h-3z",
+    "M18 14h3v3h-3z",
+    "M14 18h3v3h-3z",
+    "M18 18h3v3h-3z",
+  ],
 };
 
 import type { BlockType } from "../model/document";
@@ -295,6 +319,9 @@ export const BLOCK_TYPE_ICON: Record<BlockType, IconName> = {
   shape: "shape",
   table: "table",
   files: "files",
+  date: "calendar",
+  signature: "signature",
+  qrcode: "qrcode",
   prebuild: "prebuild",
   group: "group",
   repeat: "repeat",

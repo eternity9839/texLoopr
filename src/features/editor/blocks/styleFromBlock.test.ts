@@ -48,4 +48,11 @@ describe("styleFromBlock", () => {
     });
     expect(s.color).toBe("#2a2622");
   });
+
+  it("defaults whiteSpace to pre-wrap and honors overrides", () => {
+    expect(styleFromBlock(block({})).whiteSpace).toBe("pre-wrap");
+    expect(styleFromBlock(block({ whiteSpace: "nowrap" })).whiteSpace).toBe(
+      "nowrap",
+    );
+  });
 });

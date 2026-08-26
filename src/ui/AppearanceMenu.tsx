@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
 import { Icon } from "./icons";
 import { prefs, updatePrefs } from "../state/store";
 import { t, type MessageKey } from "../i18n";
@@ -50,6 +50,7 @@ function isOn(key: ToggleKey): boolean {
 export function AppearanceMenu() {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   void prefs.value.locale;
 
   useEffect(() => {
@@ -59,6 +60,33 @@ export function AppearanceMenu() {
     };
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
+  }, [open]);
+
+  useLayoutEffect(() => {
+    if (!open) return;
+    const panel = panelRef.current;
+    const root = rootRef.current;
+    if (!panel || !root) return;
+    const pad = 8;
+    // Reset to CSS default (below the trigger) before measuring.
+    panel.style.top = "";
+    panel.style.bottom = "";
+    panel.style.maxHeight = "";
+    const trigger = root.getBoundingClientRect();
+    const rect = panel.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - trigger.bottom - pad;
+    if (rect.height > spaceBelow && trigger.top > spaceBelow) {
+      panel.style.top = "auto";
+      panel.style.bottom = "calc(100% + 0.35rem)";
+    }
+    const after = panel.getBoundingClientRect();
+    if (after.top < pad) {
+      panel.style.top = `${pad - trigger.top}px`;
+      panel.style.bottom = "auto";
+    }
+    const finalTop = panel.getBoundingClientRect().top;
+    panel.style.maxHeight = `${Math.max(120, window.innerHeight - finalTop - pad)}px`;
+    panel.style.overflowY = "auto";
   }, [open]);
 
   return (
@@ -80,6 +108,7 @@ export function AppearanceMenu() {
       </button>
       {open && (
         <div
+          ref={panelRef}
           class="appearance-menu__panel"
           role="menu"
           aria-label={t("appearance")}

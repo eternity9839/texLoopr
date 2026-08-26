@@ -1,5 +1,7 @@
 import type { CatalogApi, ProjectRecord } from "./types";
 import { createWebCatalog } from "./webCatalog";
+import { createHttpCatalog } from "./httpCatalog";
+import { resolveBackendTransport } from "../runtimeConfig";
 
 function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
@@ -69,10 +71,20 @@ let catalogPromise: Promise<CatalogApi> | null = null;
 export function getCatalog(): Promise<CatalogApi> {
   if (!catalogPromise) {
     catalogPromise = Promise.resolve(
-      isTauri() ? createTauriCatalog() : createWebCatalog(),
+      (() => {
+        const transport = resolveBackendTransport();
+        if (transport === "tauri-local" || isTauri()) return createTauriCatalog();
+        if (transport === "http-remote") return createHttpCatalog();
+        return createWebCatalog();
+      })(),
     );
   }
   return catalogPromise;
+}
+
+/** Reset cached catalog (tests / config hot-swap). */
+export function resetCatalogCache(): void {
+  catalogPromise = null;
 }
 
 export async function persistActiveProject(input: {
@@ -88,4 +100,4 @@ export async function persistActiveProject(input: {
   });
 }
 
-export type { CatalogApi, ProjectRecord, ProjectSummary } from "./types";
+export type { ProjectSummary } from "./types";

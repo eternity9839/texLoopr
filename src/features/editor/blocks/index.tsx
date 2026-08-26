@@ -9,10 +9,12 @@ import {
 } from "../../../model/document";
 import {
   resolveTemplate,
-  evaluateCondition,
+  blockMeetsCondition,
   type DataRow,
 } from "../../../model/bindings";
 import type { RuntimeContext } from "../../../model/expr";
+import { resolveDateBlockText } from "../../../model/dateBlock";
+import { parseQrEcc, qrDataUrl } from "../../../model/qrCode";
 import {
   dataFieldLabel,
   normalizeDataFieldPath,
@@ -27,6 +29,10 @@ import {
 } from "../../../model/tableData";
 import { parseMergeSegments } from "../../../model/mergeSegments";
 import { noteIssue } from "../../../state/issueLog";
+import {
+  estimateTableHeight,
+  parseTableHeightMode,
+} from "../../../model/tableLayout";
 import {
   applyMove,
   px,
@@ -58,6 +64,7 @@ import {
   project,
   selection,
   setGroupIsolation,
+  updateBlock,
 } from "../../../state/store";
 import {
   ensureReadableInk,
@@ -137,6 +144,7 @@ export function styleFromBlock(
     lineHeight: s.lineHeight && s.lineHeight > 0 ? String(s.lineHeight) : "1.4",
     letterSpacing: `${s.letterSpacing ?? 0}px`,
     textTransform: s.textTransform ?? "none",
+    whiteSpace: s.whiteSpace ?? "pre-wrap",
     background,
     borderRadius: radius,
     // Clip fills to rounded / circular corners (badges, pills, …)
@@ -298,16 +306,26 @@ export function BlockFrame(
     };
   }, [onMoveResize, snapStep, selected, scale]);
 
-  if (
-    !evaluateCondition(block.condition, row, runtime, { diagnose: preview }) &&
-    preview
-  ) {
+  const meetsCondition = blockMeetsCondition(block, row, runtime, {
+    preview: Boolean(preview),
+  });
+  const ghostInactive =
+    !meetsCondition &&
+    !preview &&
+    prefs.value.showInactiveBranches === true;
+  if (!meetsCondition && !ghostInactive) {
     return null;
   }
 
   const beginDrag = (e: PointerEvent) => {
     if (preview) return;
     e.stopPropagation();
+    if (ghostInactive) {
+      onSelect(block.id, {
+        toggle: e.shiftKey || e.ctrlKey || e.metaKey,
+      });
+      return;
+    }
     if (block.locked || !onMoveResize) return;
     // Edge-pinned blocks stay glued — unpin in Design to drag freely
     if (pinIsActive(block.pin)) return;
@@ -365,7 +383,8 @@ export function BlockFrame(
     preview ? "block-frame--preview" : "",
     block.locked ? "block-frame--locked" : "",
     editing ? "block-frame--editing" : "",
-    !preview && !block.locked ? "block-frame--movable" : "",
+    !preview && !block.locked && !ghostInactive ? "block-frame--movable" : "",
+    ghostInactive ? "block-frame--inactive" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -446,6 +465,14 @@ export function BlockFrame(
           });
         }}
       >
+        {ghostInactive && (
+          <span
+            class="block-inactive-badge"
+            title={block.condition ?? "Hidden by condition"}
+          >
+            Hidden
+          </span>
+        )}
         {commentCount > 0 && !preview && (
           <span class="block-comment-badge" title={`${commentCount} comment(s)`}>
             {commentCount}
@@ -1006,12 +1033,60 @@ export function TableBlock(props: BlockViewProps) {
 
   const spaced = rowGap > 0 || colGap > 0;
   const sourceHint = datasetName || sourcePath;
+  const heightMode = parseTableHeightMode(block.content.heightMode);
+  const rowMinHeight = Number(block.content.rowMinHeight ?? 28);
+  const rowMaxHeight = Number(block.content.rowMaxHeight ?? 0);
+  const tableRef = useRef<HTMLTableElement>(null);
+
+  const displayMatrix: string[][] = header
+    ? [cells[0] ?? [], ...bodyRows.map((r) => r.map(String))]
+    : bodyRows.map((r) => r.map(String));
+
+  useEffect(() => {
+    if (heightMode !== "auto") return;
+    const el = tableRef.current;
+    let nextH = 0;
+    if (el) {
+      nextH = Math.ceil(el.scrollHeight);
+    } else {
+      nextH = estimateTableHeight(displayMatrix, {
+        tableWidth: block.w,
+        cols: Math.max(
+          1,
+          Number(block.content.cols ?? displayMatrix[0]?.length ?? 1),
+        ),
+        fontSize: Number(block.style.fontSize ?? 12),
+        lineHeight: Number(block.style.lineHeight ?? 1.35),
+        cellPadding: cellPad,
+        rowMinHeight,
+        rowMaxHeight,
+        rowGap,
+      });
+    }
+    if (nextH > 0 && Math.abs(nextH - block.h) > 2) {
+      updateBlock(block.id, { h: nextH }, { history: false });
+    }
+  }, [
+    heightMode,
+    block.id,
+    block.w,
+    block.h,
+    cellPad,
+    rowGap,
+    rowMinHeight,
+    rowMaxHeight,
+    displayMatrix.length,
+    bodyRows.length,
+    JSON.stringify(displayMatrix),
+  ]);
 
   return (
     <BlockFrame {...props}>
       <table
+        ref={tableRef}
         class={[
           "block-table",
+          heightMode === "auto" ? "block-table--auto" : "",
           zebra ? "block-table--zebra" : "",
           showBorders ? "" : "block-table--borderless",
           showBorders && !borderH ? "block-table--no-h-borders" : "",
@@ -1027,6 +1102,9 @@ export function TableBlock(props: BlockViewProps) {
           "--table-border": borderColor,
           "--row-gap": `${rowGap}px`,
           "--col-gap": `${colGap}px`,
+          "--row-min": `${rowMinHeight}px`,
+          ...(rowMaxHeight > 0 ? { "--row-max": `${rowMaxHeight}px` } : {}),
+          height: heightMode === "auto" ? "auto" : "100%",
         }}
         title={
           bound && !preview && sourceHint
@@ -1108,6 +1186,148 @@ export function FilesBlock(props: BlockViewProps) {
               ? ` (${Number(block.content.count)})`
               : " — no file"}
           </span>
+        )}
+      </div>
+    </BlockFrame>
+  );
+}
+
+export function DateBlock(props: BlockViewProps) {
+  const { block, preview, row, runtime } = props;
+  const text = resolveDateBlockText(block.content, preview ? row : dataRows.value[0], runtime);
+  const source = String(block.content.source ?? "today");
+  const chip =
+    source === "today"
+      ? "Today"
+      : source === "fixed"
+        ? "Fixed"
+        : dataFieldLabel(String(block.content.path ?? "date"));
+
+  if (preview) {
+    return (
+      <BlockFrame {...props}>
+        <div class="block-date block-date--resolved">{text || "—"}</div>
+      </BlockFrame>
+    );
+  }
+
+  return (
+    <BlockFrame {...props}>
+      <BindingPreview
+        class="block-date-wrap"
+        chipClass="block-date"
+        label={chip}
+        previewValue={text || null}
+        ariaLabel={`${block.name} date`}
+      />
+    </BlockFrame>
+  );
+}
+
+export function SignatureBlock(props: BlockViewProps) {
+  const { block, preview, row, runtime } = props;
+  const rawSrc = String(block.content.src ?? "");
+  const src = resolveTemplate(rawSrc, row, {
+    missingAsEmpty: preview,
+    ctx: runtime,
+    diagnose: preview,
+  });
+  const label = resolveTemplate(String(block.content.label ?? "Signature"), row, {
+    missingAsEmpty: preview,
+    ctx: runtime,
+  });
+  const caption = resolveTemplate(String(block.content.caption ?? ""), row, {
+    missingAsEmpty: preview,
+    ctx: runtime,
+  });
+  const showLine = block.content.showLine !== false;
+  const firstRow = dataRows.value[0];
+  const bindingEdit = !preview && hasMergeBinding(rawSrc);
+
+  if (bindingEdit) {
+    const previewUrl = resolveBindingPreview(rawSrc, firstRow, runtime);
+    return (
+      <BlockFrame {...props}>
+        <div class="block-signature block-signature--binding">
+          <BindingPreview
+            class="binding-preview--media"
+            chipClass="block-signature__chip"
+            label={bindingPreviewLabel(rawSrc || "signature")}
+            previewValue={previewUrl ?? (!firstRow ? "No data rows loaded" : null)}
+            media={
+              previewUrl && !previewUrl.startsWith("(") ? (
+                <img class="binding-preview__thumb" src={previewUrl} alt="" />
+              ) : undefined
+            }
+            ariaLabel={`${block.name} signature image`}
+          />
+        </div>
+      </BlockFrame>
+    );
+  }
+
+  return (
+    <BlockFrame {...props}>
+      <div class="block-signature">
+        {src ? (
+          <img class="block-signature__ink" src={src} alt={label} />
+        ) : (
+          <div class="block-signature__pad" aria-hidden="true" />
+        )}
+        {showLine ? <div class="block-signature__line" /> : null}
+        <div class="block-signature__meta">
+          {label ? <div class="block-signature__label">{label}</div> : null}
+          {caption ? (
+            <div class="block-signature__caption">
+              {caption.split("\n").map((line, i) => (
+                <div key={i}>{line}</div>
+              ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </BlockFrame>
+  );
+}
+
+export function QrCodeBlock(props: BlockViewProps) {
+  const { block, preview, row, runtime } = props;
+  const rawValue = String(block.content.value ?? "");
+  const value = resolveTemplate(rawValue, preview ? row : dataRows.value[0], {
+    missingAsEmpty: true,
+    ctx: runtime,
+    diagnose: preview,
+  });
+  const src = qrDataUrl(value, {
+    ecc: parseQrEcc(block.content.ecc),
+    dark: String(block.content.dark ?? "#1c2430"),
+    light: String(block.content.light ?? "#ffffff"),
+  });
+
+  if (!preview && hasMergeBinding(rawValue)) {
+    return (
+      <BlockFrame {...props}>
+        <div class="block-qrcode block-qrcode--binding">
+          <BindingPreview
+            class="binding-preview--media"
+            chipClass="block-qrcode__chip"
+            label={bindingPreviewLabel(rawValue)}
+            previewValue={value || (!dataRows.value[0] ? "No data rows loaded" : null)}
+            media={src ? <img class="binding-preview__thumb" src={src} alt="" /> : undefined}
+            ariaLabel={`${block.name} QR payload`}
+          />
+        </div>
+      </BlockFrame>
+    );
+  }
+
+  return (
+    <BlockFrame {...props}>
+      <div class="block-qrcode">
+        {src ? (
+          <img src={src} alt={value || "QR code"} />
+        ) : (
+          <span>Set QR value</span>
         )}
       </div>
     </BlockFrame>
@@ -1273,6 +1493,9 @@ const RENDERERS: Record<BlockType, (props: BlockViewProps) => VNode> = {
   shape: ShapeBlock,
   table: TableBlock,
   files: FilesBlock,
+  date: DateBlock,
+  signature: SignatureBlock,
+  qrcode: QrCodeBlock,
   prebuild: PrebuildBlock,
   group: GroupBlock,
   repeat: RepeatBlock,

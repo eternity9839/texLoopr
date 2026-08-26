@@ -43,7 +43,9 @@ export function usePdfImport(onDone?: () => void) {
         },
       );
       if (!result) {
-        setError("PDF import requires the desktop app (Rust backbone).");
+        setError(
+          "PDF import requires the Rust backend (desktop app, or apiBaseUrl pointing at /v1).",
+        );
         return;
       }
       loadImportedProject(result.project, result.warnings);

@@ -75,6 +75,9 @@ export interface ProjectScript {
 }
 
 export function defaultOutputs(): OutputProfile[] {
+  // Keep the starter set small. Channel layouts (SMS, push, label, API) are
+  // opt-in via Automation — otherwise preview offers artboards the project
+  // never configured and content looks cropped.
   return [
     {
       id: "out-preview",
@@ -90,16 +93,28 @@ export function defaultOutputs(): OutputProfile[] {
       enabled: true,
     },
     {
+      id: "out-email",
+      name: "Email HTML",
+      kind: "email",
+      enabled: true,
+    },
+    {
+      id: "out-image",
+      name: "Image export",
+      kind: "image",
+      enabled: true,
+    },
+  ];
+}
+
+/** Templates for outputs users add in Automation (not on every blank project). */
+export function optionalOutputTemplates(): OutputProfile[] {
+  return [
+    {
       id: "out-print-label",
       name: "Label printer",
       kind: "print",
       device: { id: "label-203dpi", label: "Label", media: "label", dpi: 203 },
-      enabled: true,
-    },
-    {
-      id: "out-email",
-      name: "Email HTML",
-      kind: "email",
       enabled: true,
     },
     {
@@ -119,12 +134,6 @@ export function defaultOutputs(): OutputProfile[] {
       name: "API webhook",
       kind: "api",
       api: { url: "https://example.com/hooks/texlooper", method: "POST" },
-      enabled: true,
-    },
-    {
-      id: "out-image",
-      name: "Image export",
-      kind: "image",
       enabled: true,
     },
   ];

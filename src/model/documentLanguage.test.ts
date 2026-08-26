@@ -49,6 +49,33 @@ describe("documentLanguage", () => {
     expect(ctx.env.language).toBe("fr");
   });
 
+  it("session override beats row language", () => {
+    expect(
+      resolveDocumentLanguage(
+        { language: "en" },
+        { language: "fr" },
+        "nl",
+      ),
+    ).toBe("nl");
+  });
+
+  it("enrichPreviewContext accepts language override", () => {
+    const project = {
+      language: "en",
+      datasets: [],
+      workflow: [],
+    } as unknown as Project;
+    const output = defaultOutputs().find((o) => o.kind === "pdf")!;
+    const ctx = enrichPreviewContext(
+      project,
+      { language: "fr", name: "Ada" },
+      output,
+      {},
+      "de",
+    );
+    expect(ctx.vars.language).toBe("de");
+  });
+
   it("injectDocumentLanguage mutates context", () => {
     const ctx = emptyCtx();
     injectDocumentLanguage(ctx, { language: "en" }, { lang: "nl" });

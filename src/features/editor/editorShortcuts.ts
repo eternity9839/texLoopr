@@ -112,6 +112,9 @@ const TOOL_KEYS: Record<string, { type: BlockType; preset?: PlacePresetId }> = {
   a: { type: "table" },
   g: { type: "group" },
   e: { type: "files" },
+  q: { type: "qrcode" },
+  n: { type: "signature" },
+  y: { type: "date", preset: "date-today" },
 };
 
 const INSPECTOR_KEYS: Record<string, InspectorTabId> = {

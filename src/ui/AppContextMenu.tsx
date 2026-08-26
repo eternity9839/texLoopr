@@ -1,5 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from "preact/hooks";
+import { createPortal } from "preact/compat";
 import { Icon, type IconName } from "./icons";
+import { clampToViewport, maxHeightInViewport } from "./viewportClamp";
 
 export interface ContextMenuItem {
   id: string;
@@ -30,16 +32,10 @@ export function AppContextMenu({ x, y, items, onClose }: AppContextMenuProps) {
     if (!el) return;
     const pad = 8;
     const rect = el.getBoundingClientRect();
-    let left = x;
-    let top = y;
-    if (left + rect.width > window.innerWidth - pad) {
-      left = Math.max(pad, window.innerWidth - rect.width - pad);
-    }
-    if (top + rect.height > window.innerHeight - pad) {
-      top = Math.max(pad, window.innerHeight - rect.height - pad);
-    }
+    const { left, top } = clampToViewport(x, y, rect.width, rect.height, pad);
     el.style.left = `${left}px`;
     el.style.top = `${top}px`;
+    el.style.maxHeight = `${maxHeightInViewport(top, pad)}px`;
   }, [x, y, items]);
 
   useEffect(() => {
@@ -54,17 +50,20 @@ export function AppContextMenu({ x, y, items, onClose }: AppContextMenuProps) {
       onClose();
     };
     const onScroll = () => onClose();
+    const onResize = () => onClose();
     window.addEventListener("keydown", onKey);
     window.addEventListener("pointerdown", onPointer, true);
     window.addEventListener("scroll", onScroll, true);
+    window.addEventListener("resize", onResize);
     return () => {
       window.removeEventListener("keydown", onKey);
       window.removeEventListener("pointerdown", onPointer, true);
       window.removeEventListener("scroll", onScroll, true);
+      window.removeEventListener("resize", onResize);
     };
   }, [onClose]);
 
-  return (
+  const menu = (
     <div
       ref={ref}
       class="app-ctx-menu"
@@ -106,4 +105,9 @@ export function AppContextMenu({ x, y, items, onClose }: AppContextMenuProps) {
       })}
     </div>
   );
+
+  // Portal to body so ancestor transforms (canvas scale/rotate) cannot
+  // take position:fixed out of the viewport coordinate space.
+  if (typeof document === "undefined") return menu;
+  return createPortal(menu, document.body);
 }

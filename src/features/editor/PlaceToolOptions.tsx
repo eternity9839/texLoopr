@@ -204,6 +204,122 @@ export function PlaceToolOptions() {
         </select>
       )}
 
+      {draft.type === "date" && (
+        <>
+          <select
+            aria-label="Date source"
+            value={String(draft.content.source ?? "today")}
+            onChange={(e) => {
+              const source = e.currentTarget.value;
+              updatePlaceDraft({
+                content: { source },
+                name:
+                  source === "today"
+                    ? "Today's date"
+                    : source === "fixed"
+                      ? "Fixed date"
+                      : "Date field",
+              });
+            }}
+          >
+            <option value="today">Today</option>
+            <option value="fixed">Fixed</option>
+            <option value="field">Field</option>
+          </select>
+          {String(draft.content.source ?? "today") === "fixed" && (
+            <input
+              type="date"
+              aria-label="Fixed date"
+              value={String(draft.content.fixed ?? "")}
+              onChange={(e) =>
+                updatePlaceDraft({ content: { fixed: e.currentTarget.value } })
+              }
+            />
+          )}
+          {String(draft.content.source ?? "today") === "field" && (
+            <input
+              class="options-bar__text"
+              aria-label="Date field path"
+              placeholder="invoice_date · date|date:short"
+              value={String(draft.content.path ?? "")}
+              onInput={(e) =>
+                updatePlaceDraft({ content: { path: e.currentTarget.value } })
+              }
+            />
+          )}
+          <select
+            aria-label="Date format"
+            value={String(draft.content.format ?? "short")}
+            onChange={(e) =>
+              updatePlaceDraft({ content: { format: e.currentTarget.value } })
+            }
+          >
+            <option value="short">Short</option>
+            <option value="long">Long</option>
+            <option value="iso">ISO</option>
+          </select>
+        </>
+      )}
+
+      {draft.type === "signature" && (
+        <>
+          <input
+            class="options-bar__text"
+            aria-label="Signature image"
+            placeholder="URL or {{signature_url}}"
+            value={String(draft.content.src ?? "")}
+            onInput={(e) =>
+              updatePlaceDraft({ content: { src: e.currentTarget.value } })
+            }
+          />
+          <label class="options-bar__file">
+            <span>Upload</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) =>
+                void onPickFile(e.currentTarget.files?.[0], true)
+              }
+            />
+          </label>
+          <input
+            class="options-bar__text"
+            aria-label="Caption"
+            placeholder="{{name}}"
+            value={String(draft.content.caption ?? "")}
+            onInput={(e) =>
+              updatePlaceDraft({ content: { caption: e.currentTarget.value } })
+            }
+          />
+        </>
+      )}
+
+      {draft.type === "qrcode" && (
+        <>
+          <input
+            class="options-bar__text"
+            aria-label="QR value"
+            placeholder="https://… or {{tracking}}"
+            value={String(draft.content.value ?? "")}
+            onInput={(e) =>
+              updatePlaceDraft({ content: { value: e.currentTarget.value } })
+            }
+          />
+          <select
+            aria-label="Error correction"
+            value={String(draft.content.ecc ?? "M")}
+            onChange={(e) =>
+              updatePlaceDraft({ content: { ecc: e.currentTarget.value } })
+            }
+          >
+            <option value="L">ECC L</option>
+            <option value="M">ECC M</option>
+            <option value="Q">ECC Q</option>
+            <option value="H">ECC H</option>
+          </select>
+        </>
+      )}
+
       {draft.type === "picture" && (
         <>
           <input

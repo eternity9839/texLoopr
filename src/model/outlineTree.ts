@@ -95,18 +95,22 @@ export function sortBlocksList(
   }
 }
 
-function blockVisibleForOutput(
+function blockVisibleForCondition(
   block: Block,
   outputKind: OutputKind | null,
   runtime: RuntimeContext | undefined,
 ): boolean {
-  if (!outputKind || !block.condition) return true;
+  if (!block.condition?.trim()) return true;
   if (!runtime) return true;
   try {
-    return evaluateCondition(block.condition, runtime.data, {
-      ...runtime,
-      output: { ...runtime.output, kind: outputKind },
-    });
+    const ctx =
+      outputKind != null
+        ? {
+            ...runtime,
+            output: { ...runtime.output, kind: outputKind },
+          }
+        : runtime;
+    return evaluateCondition(block.condition, runtime.data, ctx);
   } catch {
     return true;
   }
@@ -133,9 +137,12 @@ function walkBlocks(
   for (const block of sorted) {
     const q = opts.query.trim().toLowerCase();
     const hasChildren = isContainerBlock(block) && getChildBlocks(block).length > 0;
-    const visible = blockVisibleForOutput(
+    const kindForCheck = opts.formatScope
+      ? opts.outputKind
+      : ((opts.runtime?.output.kind as OutputKind | undefined) ?? null);
+    const visible = blockVisibleForCondition(
       block,
-      opts.formatScope ? opts.outputKind : null,
+      kindForCheck,
       opts.runtime,
     );
     const matches = !q || matchesQuery(block, q);
@@ -159,7 +166,7 @@ function walkBlocks(
       effectiveZ: effectiveZ(block),
       hasChildren,
       visibleForOutput: visible,
-      dimmed: opts.formatScope && !visible,
+      dimmed: Boolean(block.condition?.trim()) && !visible,
     });
     opts.rows.push(...childRows);
   }

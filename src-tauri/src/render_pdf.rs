@@ -70,8 +70,60 @@ fn page_size_px(project: &Value, page: &Value) -> (f32, f32) {
 
 fn block_text(block: &Value) -> Option<String> {
     let content = block.get("content")?;
+    let ty = block.get("type").and_then(|v| v.as_str()).unwrap_or("");
+    if ty == "date" {
+        let source = content
+            .get("source")
+            .and_then(|v| v.as_str())
+            .unwrap_or("today");
+        let format = content
+            .get("format")
+            .and_then(|v| v.as_str())
+            .unwrap_or("short");
+        let filter = if format == "iso" {
+            "date:iso"
+        } else if format == "long" {
+            "date:long"
+        } else {
+            "date:short"
+        };
+        return Some(match source {
+            "fixed" => {
+                let fixed = content
+                    .get("fixed")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .to_string();
+                if fixed.is_empty() {
+                    String::new()
+                } else {
+                    format!("{{{{{fixed}|{filter}}}}}", fixed = fixed, filter = filter)
+                }
+            }
+            "field" => {
+                let path = content
+                    .get("path")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("date")
+                    .trim();
+                let path = if path.is_empty() { "date" } else { path };
+                if path.contains('|') {
+                    format!("{{{{{path}}}}}")
+                } else {
+                    format!("{{{{{path}|{filter}}}}}")
+                }
+            }
+            _ => format!("{{{{env.today|{filter}}}}}"),
+        });
+    }
     if let Some(t) = content.get("text").and_then(|v| v.as_str()) {
         return Some(t.to_string());
+    }
+    if let Some(path) = content.get("path").and_then(|v| v.as_str()) {
+        // data fields
+        if ty == "data" {
+            return Some(format!("{{{{{path}}}}}"));
+        }
     }
     if let Some(items) = content.get("items").and_then(|v| v.as_array()) {
         let lines: Vec<String> = items
@@ -156,6 +208,55 @@ fn draw_shape_placeholder(
     layer.add_line(line);
 }
 
+fn map_chrome_band(band: &Value, slot: &str, page_h: f32) -> Vec<Value> {
+    let enabled = band
+        .get("enabled")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    if !enabled {
+        return Vec::new();
+    }
+    let height = band
+        .get("height")
+        .and_then(|v| v.as_f64())
+        .unwrap_or(64.0) as f32;
+    let origin_y = if slot == "header" {
+        0.0
+    } else {
+        (page_h - height).max(0.0)
+    };
+    let blocks = band
+        .get("blocks")
+        .and_then(|b| b.as_array())
+        .cloned()
+        .unwrap_or_default();
+    blocks
+        .into_iter()
+        .map(|mut b| {
+            if let Some(obj) = b.as_object_mut() {
+                let y = obj.get("y").and_then(|v| v.as_f64()).unwrap_or(0.0) as f32;
+                obj.insert("y".into(), Value::from(origin_y + y));
+                obj.remove("pin");
+            }
+            b
+        })
+        .collect()
+}
+
+fn compose_chrome_blocks(project: &Value, page_h: f32) -> Vec<Value> {
+    let Some(chrome) = project.get("pageChrome") else {
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    if let Some(header) = chrome.get("header") {
+        out.extend(map_chrome_band(header, "header", page_h));
+    }
+    if let Some(footer) = chrome.get("footer") {
+        out.extend(map_chrome_band(footer, "footer", page_h));
+    }
+    out
+}
+
 /// Render a project + data row to PDF bytes.
 pub fn render_project_pdf(
     project: &Value,
@@ -221,6 +322,10 @@ pub fn render_project_pdf(
             .and_then(|b| b.as_array())
             .cloned()
             .unwrap_or_default();
+        // Compose project page chrome (header/footer) ahead of body blocks.
+        let mut chrome_blocks = compose_chrome_blocks(project, h);
+        chrome_blocks.append(&mut ordered);
+        let mut ordered = chrome_blocks;
         ordered.sort_by(|a, b| {
             let za = a.get("zIndex").and_then(|v| v.as_i64()).unwrap_or(0);
             let zb = b.get("zIndex").and_then(|v| v.as_i64()).unwrap_or(0);
@@ -236,10 +341,10 @@ pub fn render_project_pdf(
             }
             let ty = block.get("type").and_then(|v| v.as_str()).unwrap_or("");
             match ty {
-                "paragraph" | "text" | "data" | "list" | "table" => {
+                "paragraph" | "text" | "data" | "list" | "table" | "date" => {
                     draw_text_block(&layer, &font, block, h, row, &ctx);
                 }
-                "shape" | "picture" | "files" => {
+                "shape" | "picture" | "files" | "signature" | "qrcode" => {
                     draw_shape_placeholder(&layer, block, h);
                 }
                 "group" => {
@@ -250,9 +355,9 @@ pub fn render_project_pdf(
                     {
                         for kid in kids {
                             let kty = kid.get("type").and_then(|v| v.as_str()).unwrap_or("");
-                            if matches!(kty, "paragraph" | "text" | "data" | "list" | "table") {
+                            if matches!(kty, "paragraph" | "text" | "data" | "list" | "table" | "date") {
                                 draw_text_block(&layer, &font, kid, h, row, &ctx);
-                            } else if matches!(kty, "shape" | "picture") {
+                            } else if matches!(kty, "shape" | "picture" | "signature" | "qrcode") {
                                 draw_shape_placeholder(&layer, kid, h);
                             }
                         }

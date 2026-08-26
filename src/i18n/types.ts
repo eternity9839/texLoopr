@@ -183,6 +183,8 @@ export type MessageKey =
   | "bindingPreviewHint"
   | "editContrastAssist"
   | "editContrastAssistHint"
+  | "showInactiveBranches"
+  | "showInactiveBranchesHint"
   | "textExpansions"
   | "textExpansionsHint"
   | "shortcutSectionView"

@@ -1,5 +1,5 @@
-import type { Project } from "../document";
-import { b, page, shell } from "./helpers";
+import type { Project } from "../../document";
+import { b, page, shell } from "../helpers";
 
 const SIDE_BG = "#1a2332";
 const SIDE_INK = "#e8eef6";

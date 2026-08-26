@@ -60,7 +60,7 @@ const COPY: Record<Locale, TourCopy> = {
     },
     preview: {
       title: "Aperçu — résoudre contre une sortie",
-      body: "Basculez l’aperçu pour résoudre les champs de fusion sur le même canevas. Choisissez une ligne de données et un type de sortie (seuls ceux configurés dans Automatisation sont actifs).",
+      body: "Basculez l’aperçu pour résoudre les champs de fusion. Choisissez une ligne, une pastille de langue (ou Depuis la ligne) et un type de sortie — Welcome SMS FR vs PDF EN utilise des conditions différentes.",
     },
     automation: {
       title: "Automatisation — essai à blanc du flux",
@@ -102,7 +102,7 @@ const COPY: Record<Locale, TourCopy> = {
     },
     preview: {
       title: "Preview — resolve against output",
-      body: "Toggle Preview to resolve merge fields on the same canvas. Pick a data row and an output kind (only kinds configured in Automation are enabled).",
+      body: "Toggle Preview to resolve merge fields on the same canvas. Pick a data row, a language chip (or From row), and an output kind — Welcome SMS FR vs PDF EN uses different conditions.",
     },
     automation: {
       title: "Automation — workflow dry-run",

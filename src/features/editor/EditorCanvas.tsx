@@ -41,6 +41,7 @@ import {
   canvasViewScale,
   updatePage,
   focusDataFieldFromBindingPath,
+  previewLanguageOverride,
 } from "../../state/store";
 import {
   beginIssuePass,
@@ -55,8 +56,10 @@ import { isRulerUnit } from "../../model/rulerUnits";
 import { enrichPreviewContext } from "../../model/runtime";
 import { effectiveZ } from "../../model/layerStack";
 import { findBlockDeep, flattenBlocksForPreview } from "../../model/groups";
+import { composeChromeBlocks, ensurePageChrome } from "../../model/pageChrome";
+import { parseTableHeightMode } from "../../model/tableLayout";
 import { dataColumnNames } from "../../model/bindings";
-import { evaluateCondition, isOutputFormatCondition } from "../../model/bindings";
+import { blockMeetsCondition, pageMeetsCondition } from "../../model/bindings";
 import { renderBlock } from "./blocks";
 import type { RuntimeContext } from "../../model/expr";
 import type { BlockType } from "../../model/document";
@@ -244,8 +247,17 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
 
   const runtime: RuntimeContext | undefined = useMemo(() => {
     if (!output) return undefined;
-    return enrichPreviewContext(project.value, row, output);
-  }, [output, row, project.value]);
+    return enrichPreviewContext(
+      project.value,
+      row,
+      output,
+      {},
+      previewLanguageOverride.value,
+    );
+  }, [output, row, project.value, previewLanguageOverride.value]);
+
+  const showInactiveBranches =
+    !preview && prefs.value.showInactiveBranches === true;
 
   const { renderBlocks, itemContexts } = useMemo(() => {
     const source = page?.blocks ?? [];
@@ -255,14 +267,11 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
         itemContexts: new Map<string, RuntimeContext>(),
       };
     }
-    const formatFiltered = source.filter((b) => {
-      if (!b.condition) return true;
-      // Edit: only apply pure output.kind gates so SMS/mobile cards stay off-canvas.
-      if (!preview && !isOutputFormatCondition(b.condition)) return true;
-      return evaluateCondition(b.condition, row, runtime, {
-        diagnose: preview,
-      });
-    });
+    const formatFiltered = showInactiveBranches
+      ? source
+      : source.filter((b) =>
+          blockMeetsCondition(b, row, runtime, { preview }),
+        );
     if (!preview) {
       return {
         renderBlocks: formatFiltered,
@@ -271,7 +280,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
     }
     const flat = flattenBlocksForPreview(formatFiltered, row, runtime);
     return { renderBlocks: flat.blocks, itemContexts: flat.itemContexts };
-  }, [page?.blocks, preview, runtime, row]);
+  }, [page?.blocks, preview, runtime, row, showInactiveBranches]);
 
   useEffect(() => {
     if (preview) return;
@@ -649,15 +658,9 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   );
 
   const allPages = project.value.pages;
-  const visiblePages = allPages.filter((p) => {
-    if (!p.condition?.trim()) return true;
-    if (!runtime) return true;
-    // Edit: only apply pure output.kind gates; language/data conditions apply in preview.
-    if (!preview && !isOutputFormatCondition(p.condition)) return true;
-    return evaluateCondition(p.condition, row, runtime, {
-      diagnose: preview,
-    });
-  });
+  const visiblePages = allPages.filter((p) =>
+    pageMeetsCondition(p, row, runtime, { preview }),
+  );
   const activeVisibleIdx = Math.max(
     0,
     visiblePages.findIndex((p) => p.id === page?.id),
@@ -667,14 +670,25 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
       ? visiblePages
       : viewMode === "spread"
         ? visiblePages.slice(activeVisibleIdx, activeVisibleIdx + 2)
-        : page && (!preview || visiblePages.some((p) => p.id === page.id))
-          ? [page]
-          : visiblePages.slice(0, 1);
+        : visiblePages.length === 0
+          ? []
+          : page && visiblePages.some((p) => p.id === page.id)
+            ? [page]
+            : [visiblePages[0]!];
 
   const sheetGap = 28;
-  const sheetsWide = viewMode === "spread" ? Math.min(2, pagesToShow.length) : 1;
+  const sheetsWide =
+    pagesToShow.length === 0
+      ? 1
+      : viewMode === "spread"
+        ? Math.min(2, pagesToShow.length)
+        : 1;
   const sheetsTall =
-    viewMode === "continuous" ? pagesToShow.length : 1;
+    pagesToShow.length === 0
+      ? 1
+      : viewMode === "continuous"
+        ? pagesToShow.length
+        : 1;
   const sheetW = pageW * scale;
   const sheetH = pageH * scale;
   const fitW =
@@ -709,13 +723,9 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
         contexts: new Map<string, RuntimeContext>(),
       };
     }
-    const formatFiltered = source.filter((b) => {
-      if (!b.condition) return true;
-      if (!preview && !isOutputFormatCondition(b.condition)) return true;
-      return evaluateCondition(b.condition, row, runtime, {
-        diagnose: preview,
-      });
-    });
+    const formatFiltered = source.filter((b) =>
+      blockMeetsCondition(b, row, runtime, { preview }),
+    );
     if (!preview) {
       return {
         blocks: [...formatFiltered].sort(
@@ -871,6 +881,43 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               </p>
             </div>
           )}
+          {(() => {
+            const chrome = ensurePageChrome(project.value.pageChrome);
+            const bands = [
+              {
+                slot: "header" as const,
+                top: 0,
+                h: chrome.header!.height,
+                bg: chrome.header!.background,
+                enabled: Boolean(chrome.header!.enabled),
+              },
+              {
+                slot: "footer" as const,
+                top: Math.max(0, pageH - chrome.footer!.height),
+                h: chrome.footer!.height,
+                bg: chrome.footer!.background,
+                enabled: Boolean(chrome.footer!.enabled),
+              },
+            ];
+            return bands
+              .filter((b) => b.enabled)
+              .map((b) => (
+                <div
+                  key={`chrome-${b.slot}`}
+                  class={`page-chrome-band page-chrome-band--${b.slot}`}
+                  aria-hidden="true"
+                  style={{
+                    top: `${b.top}px`,
+                    height: `${b.h}px`,
+                    background: b.bg || undefined,
+                  }}
+                >
+                  {!preview ? (
+                    <span class="page-chrome-band__label">{b.slot}</span>
+                  ) : null}
+                </div>
+              ));
+          })()}
           {marquee && isActive && interactive && (
             <div
               class="selection-marquee"
@@ -883,7 +930,13 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               }}
             />
           )}
-          {sheetBlocks.map((b) => {
+          {[
+            ...composeChromeBlocks(project.value.pageChrome, pageH),
+            ...sheetBlocks,
+          ]
+            .slice()
+            .sort((a, b) => effectiveZ(a) - effectiveZ(b))
+            .map((b) => {
             const count = comments.filter((c) => c.blockId === b.id).length;
             const itemCtx = sheetContexts.get(b.id);
             const isInteractive = interactive && !preview;
@@ -921,8 +974,14 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
                     pushHistoryCheckpoint();
                     dragOrigins.current.clear();
                     const ids = selectedIds.value;
+                    const chromeAbs = composeChromeBlocks(
+                      project.value.pageChrome,
+                      pageH,
+                    );
                     for (const oid of ids) {
-                      const blk = findBlockDeep(sheet.blocks, oid);
+                      const blk =
+                        findBlockDeep(sheet.blocks, oid) ??
+                        chromeAbs.find((c) => c.id === oid);
                       if (blk) dragOrigins.current.set(oid, { x: blk.x, y: blk.y });
                     }
                   }
@@ -941,9 +1000,15 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
                         if (anchor) {
                           const dx = (patch.x ?? 0) - anchor.x;
                           const dy = (patch.y ?? 0) - anchor.y;
+                          const chromeAbs = composeChromeBlocks(
+                            project.value.pageChrome,
+                            pageH,
+                          );
                           for (const [oid, o] of origins) {
                             if (oid === id) continue;
-                            const ob = findBlockDeep(sheet.blocks, oid);
+                            const ob =
+                              findBlockDeep(sheet.blocks, oid) ??
+                              chromeAbs.find((c) => c.id === oid);
                             if (ob && !ob.locked) {
                               updateBlock(oid, { x: o.x + dx, y: o.y + dy });
                             }
@@ -951,6 +1016,19 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
                         }
                       } else {
                         origins.clear();
+                      }
+                    }
+                    if (mode === "resize") {
+                      const blk = findBlockDeep(sheet.blocks, id);
+                      if (
+                        blk?.type === "table" &&
+                        parseTableHeightMode(blk.content.heightMode) === "auto"
+                      ) {
+                        updateBlock(id, {
+                          ...patch,
+                          content: { heightMode: "fixed" },
+                        });
+                        return;
                       }
                     }
                     updateBlock(id, patch);
@@ -1039,8 +1117,23 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
                       : undefined,
                 }}
               >
-                {pagesToShow.map((sheet) =>
-                  renderPageSheet(sheet, sheet.id === page?.id),
+                {pagesToShow.length === 0 ? (
+                  <div class="editor-empty editor-empty--gated" role="status">
+                    <strong>
+                      {preview
+                        ? "Nothing to preview for this output"
+                        : "No pages for this output"}
+                    </strong>
+                    <p class="muted">
+                      {preview
+                        ? "Page or language conditions hide every page for the active output and data row. Switch output, row, or edit conditions."
+                        : "This output kind has no matching pages. Switch output in Automation or Preview, or clear page conditions."}
+                    </p>
+                  </div>
+                ) : (
+                  pagesToShow.map((sheet) =>
+                    renderPageSheet(sheet, sheet.id === page?.id),
+                  )
                 )}
               </div>
             </div>

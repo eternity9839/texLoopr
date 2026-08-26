@@ -62,11 +62,13 @@ describe("attachProjectDatasets", () => {
 });
 
 describe("defaultOutputs", () => {
-  it("includes Image alongside Screen and PDF", () => {
+  it("includes Screen, PDF, Email, Image — not SMS/push by default", () => {
     const kinds = defaultOutputs().map((o) => o.kind);
     expect(kinds).toContain("preview");
     expect(kinds).toContain("pdf");
     expect(kinds).toContain("image");
     expect(kinds).toContain("email");
+    expect(kinds).not.toContain("sms");
+    expect(kinds).not.toContain("mobile");
   });
 });

@@ -4,7 +4,7 @@ import type { RuntimeContext } from "./expr";
 import { resolveTemplate, evaluateCondition } from "./bindings";
 import { runWorkflow } from "./runtime";
 import { createDemoProject } from "./demos/library";
-import { defaultOutputs } from "./workflow";
+import { defaultOutputs, optionalOutputTemplates } from "./workflow";
 
 const ctx: RuntimeContext = {
   data: { name: "Ada", role: "Math", company: "AE" },
@@ -94,7 +94,7 @@ describe("evaluateCondition with expressions", () => {
 describe("runWorkflow", () => {
   it("runs demo project against print output", () => {
     const project = createDemoProject();
-    const print = defaultOutputs().find((o) => o.kind === "print")!;
+    const print = optionalOutputTemplates().find((o) => o.kind === "print")!;
     const result = runWorkflow({
       project,
       row: { name: "Ada", company: "AE", role: "Math" },

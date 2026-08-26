@@ -20,7 +20,9 @@ import {
   UiOverlay,
   Watermark,
   type CanvasPresetId,
+  type PageChromeSlot,
 } from "../model/document";
+import { CANVAS_PRESETS } from "../model/document";
 import { createDemoProject, getDemo } from "../model/demos/library";
 import { DataRow, parseDataInput, SAMPLE_CSV } from "../model/bindings";
 import { bindingPathToDataFocus } from "../model/dataField";
@@ -50,6 +52,12 @@ import {
   ungroupBlock,
   updateBlockDeep,
 } from "../model/groups";
+import {
+  bandNeedsHeight,
+  ensurePageChrome,
+  findChromeBlock,
+  toBandLocalBlocks,
+} from "../model/pageChrome";
 import {
   nudgeBlockZOrder,
   type ZOrderDirection,
@@ -156,6 +164,7 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
     canvasZoomMode: "fit",
     canvasZoom: 1,
     editContrastAssist: true,
+    showInactiveBranches: false,
   };
   let next = base;
   if (saved?.prefs && saved.prefs.locale == null) {
@@ -163,6 +172,9 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
   }
   if (saved?.prefs && saved.prefs.editContrastAssist == null) {
     next = { ...next, editContrastAssist: true };
+  }
+  if (saved?.prefs && saved.prefs.showInactiveBranches == null) {
+    next = { ...next, showInactiveBranches: false };
   }
   const artboard = saved?.project?.artboard;
   if (artboard && next.canvasPreset !== artboard) {
@@ -205,6 +217,16 @@ export const dataRows = signal<DataRow[]>(
   saved?.dataRows ?? parseDataInput(SAMPLE_CSV),
 );
 export const previewRowIndex = signal<number>(saved?.previewRowIndex ?? 0);
+/**
+ * Session override for document language in Edit/Preview.
+ * `null` = resolve from row / project (default).
+ */
+export const previewLanguageOverride = signal<string | null>(null);
+
+export function setPreviewLanguageOverride(next: string | null): void {
+  previewLanguageOverride.value = next;
+}
+
 export const prefs = signal<EditorPrefs>(migratePrefs(saved));
 
 function localizedTourSteps() {
@@ -241,7 +263,7 @@ export function closePrebuildPicker(): void {
   prebuildPickerOpen.value = false;
 }
 export const catalogReady = signal(false);
-export const catalogBackend = signal<"tauri" | "web" | null>(null);
+export const catalogBackend = signal<"tauri" | "web" | "http" | null>(null);
 
 const editHistory = new EditHistory();
 if (saved?.editHistory && isEditHistorySnapshot(saved.editHistory)) {
@@ -270,13 +292,15 @@ export const selectedBlock = computed(() => {
     const block = findBlockDeep(page.blocks, sel.id);
     if (block) return block;
   }
-  return null;
+  const chromeHit = findChromeBlock(project.value.pageChrome, sel.id);
+  return chromeHit?.block ?? null;
 });
 
 /** Multi-select for grouping (Shift+click). Primary focus stays in `selection`. */
 export const selectedIds = signal<string[]>([]);
 
 export const selectedBlocks = computed(() => {
+  const p = project.value;
   const page = activePage.value;
   if (!page) return [];
   const ids = selectedIds.value.length
@@ -285,9 +309,23 @@ export const selectedBlocks = computed(() => {
       ? [selection.value.id]
       : [];
   return ids
-    .map((id) => findBlockDeep(page.blocks, id))
+    .map((id) => {
+      const onPage = findBlockDeep(page.blocks, id);
+      if (onPage) return onPage;
+      return findChromeBlock(p.pageChrome, id)?.block ?? null;
+    })
     .filter((b): b is Block => Boolean(b));
 });
+
+function projectPageSize(p: Project): { w: number; h: number } {
+  const page = p.pages.find((x) => x.id === p.activePageId) ?? p.pages[0];
+  if (page?.width && page?.height) {
+    return { w: page.width, h: page.height };
+  }
+  const preset = (p.artboard ?? "document") as CanvasPresetId;
+  const size = CANVAS_PRESETS[preset] ?? CANVAS_PRESETS.document;
+  return { w: size.w, h: size.h };
+}
 
 export const previewRow = computed(() => {
   const rows = dataRows.value;
@@ -1017,47 +1055,68 @@ export function updateBlock(
 ): void {
   updateProject((draft) => {
     for (const page of draft.pages) {
-      page.blocks = updateBlockDeep(page.blocks, blockId, (block) => {
-        const next = { ...block };
-        const moving =
-          patch.x != null || patch.y != null || patch.w != null || patch.h != null;
-        if (patch.content) next.content = { ...next.content, ...patch.content };
-        if (patch.style) next.style = { ...next.style, ...patch.style };
-        if (patch.bindings)
-          next.bindings = { ...next.bindings, ...patch.bindings };
-        if (patch.pin === null) {
-          delete next.pin;
-        } else if (patch.pin !== undefined) {
-          next.pin = patch.pin;
-        }
-        const { content: _c, style: _s, bindings: _b, pin: _p, ...rest } = patch;
-        if (!(next.locked && moving && patch.locked !== false)) {
-          Object.assign(next, rest);
-        } else {
-          const { x: _x, y: _y, w: _w, h: _h, ...safe } = rest;
-          Object.assign(next, safe);
-        }
-        if (
-          !(next.locked && patch.locked !== false) &&
-          (patch.x != null ||
-            patch.y != null ||
-            patch.w != null ||
-            patch.h != null)
-        ) {
-          const norm = normalizeRect(
-            { x: next.x, y: next.y, w: next.w, h: next.h },
-            { x: next.x, y: next.y, w: next.w, h: next.h },
-          );
-          next.x = norm.x;
-          next.y = norm.y;
-          next.w = norm.w;
-          next.h = norm.h;
-        }
-        return next;
-      });
+      if (!findBlockDeep(page.blocks, blockId)) continue;
+      page.blocks = updateBlockDeep(page.blocks, blockId, (block) =>
+        applyBlockPatch(block, patch),
+      );
+      return draft;
     }
+
+    const chromeHit = findChromeBlock(draft.pageChrome, blockId);
+    if (!chromeHit) return draft;
+    const size = projectPageSize(draft);
+    draft.pageChrome = ensurePageChrome(draft.pageChrome);
+    const band = draft.pageChrome[chromeHit.slot]!;
+    const originY =
+      chromeHit.slot === "header" ? 0 : Math.max(0, size.h - band.height);
+    const absPatch = { ...patch };
+    if (absPatch.y != null) absPatch.y = absPatch.y - originY;
+    band.blocks = band.blocks.map((b) =>
+      b.id === blockId ? applyBlockPatch(b, absPatch) : b,
+    );
     return draft;
   }, options);
+}
+
+function applyBlockPatch(
+  block: Block,
+  patch: Parameters<typeof updateBlock>[1],
+): Block {
+  const next = { ...block };
+  const moving =
+    patch.x != null || patch.y != null || patch.w != null || patch.h != null;
+  if (patch.content) next.content = { ...next.content, ...patch.content };
+  if (patch.style) next.style = { ...next.style, ...patch.style };
+  if (patch.bindings) next.bindings = { ...next.bindings, ...patch.bindings };
+  if (patch.pin === null) {
+    delete next.pin;
+  } else if (patch.pin !== undefined) {
+    next.pin = patch.pin;
+  }
+  const { content: _c, style: _s, bindings: _b, pin: _p, ...rest } = patch;
+  if (!(next.locked && moving && patch.locked !== false)) {
+    Object.assign(next, rest);
+  } else {
+    const { x: _x, y: _y, w: _w, h: _h, ...safe } = rest;
+    Object.assign(next, safe);
+  }
+  if (
+    !(next.locked && patch.locked !== false) &&
+    (patch.x != null ||
+      patch.y != null ||
+      patch.w != null ||
+      patch.h != null)
+  ) {
+    const norm = normalizeRect(
+      { x: next.x, y: next.y, w: next.w, h: next.h },
+      { x: next.x, y: next.y, w: next.w, h: next.h },
+    );
+    next.x = norm.x;
+    next.y = norm.y;
+    next.w = norm.w;
+    next.h = norm.h;
+  }
+  return next;
 }
 
 export function deleteSelection(): void {
@@ -1067,17 +1126,27 @@ export function deleteSelection(): void {
     const ids = new Set(
       selectedIds.value.length ? selectedIds.value : [sel.id],
     );
-    updateProject((draft) => {
-      for (const page of draft.pages) {
-        for (const id of ids) {
-          page.blocks = removeBlockDeep(page.blocks, id);
+    updateProject(
+      (draft) => {
+        for (const page of draft.pages) {
+          for (const id of ids) {
+            page.blocks = removeBlockDeep(page.blocks, id);
+          }
         }
-      }
-      draft.comments = (draft.comments ?? []).filter(
-        (c) => !ids.has(c.blockId),
-      );
-      return draft;
-    }, { history: true, label: "Delete selection" });
+        if (draft.pageChrome) {
+          draft.pageChrome = ensurePageChrome(draft.pageChrome);
+          for (const slot of ["header", "footer"] as const) {
+            const band = draft.pageChrome[slot]!;
+            band.blocks = band.blocks.filter((b) => !ids.has(b.id));
+          }
+        }
+        draft.comments = (draft.comments ?? []).filter(
+          (c) => !ids.has(c.blockId),
+        );
+        return draft;
+      },
+      { history: true, label: "Delete selection" },
+    );
     selection.value = null;
     selectedIds.value = [];
     return;
@@ -1086,7 +1155,7 @@ export function deleteSelection(): void {
     if (draft.pages.length <= 1) return draft;
     draft.pages = draft.pages.filter((p) => p.id !== sel.id);
     if (draft.activePageId === sel.id) {
-      draft.activePageId = draft.pages[0].id;
+      draft.activePageId = draft.pages[0]!.id;
     }
     return draft;
   }, { history: true, label: "Delete page" });
@@ -1571,6 +1640,81 @@ export function deleteDocumentStyle(styleId: string): void {
     ...draft,
     documentStyles: (draft.documentStyles ?? []).filter((s) => s.id !== styleId),
   }));
+}
+
+export function updatePageChromeBand(
+  slot: PageChromeSlot,
+  patch: Partial<{
+    enabled: boolean;
+    height: number;
+    background: string | null;
+  }>,
+): void {
+  updateProject(
+    (draft) => {
+      draft.pageChrome = ensurePageChrome(draft.pageChrome);
+      const band = draft.pageChrome[slot]!;
+      if (patch.enabled != null) band.enabled = patch.enabled;
+      if (patch.height != null) band.height = Math.max(24, Math.round(patch.height));
+      if (patch.background === null) delete band.background;
+      else if (patch.background != null) band.background = patch.background;
+      return draft;
+    },
+    { history: true, label: "Update page chrome" },
+  );
+}
+
+export function clearPageChromeBand(slot: PageChromeSlot): void {
+  updateProject(
+    (draft) => {
+      draft.pageChrome = ensurePageChrome(draft.pageChrome);
+      draft.pageChrome[slot] = {
+        enabled: false,
+        height: draft.pageChrome[slot]!.height,
+        blocks: [],
+      };
+      return draft;
+    },
+    { history: true, label: "Clear page chrome" },
+  );
+}
+
+/** Move current selection into project header/footer chrome. */
+export function promoteSelectionToChrome(slot: PageChromeSlot): void {
+  const page = activePage.value;
+  if (!page) return;
+  const targets = selectedBlocks.value.filter((b) => {
+    // Only promote page body blocks (not already chrome).
+    return Boolean(findBlockDeep(page.blocks, b.id));
+  });
+  if (!targets.length) return;
+  const size = projectPageSize(project.value);
+  updateProject(
+    (draft) => {
+      draft.pageChrome = ensurePageChrome(draft.pageChrome);
+      const band = draft.pageChrome[slot]!;
+      const local = toBandLocalBlocks(
+        targets,
+        slot,
+        size.h,
+        Math.max(band.height, bandNeedsHeight(
+          toBandLocalBlocks(targets, slot, size.h, band.height),
+          band.height,
+        )),
+      );
+      band.height = bandNeedsHeight(local, band.height);
+      band.blocks = [...band.blocks, ...local];
+      band.enabled = true;
+      const ids = new Set(targets.map((t) => t.id));
+      for (const pg of draft.pages) {
+        for (const id of ids) {
+          pg.blocks = removeBlockDeep(pg.blocks, id);
+        }
+      }
+      return draft;
+    },
+    { history: true, label: `Promote to ${slot}` },
+  );
 }
 
 /** Pure helpers for tests */

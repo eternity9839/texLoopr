@@ -101,15 +101,28 @@ export const PREBUILD_RECIPES: PrebuildRecipe[] = [
   {
     id: "signature",
     label: "Signature",
-    blurb: "Closing + signatory",
+    blurb: "Sign-here field + closing",
     w: 240,
-    h: 88,
+    h: 120,
     build: ({ x, y }) => [
       text("Closing", x, y, 240, 24, "Kind regards,", { fontSize: 12 }),
-      text("Signatory", x, y + 40, 240, 40, "{{name|default:Name}}\n{{role}}", {
-        fontSize: 12,
-        fontWeight: 600,
-      }),
+      {
+        id: createId(),
+        type: "signature" as const,
+        name: "Signature",
+        x,
+        y: y + 28,
+        w: 220,
+        h: 88,
+        content: {
+          src: "",
+          label: "Authorized signature",
+          caption: "{{name|default:Name}}\n{{role}}",
+          showLine: true,
+        },
+        style: { fontSize: 11, color: "#5c6570", fontFamily: "ui" as const },
+        zIndex: 1,
+      },
     ],
   },
   {

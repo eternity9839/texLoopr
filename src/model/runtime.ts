@@ -14,6 +14,7 @@ import {
   type WorkflowStep,
 } from "./workflow";
 import { noteIssue } from "../state/issueLog";
+import { envClock } from "./envClock";
 import { injectDocumentLanguage } from "./documentLanguage";
 
 export interface RunOptions {
@@ -49,6 +50,7 @@ export interface WorkflowResult {
 
 function buildContext(opts: RunOptions): RuntimeContext {
   const { output, device } = outputToCtx(opts.output);
+  const clock = envClock();
   const ctx: RuntimeContext = {
     data: { ...(opts.row as Record<string, ExprValue>) },
     output,
@@ -56,7 +58,7 @@ function buildContext(opts: RunOptions): RuntimeContext {
     vars: opts.vars ?? {},
     env: {
       preview: Boolean(opts.preview),
-      timestamp: Date.now(),
+      ...clock,
     },
   };
   injectDocumentLanguage(ctx, opts.project, opts.row);
@@ -127,9 +129,10 @@ export function enrichPreviewContext(
   row: DataRow | undefined,
   output: OutputProfile,
   vars: Record<string, ExprValue> = {},
+  languageOverride?: string | null,
 ): RuntimeContext {
   const ctx = previewContext(row, output, vars, true);
-  injectDocumentLanguage(ctx, project, row);
+  injectDocumentLanguage(ctx, project, row, languageOverride);
   attachProjectDatasets(project, ctx, row);
   const steps: WorkflowStep[] = (project.workflow ?? []).filter(
     (s) => s.type === "bind" || s.type === "script" || s.type === "condition",
@@ -336,11 +339,12 @@ export function previewContext(
   preview = true,
 ): RuntimeContext {
   const { output: o, device } = outputToCtx(output);
+  const clock = envClock();
   return {
     data: { ...((row ?? {}) as Record<string, ExprValue>) },
     output: o,
     device,
     vars: { ...vars },
-    env: { preview, timestamp: Date.now() },
+    env: { preview, ...clock },
   };
 }

@@ -1,23 +1,32 @@
-# ADR 0015: Document language (dataset + conditions)
+# 0015. Document language
 
-- **Status:** accepted
-- **Date:** 2026-08-26
-- **Related:** [ADR 0005](0005-templating-runtime.md), [ADR 0010](0010-project-artboard-datasets.md)
+## Status
+
+Accepted
 
 ## Context
 
-Bulk templates often need the same layout in several languages. Auto-translation is out of scope. Authors already gate blocks with conditions (`output.kind`, CSV fields). Document language must be dataset-driven, available as a default runtime variable, and work at **block** and **page** level. UI chrome locale (`prefs.locale`) must stay separate.
+Templates need alternate copy per locale (EN/FR/NL/…) without separate projects.
+Conditions already evaluate against `data`, `output`, `vars`, and `env`. Authors need a
+stable language signal that works in Edit, Preview, and headless render.
 
 ## Decision
 
-1. **Resolve `language`** (priority): row field `language` or `lang` → `Project.language` → `"en"`. Values are trimmed and lowercased for compares.
-2. **Inject** into every preview / workflow / PDF context as `vars.language` and `env.language`.
-3. **`Page.condition`** — same expression dialect as `Block.condition`; pages failing the condition are skipped in preview and render (edit mode still shows all pages for authoring).
-4. **Authoring** — alternate pages per language, or duplicate blocks / `{{#if vars.language == 'fr'}}` on one page. No automatic translation.
-5. **Rich `lookup()` language packs** remain JS-preview-first until Rust datasets land.
+1. **Resolve language** in this order: session Preview override → row `language` or
+   `lang` → `Project.language` → `"en"`.
+2. **Inject** the resolved code as `vars.language` and `env.language` on the runtime
+   context (JS and Rust).
+3. **Gate** blocks/pages with expressions such as `vars.language == 'fr'`, often
+   composed with `output.kind` via `&&`.
+4. **Authoring**: Data tab (blocks) and Design → Visibility (pages) use toggle chips
+   that compose clauses; Clear wipes the expression.
+5. **Preview** exposes Row / EN / FR / NL / DE chips for a session override without
+   changing CSV rows.
+6. **Edit** can ghost failed-condition branches (`showInactiveBranches`) so stacked
+   language/output alternates remain selectable.
 
 ## Consequences
 
-- Meta “Language” is the project default; per-row `language`/`lang` overrides for each recipient.
-- Conditions like `vars.language == 'fr'` and page-level visibility work in canvas preview and Rust PDF.
-- UI language (Settings) never drives document merge or conditions.
+- Welcome and wedding-style demos ship paired siblings at the same geometry.
+- Formats tree dimming respects active language as well as output kind.
+- A future “variant group” model could collapse duplicate geometry; not required yet.

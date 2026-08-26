@@ -28,15 +28,21 @@ import {
   inspectorTab,
   prefs,
   updatePrefs,
+  previewLanguageOverride,
+  setPreviewLanguageOverride,
 } from "../../state/store";
 import { ensureProjectAutomation } from "../../model/document";
+import {
+  PREVIEW_LANGUAGE_OPTIONS,
+  resolveDocumentLanguage,
+} from "../../model/documentLanguage";
 
 export function EditStudio() {
   const preview = previewMode.value;
   const rows = dataRows.value;
   const idx = previewRowIndex.value;
   const proj = ensureProjectAutomation(project.value);
-  const outputs = proj.outputs ?? [];
+  const outputs = (proj.outputs ?? []).filter((o) => o.enabled !== false);
   const tab = inspectorTab.value;
   const p = prefs.value;
   const inspCollapsed = Boolean(p.inspectorCollapsed);
@@ -47,6 +53,13 @@ export function EditStudio() {
   const activeKind =
     outputs.find((o) => o.id === proj.activeOutputId)?.kind ??
     outputs[0]?.kind;
+
+  const langOverride = previewLanguageOverride.value;
+  const rowLang = resolveDocumentLanguage(
+    proj,
+    rows[idx],
+    null,
+  );
 
   const selectKind = (kind: OutputKind) => {
     const match =
@@ -113,6 +126,46 @@ export function EditStudio() {
               <div
                 class="preview-kinds"
                 role="group"
+                aria-label="Document language"
+                title="Override language for conditions (or use From row)"
+              >
+                <button
+                  type="button"
+                  class={
+                    langOverride == null
+                      ? "preview-kinds__btn preview-kinds__btn--on"
+                      : "preview-kinds__btn"
+                  }
+                  title={`From row (${rowLang})`}
+                  aria-pressed={langOverride == null}
+                  onClick={() => setPreviewLanguageOverride(null)}
+                >
+                  Row
+                </button>
+                {PREVIEW_LANGUAGE_OPTIONS.map((code) => {
+                  const active = langOverride === code;
+                  return (
+                    <button
+                      type="button"
+                      key={code}
+                      class={
+                        active
+                          ? "preview-kinds__btn preview-kinds__btn--on"
+                          : "preview-kinds__btn"
+                      }
+                      title={`Language ${code.toUpperCase()}`}
+                      aria-label={`Language ${code}`}
+                      aria-pressed={active}
+                      onClick={() => setPreviewLanguageOverride(code)}
+                    >
+                      {code.toUpperCase()}
+                    </button>
+                  );
+                })}
+              </div>
+              <div
+                class="preview-kinds"
+                role="group"
                 aria-label="Output kind"
                 title="Previous/next output: Shift+[ ]"
               >
@@ -147,12 +200,12 @@ export function EditStudio() {
               </div>
               {activeKind && (
                 <span class="muted preview-kind-hint">
+                  {(langOverride ?? rowLang).toUpperCase()} ·{" "}
                   {OUTPUT_KIND_LABEL[activeKind]} · [ ] row · Shift+[ ] output
                 </span>
               )}
             </div>
-          )}
-          <div class="editor-stage">
+          )}          <div class="editor-stage">
             <EditorCanvas preview={preview} />
           </div>
           {showStatus && <StatusBar />}

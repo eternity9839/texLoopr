@@ -11,6 +11,10 @@ import { defaultRepeatChildren } from "../../model/repeat";
 import { getChildBlocks, isContainerBlock } from "../../model/groups";
 import { OUTPUT_KINDS, OUTPUT_KIND_LABEL } from "../../model/workflow";
 import { LANGUAGE_CONDITION_PRESETS } from "../../model/documentLanguage";
+import {
+  conditionHasClause,
+  toggleConditionClause,
+} from "../../model/conditionCompose";
 import { LINK_HOOKS, LINK_HOOK_LABEL } from "../../model/linkHook";
 import { Field, Section, SelectField } from "../../ui/controls";
 
@@ -40,10 +44,13 @@ export function DataBindingsPanel() {
     );
   }
 
+  const setCondition = (next: string) =>
+    updateBlock(block.id, { condition: next || undefined });
+
   return (
     <div class="panel-pad" aria-label="Data bindings">
       {isContainerBlock(block) && (
-        <Section title="Container" defaultOpen>
+        <Section title="Container">
           <p class="prop-hint">
             {getChildBlocks(block).length} child component
             {getChildBlocks(block).length === 1 ? "" : "s"} — expand the group
@@ -51,37 +58,45 @@ export function DataBindingsPanel() {
           </p>
         </Section>
       )}
-      <Section title="Merge" defaultOpen>
+      <Section title="Merge">
         <Field
           label="Condition"
           forId="data-condition"
-          hint="Show only when true in Preview. Use vars.language, output.kind, or CSV fields."
+          hint="Show when true in Edit and Preview. Chips toggle clauses with &&. Use vars.language, output.kind, or CSV fields."
         >
           <input
             id="data-condition"
-            placeholder="vars.language == 'fr' · output.kind == 'print'"
+            placeholder="vars.language == 'fr' && output.kind == 'pdf'"
             value={block.condition ?? ""}
-            onInput={(e) =>
-              updateBlock(block.id, { condition: e.currentTarget.value })
-            }
+            onInput={(e) => setCondition(e.currentTarget.value)}
           />
         </Field>
         <div class="condition-presets" role="group" aria-label="Condition presets">
-          {CONDITION_PRESETS.map((p) => (
-            <button
-              type="button"
-              key={p.value}
-              class="condition-presets__btn"
-              title={p.value}
-              onClick={() => updateBlock(block.id, { condition: p.value })}
-            >
-              {p.label}
-            </button>
-          ))}
+          {CONDITION_PRESETS.map((p) => {
+            const on = conditionHasClause(block.condition, p.value);
+            return (
+              <button
+                type="button"
+                key={p.value}
+                class={
+                  on
+                    ? "condition-presets__btn condition-presets__btn--on"
+                    : "condition-presets__btn"
+                }
+                title={`${on ? "Remove" : "Add"}: ${p.value}`}
+                aria-pressed={on}
+                onClick={() =>
+                  setCondition(toggleConditionClause(block.condition, p.value))
+                }
+              >
+                {p.label}
+              </button>
+            );
+          })}
           <button
             type="button"
             class="condition-presets__btn"
-            onClick={() => updateBlock(block.id, { condition: undefined })}
+            onClick={() => setCondition("")}
           >
             Clear
           </button>
@@ -103,8 +118,18 @@ export function DataBindingsPanel() {
                 updateBlock(block.id, { content: { path: col } });
                 return;
               }
-              if (block.type === "picture") {
+              if (block.type === "picture" || block.type === "signature") {
                 updateBlock(block.id, { content: { src: `{{${col}}}` } });
+                return;
+              }
+              if (block.type === "qrcode") {
+                updateBlock(block.id, { content: { value: `{{${col}}}` } });
+                return;
+              }
+              if (block.type === "date") {
+                updateBlock(block.id, {
+                  content: { source: "field", path: col },
+                });
                 return;
               }
               const text = String(block.content.text ?? "");
@@ -231,7 +256,7 @@ export function DataBindingsPanel() {
       </Section>
 
       {(block.type === "repeat" || block.type === "group") && (
-        <Section title="Group / repeat" defaultOpen>
+        <Section title="Group / repeat">
           <Field label="Save as custom object" forId="data-group-save">
             <div class="field-row">
               <input

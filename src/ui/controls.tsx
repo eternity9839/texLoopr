@@ -10,7 +10,7 @@ import { Icon, type IconName } from "./icons";
 export function Section({
   title,
   children,
-  defaultOpen = true,
+  defaultOpen = false,
   actions,
 }: {
   title: string;

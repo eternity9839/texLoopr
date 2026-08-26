@@ -293,7 +293,7 @@ export function MetadataPanel() {
         </Grid2>
       </Section>
 
-      <Section title="Description & custom" defaultOpen={false}>
+      <Section title="Description & custom">
         <Field label="Description" forId="meta-desc">
           <textarea
             id="meta-desc"
@@ -391,26 +391,27 @@ export function PropertiesPanel() {
               }
             />
           </Field>
-          <Field
-            label="Condition"
-            forId="block-condition"
-            hint={"Examples: role, !empty, output.kind == 'print'"}
-          >
-            <input
-              id="block-condition"
-              placeholder="data.role · output.kind == 'print'"
-              value={block.condition ?? ""}
-              onInput={(e) =>
-                updateBlock(block.id, { condition: e.currentTarget.value })
-              }
-            />
-          </Field>
+          <p class="muted prop-hint">
+            Conditions live on the Data inspector tab (chips toggle language and
+            output clauses).
+          </p>
           <FieldPicker
             block={block}
-            onPick={(col) => {
-              if (block.type === "picture") {
+            onPick={(col) => {              if (block.type === "picture" || block.type === "signature") {
                 updateBlock(block.id, {
                   content: { src: `{{${col}}}` },
+                });
+                return;
+              }
+              if (block.type === "qrcode") {
+                updateBlock(block.id, {
+                  content: { value: `{{${col}}}` },
+                });
+                return;
+              }
+              if (block.type === "date") {
+                updateBlock(block.id, {
+                  content: { source: "field", path: col },
                 });
                 return;
               }
@@ -432,6 +433,140 @@ export function PropertiesPanel() {
                 }
               />
             </Field>
+          )}
+          {block.type === "date" && (
+            <>
+              <SelectField
+                id="date-source"
+                label="Source"
+                value={String(block.content.source ?? "today")}
+                options={[
+                  { value: "today", label: "Today (generated)" },
+                  { value: "fixed", label: "Fixed date" },
+                  { value: "field", label: "Data field" },
+                ]}
+                onChange={(v) =>
+                  updateBlock(block.id, { content: { source: v } })
+                }
+              />
+              {String(block.content.source ?? "today") === "fixed" && (
+                <Field label="Date" forId="date-fixed">
+                  <input
+                    id="date-fixed"
+                    type="date"
+                    value={String(block.content.fixed ?? "")}
+                    onChange={(e) =>
+                      updateBlock(block.id, {
+                        content: { fixed: e.currentTarget.value },
+                      })
+                    }
+                  />
+                </Field>
+              )}
+              {String(block.content.source ?? "today") === "field" && (
+                <Field label="Field path" forId="date-path">
+                  <input
+                    id="date-path"
+                    placeholder="invoice_date"
+                    value={String(block.content.path ?? "")}
+                    onInput={(e) =>
+                      updateBlock(block.id, {
+                        content: { path: e.currentTarget.value },
+                      })
+                    }
+                  />
+                </Field>
+              )}
+              <SelectField
+                id="date-format"
+                label="Format"
+                value={String(block.content.format ?? "short")}
+                options={[
+                  { value: "short", label: "Short (21 Aug 2026)" },
+                  { value: "long", label: "Long" },
+                  { value: "iso", label: "ISO (2026-08-21)" },
+                ]}
+                onChange={(v) =>
+                  updateBlock(block.id, { content: { format: v } })
+                }
+              />
+            </>
+          )}
+          {block.type === "signature" && (
+            <>
+              <Field label="Ink image URL" forId="sig-src">
+                <input
+                  id="sig-src"
+                  placeholder="https://… or {{signature_url}}"
+                  value={String(block.content.src ?? "")}
+                  onInput={(e) =>
+                    updateBlock(block.id, {
+                      content: { src: e.currentTarget.value },
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Label" forId="sig-label">
+                <input
+                  id="sig-label"
+                  value={String(block.content.label ?? "")}
+                  onInput={(e) =>
+                    updateBlock(block.id, {
+                      content: { label: e.currentTarget.value },
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Caption" forId="sig-caption">
+                <textarea
+                  id="sig-caption"
+                  value={String(block.content.caption ?? "")}
+                  onInput={(e) =>
+                    updateBlock(block.id, {
+                      content: { caption: e.currentTarget.value },
+                    })
+                  }
+                />
+              </Field>
+              <CheckRow
+                checked={block.content.showLine !== false}
+                onChange={(v) =>
+                  updateBlock(block.id, { content: { showLine: v } })
+                }
+              >
+                Show signature line
+              </CheckRow>
+            </>
+          )}
+          {block.type === "qrcode" && (
+            <>
+              <Field label="QR payload" forId="qr-value">
+                <input
+                  id="qr-value"
+                  placeholder="https://… or {{tracking}}"
+                  value={String(block.content.value ?? "")}
+                  onInput={(e) =>
+                    updateBlock(block.id, {
+                      content: { value: e.currentTarget.value },
+                    })
+                  }
+                />
+              </Field>
+              <SelectField
+                id="qr-ecc"
+                label="Error correction"
+                value={String(block.content.ecc ?? "M")}
+                options={[
+                  { value: "L", label: "L (~7%)" },
+                  { value: "M", label: "M (~15%)" },
+                  { value: "Q", label: "Q (~25%)" },
+                  { value: "H", label: "H (~30%)" },
+                ]}
+                onChange={(v) =>
+                  updateBlock(block.id, { content: { ecc: v } })
+                }
+              />
+            </>
           )}
           {block.type === "picture" && (
             <>
@@ -621,7 +756,7 @@ export function PropertiesPanel() {
           h={block.h}
         />
 
-        <Section title="Typography" defaultOpen>
+        <Section title="Typography">
           <Grid2>
             <NumField
               id="font-size"
@@ -750,7 +885,7 @@ export function PropertiesPanel() {
           />
         </Section>
 
-        <Section title="Layout" defaultOpen={false}>
+        <Section title="Layout">
           <Grid2>
             <NumField
               id="opacity"
@@ -887,7 +1022,7 @@ export function PropertiesPanel() {
           </CheckRow>
         </Section>
 
-        <Section title="Appearance" defaultOpen={false}>
+        <Section title="Appearance">
           <Grid2>
             <NumField
               id="border-w"
@@ -927,7 +1062,7 @@ export function PropertiesPanel() {
           <ClearFormatButton ctx={{ block, setStyle }} />        </Section>
 
         {block.type === "list" && (
-          <Section title="List" defaultOpen={false}>
+          <Section title="List">
             <SelectField
               id="list-style"
               label="Markers"
@@ -969,7 +1104,7 @@ export function PropertiesPanel() {
         )}
 
         {block.type === "picture" && (
-          <Section title="Picture" defaultOpen={false}>
+          <Section title="Picture">
             <SelectField
               id="pic-fit"
               label="Fit"
@@ -1036,7 +1171,7 @@ export function PropertiesPanel() {
         )}
 
         {block.type === "shape" && (
-          <Section title="Shape" defaultOpen={false}>
+          <Section title="Shape">
             <SelectField
               id="shape-variant"
               label="Variant"
@@ -1079,7 +1214,7 @@ export function PropertiesPanel() {
         )}
 
         {block.type === "table" && (
-          <Section title="Table" defaultOpen={false}>
+          <Section title="Table">
             <Grid2>
               <NumField
                 id="table-rows"

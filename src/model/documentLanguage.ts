@@ -7,6 +7,10 @@ export const LANGUAGE_ROW_KEYS = ["language", "lang"] as const;
 
 export const DEFAULT_DOCUMENT_LANGUAGE = "en";
 
+/** Languages offered in Preview override chips and condition presets. */
+export const PREVIEW_LANGUAGE_OPTIONS = ["en", "fr", "nl", "de"] as const;
+export type PreviewLanguageCode = (typeof PREVIEW_LANGUAGE_OPTIONS)[number];
+
 function normalizeLang(raw: unknown): string | null {
   if (raw == null) return null;
   const s = String(raw).trim().toLowerCase();
@@ -15,12 +19,15 @@ function normalizeLang(raw: unknown): string | null {
 
 /**
  * Resolve active document language for merge/conditions.
- * Priority: row `language` | `lang` → Project.language → `"en"`.
+ * Priority: session override → row `language` | `lang` → Project.language → `"en"`.
  */
 export function resolveDocumentLanguage(
   project: Pick<Project, "language"> | null | undefined,
   row?: DataRow | null,
+  override?: string | null,
 ): string {
+  const fromOverride = normalizeLang(override);
+  if (fromOverride) return fromOverride;
   if (row) {
     for (const key of LANGUAGE_ROW_KEYS) {
       const fromRow = normalizeLang(row[key]);
@@ -50,8 +57,9 @@ export function injectDocumentLanguage(
   ctx: RuntimeContext,
   project: Pick<Project, "language"> | null | undefined,
   row?: DataRow | null,
+  override?: string | null,
 ): RuntimeContext {
-  const language = resolveDocumentLanguage(project, row);
+  const language = resolveDocumentLanguage(project, row, override);
   ctx.vars = { ...ctx.vars, language };
   ctx.env = { ...ctx.env, language };
   return ctx;

@@ -56,7 +56,7 @@ export function SettingsMode() {
 
       {section === "general" && (
         <>
-          <Section title={t("preferences")}>
+          <Section defaultOpen title={t("preferences")}>
             <SelectField
               id="settings-locale"
               label={t("language")}
@@ -94,7 +94,7 @@ export function SettingsMode() {
             />
           </Section>
 
-          <Section title={t("connections")}>
+          <Section defaultOpen title={t("connections")}>
             <div class="settings-conn">
               <div class="settings-conn__row">
                 <span class="muted">{t("storage")}</span>
@@ -120,7 +120,7 @@ export function SettingsMode() {
             </div>
           </Section>
 
-          <Section title={t("keyboardShortcuts")}>
+          <Section defaultOpen title={t("keyboardShortcuts")}>
             {SHORTCUT_SECTIONS.map((section) => (
               <div class="settings-keys-group" key={section.titleKey}>
                 <h4 class="settings-keys-group__title">
@@ -140,7 +140,7 @@ export function SettingsMode() {
             ))}
           </Section>
 
-          <Section title={t("workspace")}>
+          <Section defaultOpen title={t("workspace")}>
             <p class="muted settings-hint">{t("workspaceHint")}</p>
             <div class="field-row">
               <button
@@ -173,7 +173,7 @@ export function SettingsMode() {
       )}
 
       {section === "appearance" && (
-        <Section title={t("sectionAppearance")}>
+        <Section defaultOpen title={t("sectionAppearance")}>
           <p class="muted settings-hint">{t("sectionAppearanceHint")}</p>
           <ToggleRow
             label={t("tools")}
@@ -199,7 +199,7 @@ export function SettingsMode() {
       )}
 
       {section === "page" && (
-        <Section title={t("sectionPage")}>
+        <Section defaultOpen title={t("sectionPage")}>
           <p class="muted settings-hint">{t("sectionPageHint")}</p>
           <SelectField
             id="settings-page-view"
@@ -282,7 +282,7 @@ export function SettingsMode() {
       )}
 
       {section === "editor" && (
-        <Section title={t("sectionEditor")}>
+        <Section defaultOpen title={t("sectionEditor")}>
           <p class="muted settings-hint">{t("sectionEditorHint")}</p>
           <ToggleRow
             label={t("grid")}
@@ -318,6 +318,12 @@ export function SettingsMode() {
             onChange={(v) => updatePrefs({ editContrastAssist: v })}
           />
           <p class="muted settings-hint">{t("editContrastAssistHint")}</p>
+          <ToggleRow
+            label={t("showInactiveBranches")}
+            checked={p.showInactiveBranches === true}
+            onChange={(v) => updatePrefs({ showInactiveBranches: v })}
+          />
+          <p class="muted settings-hint">{t("showInactiveBranchesHint")}</p>
           <ToggleRow
             label={t("textExpansions")}
             checked={p.textExpansionsEnabled !== false}

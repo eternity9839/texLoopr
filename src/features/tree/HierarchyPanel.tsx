@@ -13,7 +13,6 @@ import {
   findBlockAncestors,
   isExpanded,
   outlineKinKey,
-  OUTPUT_KIND_ARTBOARD,
   type OutlineRow,
   type OutlineSortMode,
 } from "../../model/outlineTree";
@@ -27,14 +26,17 @@ import {
   activePage,
   prefs,
   updatePrefs,
-  updateProjectMeta,
   setActiveOutputId,
   addPage,
   insertBlock,
   updateBlock,
   setGroupIsolation,
+  previewRow,
+  previewLanguageOverride,
+  activeOutputProfile,
 } from "../../state/store";
 import { BlockAssociations } from "../properties/BlockAssociations";
+import { enrichPreviewContext } from "../../model/runtime";
 
 const ROW_H = 26;
 const PAGE_ROW_H = 28;
@@ -131,17 +133,35 @@ export function HierarchyPanel() {
     }));
   }, [currentPageId]);
 
-  const rows = useMemo(
-    () =>
-      buildOutlineRows({
-        project: proj,
-        expanded,
-        query,
-        sort,
-        showFormatsInTree: showFormats,
-      }),
-    [proj, expanded, query, sort, showFormats],
-  );
+  const rows = useMemo(() => {
+    const output = activeOutputProfile() ?? proj.outputs?.[0];
+    const runtime = output
+      ? enrichPreviewContext(
+          proj,
+          previewRow.value,
+          output,
+          {},
+          previewLanguageOverride.value,
+        )
+      : undefined;
+    return buildOutlineRows({
+      project: proj,
+      expanded,
+      query,
+      sort,
+      showFormatsInTree: showFormats,
+      runtime,
+    });
+  }, [
+    proj,
+    expanded,
+    query,
+    sort,
+    showFormats,
+    previewRow.value,
+    previewLanguageOverride.value,
+    proj.activeOutputId,
+  ]);
 
   const scrollToIndex = useMemo(() => {
     if (sel?.kind !== "block") return null;
@@ -440,11 +460,9 @@ export function HierarchyPanel() {
                   <button
                     type="button"
                     class="nav-page__name"
-                    onClick={() => {
+                      onClick={() => {
                       setActivePage(row.pageId);
                       setActiveOutputId(row.output.id);
-                      const ab = OUTPUT_KIND_ARTBOARD[row.output.kind];
-                      if (ab) updateProjectMeta({ artboard: ab });
                       setExpanded((prev) => ({
                         ...prev,
                         [expandKeyProject()]: true,
@@ -545,7 +563,7 @@ export function HierarchyPanel() {
                     selected ? "nav-block nav-block--selected" : "nav-block"
                   }
                   aria-current={selected ? "true" : undefined}
-                  title={`${block.type} · z ${effectiveZ}${block.locked ? " · locked" : ""}${binding ? ` · ${binding.label}` : ""}`}
+                  title={`${block.type} · z ${effectiveZ}${block.locked ? " · locked" : ""}${block.condition ? ` · if ${block.condition}` : ""}${binding ? ` · ${binding.label}` : ""}`}
                   onClick={(e) =>
                     selectBlockRow(pageId, block.id, e, hasChildren)
                   }
@@ -554,6 +572,15 @@ export function HierarchyPanel() {
                     <Icon name={BLOCK_TYPE_ICON[block.type]} size={12} />
                   </span>
                   <span class="nav-block__name">{block.name}</span>
+                  {block.condition?.trim() && (
+                    <span
+                      class="nav-block__cond"
+                      title={block.condition}
+                      aria-label={`Condition: ${block.condition}`}
+                    >
+                      if
+                    </span>
+                  )}
                   {binding && (
                     <span
                       class={[

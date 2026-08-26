@@ -60,6 +60,10 @@ export function shell(
       | "artboard"
       | "datasets"
       | "primaryDatasetId"
+      | "textStyles"
+      | "documentStyles"
+      | "language"
+      | "pageChrome"
     >
   >,
 ): Project {
@@ -81,6 +85,10 @@ export function shell(
     artboard: extras?.artboard ?? "document",
     datasets: extras?.datasets,
     primaryDatasetId: extras?.primaryDatasetId,
+    textStyles: extras?.textStyles,
+    documentStyles: extras?.documentStyles,
+    language: extras?.language,
+    pageChrome: extras?.pageChrome,
   };
 }
 

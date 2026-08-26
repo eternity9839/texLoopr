@@ -1,24 +1,17 @@
-//! texlooper-cli — headless import + render + local API (ADR 0014).
+//! texlooper-cli — headless import + render + HTTP API (ADR 0014 / 0016).
 
-use axum::{
-    body::Body,
-    extract::Json,
-    http::{header, StatusCode},
-    response::{IntoResponse, Response},
-    routing::{get, post},
-    Router,
-};
 use clap::{Parser, Subcommand};
-use serde::Deserialize;
 use serde_json::Value;
 use std::net::SocketAddr;
 use std::path::PathBuf;
-use texlooper_lib::pdf_import::{import_pdf_from_path, import_pdf_structure};
+use texlooper_lib::api::handlers::resolve_output;
+use texlooper_lib::api::{build_router, serve_addr_is_loopback, ApiState};
+use texlooper_lib::catalog_store::open_catalog_from_env;
+use texlooper_lib::pdf_import::import_pdf_from_path;
 use texlooper_lib::render_pdf::render_project_pdf;
-use tower_http::cors::CorsLayer;
 
 #[derive(Parser)]
-#[command(name = "texlooper-cli", about = "Headless texLooper import/render")]
+#[command(name = "texlooper-cli", about = "Headless texLooper import/render/API")]
 struct Cli {
     #[command(subcommand)]
     cmd: Commands,
@@ -44,22 +37,18 @@ enum Commands {
         #[arg(long)]
         output_id: Option<String>,
     },
-    /// Local HTTP API on 127.0.0.1 (no auth)
+    /// HTTP API (engines + catalog). Loopback open; non-loopback needs TEXLOOPER_API_KEY
+    /// unless TEXLOOPER_TRUST_EDGE=1 (auth at reverse proxy — Docker/Traefik only).
     Serve {
         #[arg(long, default_value = "127.0.0.1:8787")]
         bind: String,
+        /// Force API key even on loopback
+        #[arg(long)]
+        require_auth: bool,
+        /// Disable catalog routes
+        #[arg(long)]
+        no_catalog: bool,
     },
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-struct RenderBody {
-    project: Value,
-    data: Value,
-    #[serde(default)]
-    output: Option<Value>,
-    #[serde(default)]
-    output_id: Option<String>,
 }
 
 #[tokio::main]
@@ -99,75 +88,59 @@ async fn main() {
             std::fs::write(&output, &bytes).expect("write pdf");
             println!("wrote {} ({} bytes)", output.display(), bytes.len());
         }
-        Commands::Serve { bind } => {
+        Commands::Serve {
+            bind,
+            require_auth,
+            no_catalog,
+        } => {
             let addr: SocketAddr = bind.parse().expect("bind address");
-            if !addr.ip().is_loopback() {
-                eprintln!("refusing non-loopback bind in v1 (use 127.0.0.1)");
+            let loopback = serve_addr_is_loopback(addr);
+            let trust_edge = std::env::var("TEXLOOPER_TRUST_EDGE")
+                .map(|v| v == "1" || v.eq_ignore_ascii_case("true"))
+                .unwrap_or(false);
+            let api_key = std::env::var("TEXLOOPER_API_KEY").ok().filter(|s| !s.is_empty());
+            if !loopback && !trust_edge && api_key.is_none() {
+                eprintln!("non-loopback bind requires TEXLOOPER_API_KEY (or TEXLOOPER_TRUST_EDGE=1)");
                 std::process::exit(1);
             }
-            let app = Router::new()
-                .route("/health", get(|| async { "ok" }))
-                .route("/v1/render", post(handle_render))
-                .route("/v1/import-pdf", post(handle_import))
-                .layer(CorsLayer::permissive());
-            println!("texlooper-cli listening on http://{addr} (local only)");
+            let catalog = if no_catalog {
+                None
+            } else {
+                let dir = std::env::var("TEXLOOPER_DATA_DIR")
+                    .map(PathBuf::from)
+                    .unwrap_or_else(|_| {
+                        dirs_fallback()
+                    });
+                match open_catalog_from_env(&dir) {
+                    Ok(c) => {
+                        println!("catalog: {} ({})", c.backend_name(), c.db_path_display());
+                        Some(c)
+                    }
+                    Err(e) => {
+                        eprintln!("catalog unavailable: {e}");
+                        None
+                    }
+                }
+            };
+            // Edge trust: Traefik/auth already gate access; do not require client API keys.
+            let open_for_edge = trust_edge && !require_auth;
+            let state = ApiState {
+                catalog,
+                api_key,
+                force_auth: require_auth,
+                bind_is_loopback: loopback || open_for_edge,
+            };
+            let app = build_router(state);
+            if trust_edge {
+                println!("texlooper-cli edge-trust enabled (no client API key)");
+            }
+            println!("texlooper-cli listening on http://{addr}");
             let listener = tokio::net::TcpListener::bind(addr).await.expect("bind");
             axum::serve(listener, app).await.expect("serve");
         }
     }
 }
 
-fn resolve_output(
-    project: &Value,
-    output_id: Option<&str>,
-    explicit: Option<Value>,
-) -> Option<Value> {
-    if let Some(o) = explicit {
-        return Some(o);
-    }
-    let outs = project.get("outputs")?.as_array()?;
-    if let Some(id) = output_id {
-        return outs
-            .iter()
-            .find(|o| o.get("id").and_then(|v| v.as_str()) == Some(id))
-            .cloned();
-    }
-    outs.iter()
-        .find(|o| o.get("kind").and_then(|k| k.as_str()) == Some("pdf"))
-        .cloned()
-        .or_else(|| outs.first().cloned())
-}
-
-async fn handle_render(Json(body): Json<RenderBody>) -> Response {
-    let out = resolve_output(&body.project, body.output_id.as_deref(), body.output);
-    match render_project_pdf(&body.project, &body.data, out.as_ref()) {
-        Ok(bytes) => Response::builder()
-            .status(StatusCode::OK)
-            .header(header::CONTENT_TYPE, "application/pdf")
-            .body(Body::from(bytes))
-            .unwrap(),
-        Err(e) => (StatusCode::BAD_REQUEST, e.to_string()).into_response(),
-    }
-}
-
-#[derive(Deserialize)]
-struct ImportBody {
-    /// Raw PDF as base64
-    #[serde(default)]
-    bytes_base64: Option<String>,
-}
-
-async fn handle_import(Json(body): Json<ImportBody>) -> Response {
-    use base64::Engine;
-    let Some(b64) = body.bytes_base64 else {
-        return (StatusCode::BAD_REQUEST, "bytesBase64 required").into_response();
-    };
-    let bytes = match base64::engine::general_purpose::STANDARD.decode(b64.trim()) {
-        Ok(b) => b,
-        Err(e) => return (StatusCode::BAD_REQUEST, e.to_string()).into_response(),
-    };
-    match import_pdf_structure(&bytes, None) {
-        Ok(result) => Json(result).into_response(),
-        Err(e) => (StatusCode::BAD_REQUEST, e.to_string()).into_response(),
-    }
+fn dirs_fallback() -> PathBuf {
+    std::env::temp_dir().join("texlooper-api")
 }

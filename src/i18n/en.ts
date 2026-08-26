@@ -184,7 +184,7 @@ export const en: Messages = {
   pageVisibility: "Visibility",
   pageCondition: "Page condition",
   pageConditionHint:
-    "Hide this page in Preview/Render when false. Use vars.language from the data row or project default.",
+    "Hide this page in Edit/Preview/Render when false. Chips toggle clauses with && (language + output.kind).",
   saveStyle: "Save",
   deleteStyle: "Delete style",
   colorPalette: "Palette",
@@ -197,6 +197,9 @@ export const en: Messages = {
   editContrastAssist: "Edit contrast assist",
   editContrastAssistHint:
     "In Edit, lighten weak text and merge chips on dark backdrops (sidebars, CTAs). Preview stays true-to-print.",
+  showInactiveBranches: "Show inactive condition branches",
+  showInactiveBranchesHint:
+    "In Edit, ghost blocks that fail their condition (language/output alternates) instead of hiding them.",
   textExpansions: "Text expansions (Emmet-style)",
   textExpansionsHint:
     "In paragraph text: Space after https://…, data-source://field, or @field.",

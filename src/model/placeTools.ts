@@ -18,6 +18,9 @@ export type PlacePresetId =
   | "textbox"
   | "bullets"
   | "numbers"
+  | "date-today"
+  | "date-fixed"
+  | "date-field"
   | LinkHook;
 
 export type PlaceToolDef = {
@@ -168,6 +171,41 @@ export function buildPlaceDraft(
       style = { ...style, listStyle: "decimal" };
       content.start = 1;
       break;
+    case "date-today":
+      name = "Today's date";
+      content.source = "today";
+      content.format = "short";
+      content.fixed = "";
+      content.path = "date";
+      style = { ...style, fontSize: 13, fontFamily: "ui", color: "#1c2430" };
+      w = 140;
+      h = 28;
+      break;
+    case "date-fixed":
+      name = "Fixed date";
+      content.source = "fixed";
+      content.format = "short";
+      content.fixed = new Date().toISOString().slice(0, 10);
+      content.path = "date";
+      style = { ...style, fontSize: 13, fontFamily: "ui", color: "#1c2430" };
+      w = 140;
+      h = 28;
+      break;
+    case "date-field":
+      name = "Date field";
+      content.source = "field";
+      content.format = "short";
+      content.path = "date";
+      content.fixed = "";
+      style = {
+        ...style,
+        fontSize: 13,
+        fontFamily: "ui",
+        color: DATA_FIELD_COLOR,
+      };
+      w = 140;
+      h = 28;
+      break;
     default:
       break;
   }
@@ -207,6 +245,26 @@ export function buildPlaceDraft(
     };
     w = 120;
     h = 28;
+  }
+
+  if (type === "date" && !preset) {
+    content.source = content.source ?? "today";
+    content.format = content.format ?? "short";
+    style = { ...style, fontSize: 13, fontFamily: "ui", color: "#1c2430" };
+  }
+
+  if (type === "signature") {
+    style = {
+      ...style,
+      fontSize: 11,
+      color: "#5c6570",
+      fontFamily: "ui",
+    };
+  }
+
+  if (type === "qrcode") {
+    content.value = String(content.value ?? "{{tracking}}");
+    content.ecc = content.ecc ?? "M";
   }
 
   if (type === "link") {
@@ -259,11 +317,6 @@ export const TEXT_TOOLS: PlaceToolDef[] = [
     label: "Data field",
     hint: "Merge field chip — hover chip to preview row 1",
   },
-  {
-    type: "link",
-    label: "Link",
-    hint: "URL, email, phone, SMS, or anchor — pick kind in the options strip",
-  },
   { type: "list", label: "List", hint: "Bulleted or numbered list" },
 ];
 
@@ -284,6 +337,52 @@ export const MEDIA_TOOLS: PlaceToolDef[] = [
 export const STRUCTURE_TOOLS: PlaceToolDef[] = [
   { type: "table", label: "Table", hint: "Rows and columns" },
   { type: "group", label: "Group", hint: "Empty group frame for nesting" },
+];
+
+/** Foldable toolbox sheet — link + date variants. */
+export const LINK_DATE_TOOLS: PlaceToolDef[] = [
+  {
+    type: "link",
+    label: "Link",
+    hint: "URL, email, phone, SMS, or anchor",
+  },
+  {
+    type: "date",
+    label: "Date",
+    hint: "Today, fixed, or bound date column",
+  },
+  {
+    type: "date",
+    preset: "date-today",
+    label: "Today's date",
+    hint: "Always renders the current calendar day",
+  },
+  {
+    type: "date",
+    preset: "date-fixed",
+    label: "Fixed date",
+    hint: "Pick a specific date in the options strip",
+  },
+  {
+    type: "date",
+    preset: "date-field",
+    label: "Date field",
+    hint: "Merge a date column with |date formatting",
+  },
+];
+
+/** Foldable toolbox sheet — signature + QR. */
+export const SIGNATURE_QR_TOOLS: PlaceToolDef[] = [
+  {
+    type: "signature",
+    label: "Signature",
+    hint: "Sign-here field — upload ink or bind {{signature_url}}",
+  },
+  {
+    type: "qrcode",
+    label: "QR code",
+    hint: "Encode a URL or {{field}} as a scannable QR",
+  },
 ];
 
 /** Word-style insert helpers (arm → options strip → click to place). */
@@ -336,4 +435,13 @@ export const TOOL_GROUPS: { id: string; tools: PlaceToolDef[] }[] = [
   { id: "text", tools: TEXT_TOOLS },
   { id: "media", tools: MEDIA_TOOLS },
   { id: "structure", tools: STRUCTURE_TOOLS },
+];
+
+/** All placeable types for context menus / hierarchy add. */
+export const ALL_PLACE_TOOLS: PlaceToolDef[] = [
+  ...TEXT_TOOLS,
+  ...LINK_DATE_TOOLS.filter((t) => !t.preset),
+  ...MEDIA_TOOLS,
+  ...SIGNATURE_QR_TOOLS,
+  ...STRUCTURE_TOOLS,
 ];

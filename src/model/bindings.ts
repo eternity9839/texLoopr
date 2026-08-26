@@ -175,19 +175,47 @@ function lookupCtx(path: string, ctx: RuntimeContext): unknown {
 
 /**
  * True when the condition is only about output.kind (format alternate layouts).
- * Used in Edit to hide SMS/mobile chrome without hiding data-driven conditions.
+ * Kept for tooling / docs; Edit and Preview now evaluate all conditions equally.
  */
 export function isOutputFormatCondition(condition: string | undefined): boolean {
   if (!condition?.trim()) return false;
-  const stripped = condition
-    .trim()
-    .replace(/\s+/g, " ")
-    .replace(/&&/g, "&&")
-    .replace(/\|\|/g, "||");
-  // Allow only output.kind comparisons chained with &&
-  return /^(output\.kind\s*(==|!=)\s*['"][\w-]+['"](\s*&&\s*)?)+$/.test(
+  const stripped = condition.trim().replace(/\s+/g, " ");
+  // Allow output.kind comparisons chained with && or ||
+  return /^(output\.kind\s*(==|!=)\s*['"][\w-]+['"](\s*(&&|\|\|)\s*)?)+$/.test(
     stripped,
   );
+}
+
+/** Whether a page should appear for the active output / row. */
+export function pageMeetsCondition(
+  page: { condition?: string },
+  row: DataRow | undefined,
+  runtime: RuntimeContext | undefined,
+  opts: { preview: boolean },
+): boolean {
+  if (!page.condition?.trim()) return true;
+  if (!runtime) return true;
+  return evaluateCondition(page.condition, row, runtime, {
+    diagnose: opts.preview,
+  });
+}
+
+/**
+ * Whether a block should appear for the active output / row.
+ * Applied in Edit and Preview so language/data alternates do not stack
+ * unreadably (switch Data preview row / output to reveal other branches).
+ */
+export function blockMeetsCondition(
+  block: { condition?: string },
+  row: DataRow | undefined,
+  runtime: RuntimeContext | undefined,
+  opts: { preview: boolean },
+): boolean {
+  if (!block.condition?.trim()) return true;
+  if (!runtime) return true;
+  return evaluateCondition(block.condition, row, runtime, {
+    diagnose: opts.preview,
+  });
 }
 
 /**

@@ -13,8 +13,24 @@ import "./styles/controls.css";
 import "./styles/layout.css";
 import "./styles/editor.css";
 import App from "./App";
-import { hydrateFromCatalog, maybeAutoStartTour, prefs } from "./state/store";
+import {
+  hydrateFromCatalog,
+  loadImportedProject,
+  maybeAutoStartTour,
+  prefs,
+} from "./state/store";
 import { syncDocumentLocale } from "./i18n";
+import { buildYassinResume } from "./projects/yassinResume";
+
+function maybeLoadPersonalProject(): void {
+  if (typeof location === "undefined") return;
+  const load = new URLSearchParams(location.search).get("load");
+  if (load === "yassin-resume") {
+    // Keep ?load= in the URL so Vite full-reloads re-apply the builder
+    // instead of restoring a stale localStorage draft.
+    loadImportedProject(buildYassinResume());
+  }
+}
 
 void hydrateFromCatalog().finally(() => {
   syncDocumentLocale(
@@ -22,6 +38,7 @@ void hydrateFromCatalog().finally(() => {
       ? prefs.value.locale
       : "en",
   );
+  maybeLoadPersonalProject();
   render(<App />, document.getElementById("root")!);
   maybeAutoStartTour();
 });

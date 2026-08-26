@@ -9,6 +9,7 @@ import {
   select,
   setGroupIsolation,
   prefs,
+  previewLanguageOverride,
 } from "../../state/store";
 import {
   extractMergePaths,
@@ -17,7 +18,7 @@ import {
 import { stackIndexAmongSiblings } from "../../model/layerStack";
 import { evaluateCondition } from "../../model/bindings";
 import { enrichPreviewContext } from "../../model/runtime";
-import { OUTPUT_KINDS, OUTPUT_KIND_LABEL } from "../../model/workflow";
+import { OUTPUT_KIND_LABEL } from "../../model/workflow";
 import { pinIsActive } from "../../model/geometry";
 
 /** Associations strip for Layers / inspector — parent chain, stack, outputs, fields. */
@@ -44,21 +45,31 @@ export function BlockAssociations({ compact = false }: { compact?: boolean }) {
   const outputs = project.value.outputs ?? [];
   const activeOut = activeOutputProfile() ?? outputs[0];
   const ctx = activeOut
-    ? enrichPreviewContext(project.value, row, activeOut)
+    ? enrichPreviewContext(
+        project.value,
+        row,
+        activeOut,
+        {},
+        previewLanguageOverride.value,
+      )
     : undefined;
 
-  const visibleOutputs = OUTPUT_KINDS.filter((kind) => {
-    if (!block.condition) return true;
-    if (!ctx) return true;
-    try {
-      return evaluateCondition(block.condition, row, {
-        ...ctx,
-        output: { ...ctx.output, kind },
-      });
-    } catch {
-      return false;
-    }
-  });
+  const visibleOutputs = (project.value.outputs ?? [])
+    .filter((o) => o.enabled !== false)
+    .map((o) => o.kind)
+    .filter((kind, i, arr) => arr.indexOf(kind) === i)
+    .filter((kind) => {
+      if (!block.condition) return true;
+      if (!ctx) return true;
+      try {
+        return evaluateCondition(block.condition, row, {
+          ...ctx,
+          output: { ...ctx.output, kind },
+        });
+      } catch {
+        return false;
+      }
+    });
 
   return (
     <div class={`assoc-strip${compact ? " assoc-strip--compact" : ""}`}>

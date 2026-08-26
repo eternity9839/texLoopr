@@ -41,7 +41,7 @@ export interface VariableRow {
 }
 
 export interface CatalogApi {
-  backend: "tauri" | "web";
+  backend: "tauri" | "web" | "http";
   dbPath(): Promise<string>;
   listFilesystems(): Promise<FilesystemRow[]>;
   upsertFilesystem(

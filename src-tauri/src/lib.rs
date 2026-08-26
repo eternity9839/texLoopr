@@ -1,24 +1,28 @@
 mod data;
-mod db;
+pub mod db;
 pub mod pdf_import;
 pub mod render_batch;
 pub mod render_pdf;
-mod template;
-mod workflow;
+pub mod template;
+pub mod workflow;
+pub mod api;
+pub mod catalog_store;
 
-use data::{parse_data_input, DataError, ParseResult};
+use api::handlers::{
+    handle_data_parse, handle_render, handle_render_batch, handle_template_resolve,
+    handle_workflow_run, runtime_info, RenderBatchHttpRequest, TemplateResolveRequest,
+    WorkflowRunRequest,
+};
+use data::ParseResult;
 use db::{CatalogDb, DbError};
 use pdf_import::{
     import_pdf_from_base64, import_pdf_from_path, PdfImportProgress, PdfImportResult, ProgressFn,
 };
-use render_batch::{render_batch, RenderBatchRequest, RenderBatchResult};
-use render_pdf::render_project_pdf;
+use render_batch::RenderBatchResult;
 use serde_json::Value;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Manager, State};
-use template::{resolve_template, RuntimeContext};
-use workflow::{run_workflow, WorkflowResult};
 
 struct DbState(Arc<CatalogDb>);
 
@@ -35,24 +39,12 @@ fn get_app_version() -> String {
 
 #[tauri::command]
 fn get_runtime_info() -> Value {
-    serde_json::json!({
-        "version": env!("CARGO_PKG_VERSION"),
-        "backbone": "rust",
-        "engines": [
-            "catalog",
-            "data_parse",
-            "template_resolve",
-            "workflow_run",
-            "pdf_import_structure",
-            "render_project_pdf",
-            "render_batch"
-        ],
-    })
+    runtime_info()
 }
 
 #[tauri::command]
-fn data_parse(text: String) -> Result<ParseResult, DataError> {
-    parse_data_input(&text)
+fn data_parse(text: String) -> Result<ParseResult, String> {
+    handle_data_parse(&text)
 }
 
 #[tauri::command]
@@ -62,31 +54,12 @@ fn template_resolve(
     ctx: Option<Value>,
     missing_as_empty: Option<bool>,
 ) -> String {
-    let missing = missing_as_empty.unwrap_or(true);
-    let runtime = ctx.as_ref().map(ctx_from_value);
-    resolve_template(&template, &row, runtime.as_ref(), missing)
-}
-
-fn ctx_from_value(v: &Value) -> RuntimeContext {
-    let mut ctx = RuntimeContext::default();
-    if let Value::Object(m) = v {
-        if let Some(Value::Object(d)) = m.get("data") {
-            ctx.data = d.clone();
-        }
-        if let Some(Value::Object(o)) = m.get("output") {
-            ctx.output = o.clone();
-        }
-        if let Some(Value::Object(d)) = m.get("device") {
-            ctx.device = d.clone();
-        }
-        if let Some(Value::Object(vars)) = m.get("vars") {
-            ctx.vars = vars.clone();
-        }
-        if let Some(Value::Object(env)) = m.get("env") {
-            ctx.env = env.clone();
-        }
-    }
-    ctx
+    handle_template_resolve(&TemplateResolveRequest {
+        template,
+        row,
+        ctx,
+        missing_as_empty,
+    })
 }
 
 #[tauri::command]
@@ -96,14 +69,14 @@ fn workflow_run(
     output: Value,
     vars: Option<Value>,
     preview: Option<bool>,
-) -> WorkflowResult {
-    run_workflow(
-        &project,
-        &row,
-        &output,
-        vars.as_ref(),
-        preview.unwrap_or(false),
-    )
+) -> crate::workflow::WorkflowResult {
+    handle_workflow_run(&WorkflowRunRequest {
+        project,
+        row,
+        output,
+        vars,
+        preview,
+    })
 }
 
 #[tauri::command]
@@ -131,7 +104,13 @@ fn render_project_pdf_cmd(
     row: Value,
     output: Option<Value>,
 ) -> Result<Vec<u8>, String> {
-    render_project_pdf(&project, &row, output.as_ref()).map_err(|e| e.to_string())
+    handle_render(&api::handlers::RenderRequest {
+        project,
+        data: None,
+        row: Some(row),
+        output,
+        output_id: None,
+    })
 }
 
 #[tauri::command]
@@ -141,13 +120,13 @@ fn render_batch_cmd(
     output: Option<Value>,
     include_zip: Option<bool>,
 ) -> Result<RenderBatchResult, String> {
-    let req = RenderBatchRequest {
+    handle_render_batch(&RenderBatchHttpRequest {
         project,
         rows,
         output,
-        include_zip: include_zip.unwrap_or(true),
-    };
-    render_batch(&req).map_err(|e| e.to_string())
+        output_id: None,
+        include_zip,
+    })
 }
 
 #[tauri::command]

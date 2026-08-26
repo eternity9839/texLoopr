@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  blockMeetsCondition,
   evaluateCondition,
   isOutputFormatCondition,
   parseDataInput,
@@ -9,6 +10,9 @@ import {
 } from "./bindings";
 import { createEmptyProject, createId } from "./document";
 import { reduceInsertBlock } from "../state/store";
+import { previewContext } from "./runtime";
+import { defaultOutputs } from "./workflow";
+import { withLanguageContext } from "./documentLanguage";
 
 describe("resolveTemplate", () => {
   it("replaces known paths", () => {
@@ -107,6 +111,16 @@ describe("isOutputFormatCondition", () => {
         "output.kind != 'sms' && output.kind != 'mobile'",
       ),
     ).toBe(true);
+    expect(
+      isOutputFormatCondition(
+        "output.kind == 'pdf' || output.kind == 'print'",
+      ),
+    ).toBe(true);
+    expect(
+      isOutputFormatCondition(
+        "output.kind == 'print' || output.kind == 'pdf'",
+      ),
+    ).toBe(true);
   });
 
   it("ignores data-driven or mixed conditions", () => {
@@ -115,6 +129,32 @@ describe("isOutputFormatCondition", () => {
       isOutputFormatCondition("data.role && output.kind != 'sms'"),
     ).toBe(false);
     expect(isOutputFormatCondition("")).toBe(false);
+  });
+});
+
+describe("blockMeetsCondition", () => {
+  it("hides language alternates in edit mode using the active row", () => {
+    const runtime = withLanguageContext(
+      previewContext({ language: "en" }, defaultOutputs()[0]!),
+      "en",
+    );
+
+    expect(
+      blockMeetsCondition(
+        { condition: "vars.language == 'fr'" },
+        { language: "en" },
+        runtime,
+        { preview: false },
+      ),
+    ).toBe(false);
+    expect(
+      blockMeetsCondition(
+        { condition: "vars.language != 'fr'" },
+        { language: "en" },
+        runtime,
+        { preview: false },
+      ),
+    ).toBe(true);
   });
 });
 

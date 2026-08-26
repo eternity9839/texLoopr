@@ -185,7 +185,7 @@ export const fr: Messages = {
   pageVisibility: "Visibilité",
   pageCondition: "Condition de page",
   pageConditionHint:
-    "Masque cette page en aperçu/rendu si faux. Utilisez vars.language (ligne de données ou défaut du projet).",
+    "Masque cette page en édition/aperçu/rendu si faux. Les pastilles basculent des clauses avec && (langue + output.kind).",
   saveStyle: "Enregistrer",
   deleteStyle: "Supprimer le style",
   colorPalette: "Palette",
@@ -198,6 +198,9 @@ export const fr: Messages = {
   editContrastAssist: "Aide au contraste (édition)",
   editContrastAssistHint:
     "En édition, éclaircit le texte et les pastilles de fusion sur fonds sombres. L’aperçu reste fidèle à l’impression.",
+  showInactiveBranches: "Afficher les branches conditionnelles inactives",
+  showInactiveBranchesHint:
+    "En édition, fantôme les blocs dont la condition échoue (alternatives langue/sortie) au lieu de les masquer.",
   textExpansions: "Expansions de texte (style Emmet)",
   textExpansionsHint:
     "Dans un paragraphe : Espace après https://…, data-source://champ ou @champ.",

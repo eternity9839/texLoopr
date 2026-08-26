@@ -6,7 +6,7 @@ export type ZOrderDirection = "front" | "forward" | "backward" | "back";
 /** Default paint rank when zIndex is unset (matches canvas sort). */
 export function layerRank(type: BlockType | string | undefined): number {
   if (type === "shape") return 0;
-  if (type === "picture") return 1;
+  if (type === "picture" || type === "qrcode" || type === "signature") return 1;
   return 2;
 }
 
