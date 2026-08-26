@@ -79,7 +79,7 @@ jobs:
       - name: Install attic-client
         run: nix profile install nixpkgs#attic-client
 
-      - name: Build SPA (Nix devShell)
+      - name: Typecheck, test, and build SPA
         run: bash deploy/orangepi/ci-build.sh
 
       # Optional cache warm — never block deploy on Attic auth / path-info issues
