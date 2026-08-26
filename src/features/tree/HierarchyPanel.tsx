@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "preact/hooks";
 import { VirtualList } from "../../ui/VirtualList";
 import { Icon, BLOCK_TYPE_ICON } from "../../ui/icons";
-import { BLOCK_TOOLS } from "../editor/Toolbox";
+import { BLOCK_TOOLS, localizedBlockTypeLabel } from "../editor/Toolbox";
 import {
   buildOutlineRows,
   expandKeyFormat,
@@ -252,15 +252,15 @@ export function HierarchyPanel() {
                 Surface
               </button>
               <hr class="nav-add__sep" />
-              {BLOCK_TOOLS.map((t) => (
+              {BLOCK_TOOLS.map((tool) => (
                 <button
                   type="button"
                   role="menuitem"
-                  key={t.type}
-                  onClick={() => addBlock(t.type)}
+                  key={tool.type}
+                  onClick={() => addBlock(tool.type)}
                 >
-                  <Icon name={BLOCK_TYPE_ICON[t.type]} size={13} />
-                  {t.label}
+                  <Icon name={BLOCK_TYPE_ICON[tool.type]} size={13} />
+                  {localizedBlockTypeLabel(tool.type, tool.label)}
                 </button>
               ))}
             </div>

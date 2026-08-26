@@ -1,4 +1,5 @@
 import type { IconName } from "../../ui/icons";
+import type { MessageKey } from "../../i18n";
 
 export type InspectorTabId =
   | "layers"
@@ -10,13 +11,13 @@ export type InspectorTabId =
 
 export const INSPECTOR_TABS: {
   id: InspectorTabId;
-  label: string;
+  labelKey: MessageKey;
   icon: IconName;
 }[] = [
-  { id: "layers", label: "Layers", icon: "rows" },
-  { id: "design", label: "Design", icon: "sliders" },
-  { id: "data", label: "Data", icon: "database" },
-  { id: "comments", label: "Notes", icon: "messages" },
-  { id: "history", label: "History", icon: "history" },
-  { id: "meta", label: "Meta", icon: "tags" },
+  { id: "layers", labelKey: "tabLayers", icon: "rows" },
+  { id: "design", labelKey: "tabDesign", icon: "sliders" },
+  { id: "data", labelKey: "tabData", icon: "database" },
+  { id: "comments", labelKey: "tabNotes", icon: "messages" },
+  { id: "history", labelKey: "tabHistory", icon: "history" },
+  { id: "meta", labelKey: "tabMeta", icon: "tags" },
 ];

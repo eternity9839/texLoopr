@@ -1,6 +1,5 @@
 import { useState } from "preact/hooks";
 import { Icon, BLOCK_TYPE_ICON } from "../../ui/icons";
-import type { BlockType } from "../../model/document";
 import {
   TOOL_GROUPS,
   WORD_HELPER_TOOLS,
@@ -12,12 +11,39 @@ import {
   armPlaceTool,
   armSelectTool,
   placeCustomObject,
+  prefs,
   project,
   setStudioView,
 } from "../../state/store";
+import { t, type MessageKey } from "../../i18n";
+import type { BlockType } from "../../model/document";
 
 export const BLOCK_TOOLS: { type: BlockType; label: string }[] =
-  TOOL_GROUPS.flatMap((g) => g.tools.map((t) => ({ type: t.type, label: t.label })));
+  TOOL_GROUPS.flatMap((g) =>
+    g.tools.map((tool) => ({ type: tool.type, label: tool.label })),
+  );
+
+const TOOL_LABEL_KEYS: Partial<Record<BlockType, MessageKey>> = {
+  paragraph: "toolParagraph",
+  text: "toolText",
+  data: "toolData",
+  link: "toolLink",
+  list: "toolList",
+  picture: "toolPicture",
+  shape: "toolShape",
+  files: "toolFiles",
+  table: "toolTable",
+  group: "toolGroup",
+};
+
+export function localizedBlockTypeLabel(type: BlockType, fallback?: string): string {
+  const key = TOOL_LABEL_KEYS[type];
+  return key ? t(key) : (fallback ?? type);
+}
+
+function localizedToolLabel(tool: PlaceToolDef): string {
+  return localizedBlockTypeLabel(tool.type, tool.label);
+}
 
 function toolKey(t: PlaceToolDef): string {
   return t.preset ? `${t.type}:${t.preset}` : t.type;
@@ -32,16 +58,17 @@ function isArmed(t: PlaceToolDef): boolean {
 
 /** Fixed left tool palette — arm place tools; click the page to configure. */
 export function Toolbox() {
+  void prefs.value.locale;
   const customs = project.value.customObjects ?? [];
   const [sheet, setSheet] = useState<"none" | "word" | "customs">("none");
 
-  const arm = (t: PlaceToolDef) => {
+  const arm = (tool: PlaceToolDef) => {
     setStudioView("edit");
-    if (isArmed(t)) {
+    if (isArmed(tool)) {
       armSelectTool();
       return;
     }
-    armPlaceTool(t.type, t.preset ?? null);
+    armPlaceTool(tool.type, tool.preset ?? null);
     setSheet("none");
   };
 
@@ -51,8 +78,8 @@ export function Toolbox() {
         <button
           type="button"
           class={!activeTool.value ? "tool tool--on" : "tool"}
-          title="Select (V) — click or drag to select blocks"
-          aria-label="Select tool. Click or drag on the page to select blocks."
+          title={`${t("toolSelect")} (V)`}
+          aria-label={t("toolSelect")}
           aria-pressed={!activeTool.value}
           onClick={() => {
             setStudioView("edit");
@@ -66,19 +93,22 @@ export function Toolbox() {
         {TOOL_GROUPS.map((group, gi) => (
           <div class="tool-palette__group" key={group.id} role="group">
             {gi > 0 && <span class="tool-palette__sep" aria-hidden="true" />}
-            {group.tools.map((tool) => (
+            {group.tools.map((tool) => {
+              const label = localizedToolLabel(tool);
+              return (
               <button
                 type="button"
                 class={isArmed(tool) ? "tool tool--on" : "tool"}
                 key={toolKey(tool)}
-                title={`${tool.label} — ${tool.hint}. Click the page to place.`}
-                aria-label={`${tool.label}. ${tool.hint}. Click the page to place.`}
+                title={`${label} — ${tool.hint}`}
+                aria-label={`${label}. ${tool.hint}`}
                 aria-pressed={isArmed(tool)}
                 onClick={() => arm(tool)}
               >
                 <Icon name={BLOCK_TYPE_ICON[tool.type]} size={15} />
               </button>
-            ))}
+              );
+            })}
           </div>
         ))}
         <span class="tool-palette__sep" aria-hidden="true" />

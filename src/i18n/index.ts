@@ -9,7 +9,7 @@ const CATALOG: Record<LocaleId, Messages> = { en, fr };
 
 export function activeLocale(): LocaleId {
   const loc = prefs.value.locale;
-  return loc === "en" || loc === "fr" ? loc : "fr";
+  return loc === "en" || loc === "fr" ? loc : "en";
 }
 
 /** Translate a chrome string. Falls back to English, then the key. */
@@ -26,4 +26,12 @@ export function t(key: MessageKey, vars?: Record<string, string | number>): stri
 
 export function localeLabel(id: LocaleId): string {
   return id === "fr" ? "Français" : "English";
+}
+
+/** Keep <html lang> in sync with UI locale. */
+export function syncDocumentLocale(locale?: LocaleId): void {
+  const id = locale ?? activeLocale();
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = id;
+  }
 }

@@ -161,6 +161,26 @@ export type MessageKey =
   | "shortcutEmmetUrl"
   | "shortcutEmmetData"
   | "shortcutEmmetAt"
-  | "shortcutEmmetHooks";
+  | "shortcutEmmetHooks"
+  | "tabLayers"
+  | "tabDesign"
+  | "tabData"
+  | "tabNotes"
+  | "tabHistory"
+  | "tabMeta"
+  | "surfaceSetup"
+  | "transform"
+  | "gridGuides"
+  | "toolSelect"
+  | "toolParagraph"
+  | "toolText"
+  | "toolData"
+  | "toolLink"
+  | "toolList"
+  | "toolPicture"
+  | "toolShape"
+  | "toolFiles"
+  | "toolTable"
+  | "toolGroup";
 
 export type Messages = Record<MessageKey, string>;

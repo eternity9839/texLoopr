@@ -12,6 +12,7 @@ import { MetadataPanel } from "../properties/PropertiesPanel";
 import { CommentsPanel } from "../editor/CommentsPanel";
 import { HistoryPanel } from "../properties/HistoryPanel";
 import { INSPECTOR_TABS } from "./inspectorTabs";
+import { t } from "../../i18n";
 import {
   OUTPUT_KINDS,
   OUTPUT_KIND_LABEL,
@@ -160,46 +161,46 @@ export function EditStudio() {
       inspector={
         preview || !showInspector ? undefined : (
           <div data-tour="inspector" class="inspector-shell">
-            <div class="inspector-tabs" role="tablist" aria-label="Inspector">
-              {INSPECTOR_TABS.map((t) => (
+            <div class="inspector-tabs" role="tablist" aria-label={t("inspector")}>
+              {INSPECTOR_TABS.map((tabDef) => (
                 <button
                   type="button"
                   role="tab"
-                  key={t.id}
+                  key={tabDef.id}
                   class="inspector-tabs__btn inspector-tabs__btn--icon"
-                  title={t.label}
-                  aria-label={t.label}
-                  aria-selected={tab === t.id}
+                  title={t(tabDef.labelKey)}
+                  aria-label={t(tabDef.labelKey)}
+                  aria-selected={tab === tabDef.id}
                   onClick={() => {
-                    inspectorTab.value = t.id;
+                    inspectorTab.value = tabDef.id;
                     if (prefs.value.inspectorCollapsed) {
                       updatePrefs({ inspectorCollapsed: false });
                     }
                   }}
                 >
-                  <Icon name={t.icon} size={14} />
+                  <Icon name={tabDef.icon} size={14} />
                 </button>
               ))}
             </div>
             {inspCollapsed ? (
-              <div class="insp-icons" aria-label="Inspector collapsed">
-                {INSPECTOR_TABS.map((t) => (
+              <div class="insp-icons" aria-label={t("inspector")}>
+                {INSPECTOR_TABS.map((tabDef) => (
                   <button
                     type="button"
-                    key={t.id}
+                    key={tabDef.id}
                     class={
-                      tab === t.id
+                      tab === tabDef.id
                         ? "nav-icon-btn nav-icon-btn--on"
                         : "nav-icon-btn"
                     }
-                    title={t.label}
-                    aria-label={t.label}
+                    title={t(tabDef.labelKey)}
+                    aria-label={t(tabDef.labelKey)}
                     onClick={() => {
-                      inspectorTab.value = t.id;
+                      inspectorTab.value = tabDef.id;
                       updatePrefs({ inspectorCollapsed: false });
                     }}
                   >
-                    <Icon name={t.icon} size={14} />
+                    <Icon name={tabDef.icon} size={14} />
                   </button>
                 ))}
               </div>

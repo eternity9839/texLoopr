@@ -139,15 +139,19 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
     gridLock: false,
     gridStyle: "lines",
     showMarginGuides: true,
-    locale: "fr",
+    locale: "en",
     canvasZoomMode: "fit",
     canvasZoom: 1,
   };
-  const artboard = saved?.project?.artboard;
-  if (artboard && base.canvasPreset !== artboard) {
-    return { ...base, canvasPreset: artboard };
+  let next = base;
+  if (saved?.prefs && saved.prefs.locale == null) {
+    next = { ...next, locale: "en" };
   }
-  return base;
+  const artboard = saved?.project?.artboard;
+  if (artboard && next.canvasPreset !== artboard) {
+    next = { ...next, canvasPreset: artboard };
+  }
+  return next;
 }
 
 function loadSnapshot(): Partial<AppStateSnapshot> | null {
@@ -1320,6 +1324,9 @@ export function cycleActiveOutput(delta: 1 | -1): void {
 
 export function updatePrefs(patch: Partial<EditorPrefs>): void {
   prefs.value = { ...prefs.value, ...patch };
+  if (patch.locale != null && typeof document !== "undefined") {
+    document.documentElement.lang = patch.locale === "fr" ? "fr" : "en";
+  }
 }
 
 export function setCanvasZoomFit(): void {

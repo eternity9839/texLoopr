@@ -29,6 +29,7 @@ import {
   SelectField,
 } from "../../ui/controls";
 import { INSPECTOR_TABS } from "../studio/inspectorTabs";
+import { t } from "../../i18n";
 import { ClearFormatButton, type AppearanceCtx } from "./appearance";
 
 function FieldPicker({
@@ -336,26 +337,26 @@ export function PropertiesPanel() {
 
   if (collapsed) {
     return (
-      <div class="insp-icons" aria-label="Inspector icons">
-        {INSPECTOR_TABS.map((t) => (
+      <div class="insp-icons" aria-label={t("inspector")}>
+        {INSPECTOR_TABS.map((tabDef) => (
           <button
             type="button"
-            key={t.id}
+            key={tabDef.id}
             class={
-              inspectorTab.value === t.id
+              inspectorTab.value === tabDef.id
                 ? "nav-icon-btn nav-icon-btn--on"
                 : "nav-icon-btn"
             }
-            title={t.label}
-            aria-label={t.label}
+            title={t(tabDef.labelKey)}
+            aria-label={t(tabDef.labelKey)}
             onClick={() => {
-              inspectorTab.value = t.id;
+              inspectorTab.value = tabDef.id;
               if (prefs.value.inspectorCollapsed) {
                 updatePrefs({ inspectorCollapsed: false });
               }
             }}
           >
-            <Icon name={t.icon} size={14} />
+            <Icon name={tabDef.icon} size={14} />
           </button>
         ))}
       </div>

@@ -60,7 +60,7 @@ export function SettingsMode() {
             <SelectField
               id="settings-locale"
               label={t("language")}
-              value={p.locale ?? "fr"}
+              value={p.locale ?? "en"}
               options={[
                 { value: "fr", label: localeLabel("fr") },
                 { value: "en", label: localeLabel("en") },

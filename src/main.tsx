@@ -13,9 +13,15 @@ import "./styles/controls.css";
 import "./styles/layout.css";
 import "./styles/editor.css";
 import App from "./App";
-import { hydrateFromCatalog, maybeAutoStartTour } from "./state/store";
+import { hydrateFromCatalog, maybeAutoStartTour, prefs } from "./state/store";
+import { syncDocumentLocale } from "./i18n";
 
 void hydrateFromCatalog().finally(() => {
+  syncDocumentLocale(
+    prefs.value.locale === "fr" || prefs.value.locale === "en"
+      ? prefs.value.locale
+      : "en",
+  );
   render(<App />, document.getElementById("root")!);
   maybeAutoStartTour();
 });

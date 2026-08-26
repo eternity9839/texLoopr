@@ -28,6 +28,7 @@ import { effectiveZ, stackIndexAmongSiblings } from "../../model/layerStack";
 import { dataColumnNames } from "../../model/bindings";
 import { resizeTableCells } from "../../model/placeTools";
 import { fieldKeyFromHeader } from "../../model/tableData";
+import { t } from "../../i18n";
 import {
   CheckRow,
   ColorField,
@@ -1076,7 +1077,7 @@ export function PageSetup() {
 
   return (
     <>
-      <Section title="Margins" defaultOpen>
+      <Section title={t("margins")} defaultOpen>
         <div class="prop-grid prop-grid--2">
           <MarginFields margins={margins} pageId={page.id} />
         </div>
@@ -1090,7 +1091,7 @@ export function PageSetup() {
         />
       </Section>
 
-      <Section title="Transform" defaultOpen={false}>
+      <Section title={t("transform")} defaultOpen={false}>
         <div class="prop-grid prop-grid--2">
           <NumField
             id="page-rotate"
@@ -1128,7 +1129,7 @@ export function PageSetup() {
         </p>
       </Section>
 
-      <Section title="Watermark" defaultOpen={false}>
+      <Section title={t("watermark")} defaultOpen={false}>
         <SelectField
           id="wm-kind"
           label="Preset"
@@ -1266,7 +1267,7 @@ export function PageSetup() {
         </button>
       </Section>
 
-      <Section title="Grid & guides" defaultOpen={false}>
+      <Section title={t("gridGuides")} defaultOpen={false}>
         <CheckRow
           checked={Boolean(prefs.value.gridLock)}
           onChange={(v) => updatePrefs({ gridLock: v })}
@@ -1330,10 +1331,10 @@ export function DesignPanel() {
   const count = selectedBlocks.value.length;
   const title = isComponent
     ? `${TYPE_LABELS[sel!.type] ?? sel!.type}${count > 1 ? ` · ${count}` : ""}`
-    : "Surface setup";
+    : t("surfaceSetup");
 
   return (
-    <div class="design-panel panel-pad" aria-label="Design">
+    <div class="design-panel panel-pad" aria-label={t("tabDesign")}>
       <p class="design-panel__title muted">{title}</p>
       {isComponent ? <ComponentProps /> : <PageSetup />}
     </div>
