@@ -380,9 +380,14 @@
   align-items: center;
 }
 
+.editor-stack {
+  width: max-content;
+  height: max-content;
+}
+
 .editor-sheet {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .editor-page--idle {
@@ -595,8 +600,8 @@
   position: absolute;
   overflow: visible;
   border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
-  background: color-mix(in srgb, var(--paper) 92%, transparent);
-  box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 4%, transparent);
+  background: transparent;
+  box-shadow: none;
   touch-action: none;
   user-select: none;
 }
@@ -650,6 +655,44 @@
 
 .block-body--clip {
   overflow: hidden;
+}
+
+.merge-aware-text {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  text-align: inherit;
+  cursor: text;
+}
+
+.merge-aware-text__plain {
+  white-space: pre-wrap;
+}
+
+.merge-aware-text__chip-wrap {
+  display: inline;
+}
+
+.merge-aware-text .binding-preview__chip {
+  display: inline;
+  vertical-align: baseline;
+}
+
+.block-list .merge-aware-text,
+.block-table .merge-aware-text {
+  min-height: 1.2em;
+}
+
+.block-list .merge-aware-text textarea,
+.block-table .merge-aware-text textarea {
+  min-height: 1.4em;
 }
 
 .block-body textarea,
@@ -1673,27 +1716,25 @@
   outline: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
-.editor-board--rulers {
-  /* deprecated: rulers dock to .editor-sheet, not the pasteboard */
-}
-
-/* Rulers hug the scaled page stack (inner canvas edge), not the grey board. */
+/* Per-page rulers hug each artboard, not the pasteboard. */
 .editor-sheet {
   display: grid;
-  grid-template-columns: 0 1fr;
-  grid-template-rows: 0 1fr;
+  grid-template-columns: 0 auto;
+  grid-template-rows: 0 auto;
   width: max-content;
   height: max-content;
 }
 
 .editor-sheet--rulers {
-  grid-template-columns: 1.1rem 1fr;
-  grid-template-rows: 1.1rem 1fr;
+  grid-template-columns: 1.1rem auto;
+  grid-template-rows: 1.1rem auto;
 }
 
-.editor-sheet > .editor-fit {
+.editor-sheet > .editor-sheet__viewport {
   grid-column: 2;
   grid-row: 2;
+  overflow: hidden;
+  position: relative;
 }
 
 .editor-ruler {

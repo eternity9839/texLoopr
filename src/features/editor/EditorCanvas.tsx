@@ -567,7 +567,6 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
     select(null);
   };
 
-  const empty = !page || page.blocks.length === 0;
   const boardClass = [
     "editor-board",
     showGrid ? "editor-board--grid" : "",
@@ -599,14 +598,17 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
           : [];
 
   const sheetGap = 28;
+  const rulerGutter = showRulers && !preview ? 18 : 0;
   const sheetsWide = viewMode === "spread" ? Math.min(2, pagesToShow.length) : 1;
   const sheetsTall =
     viewMode === "continuous" ? pagesToShow.length : 1;
+  const sheetW = pageW * scale + rulerGutter;
+  const sheetH = pageH * scale + rulerGutter;
   const fitW =
-    pageW * sheetsWide * scale +
+    sheetW * sheetsWide +
     (sheetsWide > 1 ? sheetGap * (sheetsWide - 1) * scale : 0);
   const fitH =
-    pageH * sheetsTall * scale +
+    sheetH * sheetsTall +
     (sheetsTall > 1 ? sheetGap * (sheetsTall - 1) * scale : 0);
 
   const boardStyle = {
@@ -618,33 +620,77 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
     "--page-height": `${pageH}px`,
   } as Record<string, string>;
 
+  const filterSheetBlocks = (sheet: Page, isActive: boolean) => {
+    if (isActive) {
+      return {
+        blocks: sorted,
+        contexts: itemContexts,
+      };
+    }
+    const source = sheet.blocks;
+    if (!runtime) {
+      return {
+        blocks: [...source].sort(
+          (a, b) => effectiveZ(a) - effectiveZ(b) || a.id.localeCompare(b.id),
+        ),
+        contexts: new Map<string, RuntimeContext>(),
+      };
+    }
+    const formatFiltered = source.filter((b) => {
+      if (!b.condition) return true;
+      if (!preview && !isOutputFormatCondition(b.condition)) return true;
+      return evaluateCondition(b.condition, row, runtime);
+    });
+    if (!preview) {
+      return {
+        blocks: [...formatFiltered].sort(
+          (a, b) => effectiveZ(a) - effectiveZ(b) || a.id.localeCompare(b.id),
+        ),
+        contexts: new Map<string, RuntimeContext>(),
+      };
+    }
+    const flat = flattenBlocksForPreview(formatFiltered, row, runtime);
+    return { blocks: flat.blocks, contexts: flat.itemContexts };
+  };
+
   const renderPageSheet = (sheet: Page, interactive: boolean) => {
-    const sheetBlocks = interactive
-      ? sorted
-      : [...sheet.blocks].sort(
-          (a, b) => effectiveZ(a) - effectiveZ(b),
-        );
-    const m = normalizeMargins(sheet.margins);
     const isActive = sheet.id === page?.id;
+    const { blocks: sheetBlocks, contexts: sheetContexts } = filterSheetBlocks(
+      sheet,
+      isActive,
+    );
+    const m = normalizeMargins(sheet.margins);
+    const showPageRulers = showRulers && !preview;
     return (
       <div
         key={sheet.id}
-        class="editor-sheet"
+        class={[
+          "editor-sheet",
+          showPageRulers ? "editor-sheet--rulers" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
+        style={{
+          flexShrink: 0,
+        }}
+      >
+        {showPageRulers && (
+          <>
+            <div class="editor-ruler editor-ruler--corner" aria-hidden="true" />
+            <div class="editor-ruler editor-ruler--x" aria-hidden="true" />
+            <div class="editor-ruler editor-ruler--y" aria-hidden="true" />
+          </>
+        )}
+      <div
+        class="editor-sheet__viewport"
         style={{
           width: `${pageW * scale}px`,
           height: `${pageH * scale}px`,
-          marginBottom:
-            viewMode === "continuous" ? `${sheetGap * scale}px` : undefined,
-          marginRight:
-            viewMode === "spread" && sheetsWide > 1
-              ? `${sheetGap * scale}px`
-              : undefined,
-          flexShrink: 0,
         }}
       >
       <div
         class={[
-          preview || !interactive
+          preview
             ? "editor-page editor-page--preview"
             : "editor-page",
           tool && interactive && !preview ? "editor-page--placing" : "",
@@ -702,10 +748,14 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               x: Math.max(0, at.x),
               y: Math.max(0, at.y),
             });
+            return;
           }
+          select(null);
         }}
         onContextMenu={(e) => {
           if (preview) return;
+          e.preventDefault();
+          e.stopPropagation();
           if ((e.target as HTMLElement).closest(".block-frame")) return;
           if (!isActive) setActivePage(sheet.id);
           select(null);
@@ -715,9 +765,11 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
         <div
           class="editor-page__surface"
           style={{
-            transform: sheet
-              ? cssTransformFromStyle(sheet) || undefined
-              : undefined,
+            transform: cssTransformFromStyle({
+              rotate: sheet.rotate,
+              mirrorX: sheet.mirrorX,
+              mirrorY: sheet.mirrorY,
+            }) || undefined,
             transformOrigin: "center center",
           }}
         >
@@ -733,7 +785,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               pageH={pageH}
             />
           ) : null}
-          {!preview && prefs.value.showMarginGuides !== false && interactive ? (
+          {!preview && prefs.value.showMarginGuides !== false ? (
             <>
               <div
                 class="page-margin-guide page-margin-guide--top"
@@ -753,7 +805,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               />
             </>
           ) : null}
-          {interactive && empty && !preview && (
+          {interactive && sheet.blocks.length === 0 && !preview && (
             <div class="editor-empty">
               <strong>Empty surface</strong>
               <p class="muted">
@@ -776,7 +828,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
           )}
           {sheetBlocks.map((b) => {
             const count = comments.filter((c) => c.blockId === b.id).length;
-            const itemCtx = itemContexts.get(b.id);
+            const itemCtx = sheetContexts.get(b.id);
             const isInteractive = interactive && !preview;
             return renderBlock({
               block: b,
@@ -784,7 +836,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
                 isInteractive &&
                 (selectedIds.value.includes(b.id) ||
                   (sel?.kind === "block" && sel.id === b.id)),
-              preview: !isInteractive,
+              preview,
               row,
               runtime: itemCtx ?? runtime,
               commentCount: showComments ? count : 0,
@@ -805,7 +857,15 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
                 ? (id, content) => updateBlock(id, { content })
                 : undefined,
               onGestureStart: isInteractive
-                ? () => pushHistoryCheckpoint()
+                ? () => {
+                    pushHistoryCheckpoint();
+                    dragOrigins.current.clear();
+                    const ids = selectedIds.value;
+                    for (const oid of ids) {
+                      const blk = findBlockDeep(sheet.blocks, oid);
+                      if (blk) dragOrigins.current.set(oid, { x: blk.x, y: blk.y });
+                    }
+                  }
                 : undefined,
               onMoveResize: isInteractive
                 ? (id, patch, mode) => {
@@ -817,20 +877,13 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
                           : [id];
                       const origins = dragOrigins.current;
                       if (ids.length > 1) {
-                        if (origins.size === 0) {
-                          origins.clear();
-                          for (const id of ids) {
-                            const blk = findBlockDeep(page?.blocks ?? [], id);
-                            if (blk) origins.set(id, { x: blk.x, y: blk.y });
-                          }
-                        }
                         const anchor = origins.get(id);
                         if (anchor) {
                           const dx = (patch.x ?? 0) - anchor.x;
                           const dy = (patch.y ?? 0) - anchor.y;
                           for (const [oid, o] of origins) {
                             if (oid === id) continue;
-                            const ob = findBlockDeep(page?.blocks ?? [], oid);
+                            const ob = findBlockDeep(sheet.blocks, oid);
                             if (ob && !ob.locked) {
                               updateBlock(oid, { x: o.x + dx, y: o.y + dy });
                             }
@@ -853,6 +906,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
             />
           ) : null}
         </div>
+      </div>
       </div>
       </div>
     );
@@ -890,21 +944,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
             transformOrigin: "center center",
           }}
         >
-          <div
-            class={[
-              "editor-sheet",
-              showRulers && !preview ? "editor-sheet--rulers" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
-          >
-            {showRulers && !preview && (
-              <>
-                <div class="editor-ruler editor-ruler--corner" aria-hidden="true" />
-                <div class="editor-ruler editor-ruler--x" aria-hidden="true" />
-                <div class="editor-ruler editor-ruler--y" aria-hidden="true" />
-              </>
-            )}
+          <div class="editor-stack">
             <div
               class={
                 viewMode === "spread"
@@ -916,6 +956,10 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               style={{
                 width: `${fitW}px`,
                 height: `${fitH}px`,
+                gap:
+                  viewMode === "continuous" || viewMode === "spread"
+                    ? `${sheetGap * scale}px`
+                    : undefined,
               }}
             >
               {pagesToShow.map((sheet) =>
