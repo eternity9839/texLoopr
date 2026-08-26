@@ -46,6 +46,7 @@ export function MergeAwareText({
   runtime,
   selected,
   onChangeContent,
+  onChipContextMenu,
 }: {
   text: string;
   blockId: string;
@@ -54,6 +55,7 @@ export function MergeAwareText({
   runtime?: RuntimeContext;
   selected?: boolean;
   onChangeContent?: (id: string, content: Record<string, unknown>) => void;
+  onChipContextMenu?: (mergePath: string, e: MouseEvent) => void;
 }) {
   const frameEdit = useContext(BlockEditContext);
   const [editing, setEditing] = useState(false);
@@ -145,6 +147,7 @@ export function MergeAwareText({
               setEditing(true);
               frameEdit?.requestEdit();
             }}
+            onChipContextMenu={(e) => onChipContextMenu?.(seg.path, e)}
             ariaLabel={seg.raw}
           />
         );

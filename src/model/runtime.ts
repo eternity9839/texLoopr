@@ -42,6 +42,8 @@ export interface WorkflowResult {
     kind: string;
     payload: Record<string, unknown>;
   } | null;
+  /** Present when Rust render produced a PDF (base64). */
+  pdfBase64?: string | null;
 }
 
 function buildContext(opts: RunOptions): RuntimeContext {

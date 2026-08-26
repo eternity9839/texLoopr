@@ -313,6 +313,12 @@ export function SettingsMode() {
             }
           />
           <ToggleRow
+            label={t("editContrastAssist")}
+            checked={p.editContrastAssist !== false}
+            onChange={(v) => updatePrefs({ editContrastAssist: v })}
+          />
+          <p class="muted settings-hint">{t("editContrastAssistHint")}</p>
+          <ToggleRow
             label={t("textExpansions")}
             checked={p.textExpansionsEnabled !== false}
             onChange={(v) => updatePrefs({ textExpansionsEnabled: v })}

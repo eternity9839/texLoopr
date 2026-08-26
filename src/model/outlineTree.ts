@@ -286,7 +286,7 @@ export const OUTPUT_KIND_ARTBOARD: Partial<Record<OutputKind, CanvasPresetId>> =
     email: "document",
     sms: "notification",
     mobile: "mobile",
-    image: "landscape",
+    image: "igPost",
     api: "document",
   };
 
@@ -312,10 +312,77 @@ export function extractMergePaths(block: Block): string[] {
   if (Array.isArray(block.content.items)) {
     for (const item of block.content.items as string[]) scan(String(item));
   }
+  if (Array.isArray(block.content.cells)) {
+    for (const row of block.content.cells as unknown[]) {
+      if (!Array.isArray(row)) continue;
+      for (const cell of row) scan(String(cell));
+    }
+  }
+  const sourcePath = String(block.content.sourcePath ?? "").trim();
+  if (sourcePath) paths.add(sourcePath);
+  const datasetName = String(block.content.datasetName ?? "").trim();
+  if (datasetName) paths.add(`dataset:${datasetName}`);
   if (isContainerBlock(block)) {
     for (const child of getChildBlocks(block)) {
       for (const p of extractMergePaths(child)) paths.add(p);
     }
   }
   return [...paths];
+}
+
+/** Stable, readable accents for surfaces / groups in the Layers tree. */
+const GROUP_ACCENTS = [
+  "#0f6b63",
+  "#c45c26",
+  "#3d5a80",
+  "#6b8f71",
+  "#b08d57",
+  "#8b5e6b",
+  "#4a7c9b",
+  "#9a6b4f",
+] as const;
+
+export function accentForKey(key: string): string {
+  let h = 2166136261;
+  for (let i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return GROUP_ACCENTS[(h >>> 0) % GROUP_ACCENTS.length]!;
+}
+
+/** Kinship key: nested group id, else the surface (page) id. */
+export function outlineKinKey(
+  pageId: string,
+  parentId: string | null,
+): string {
+  return parentId ? `group:${parentId}` : `page:${pageId}`;
+}
+
+export type BlockBindingHint = {
+  fields: string[];
+  sourcePath: string;
+  datasetName: string;
+  label: string;
+};
+
+/** Compact binding summary for Layers dots / tooltips. */
+export function blockBindingHint(block: Block): BlockBindingHint | null {
+  const fields = extractMergePaths(block);
+  const sourcePath = String(block.content.sourcePath ?? "").trim();
+  const datasetName = String(block.content.datasetName ?? "").trim();
+  if (!fields.length && !sourcePath && !datasetName) return null;
+  const parts: string[] = [];
+  if (datasetName) parts.push(`dataset ${datasetName}`);
+  if (sourcePath) parts.push(`rows ← ${sourcePath}`);
+  const merges = fields.filter(
+    (f) => f !== sourcePath && f !== `dataset:${datasetName}`,
+  );
+  if (merges.length) parts.push(merges.slice(0, 4).join(", "));
+  return {
+    fields,
+    sourcePath,
+    datasetName,
+    label: parts.join(" · ") || "Data-bound",
+  };
 }

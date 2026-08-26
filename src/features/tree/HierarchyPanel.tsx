@@ -3,6 +3,8 @@ import { VirtualList } from "../../ui/VirtualList";
 import { Icon, BLOCK_TYPE_ICON } from "../../ui/icons";
 import { BLOCK_TOOLS, localizedBlockTypeLabel } from "../editor/Toolbox";
 import {
+  accentForKey,
+  blockBindingHint,
   buildOutlineRows,
   expandKeyFormat,
   expandKeyGroup,
@@ -10,6 +12,7 @@ import {
   expandKeyProject,
   findBlockAncestors,
   isExpanded,
+  outlineKinKey,
   OUTPUT_KIND_ARTBOARD,
   type OutlineRow,
   type OutlineSortMode,
@@ -37,6 +40,12 @@ const ROW_H = 26;
 const PAGE_ROW_H = 28;
 const BLOCK_ROW_H = 24;
 
+type HoverPlay = {
+  kinKey: string | null;
+  fields: string[];
+  blockId: string | null;
+};
+
 function rowKey(row: OutlineRow, i: number): string {
   switch (row.kind) {
     case "project":
@@ -52,6 +61,12 @@ function rowKey(row: OutlineRow, i: number): string {
   }
 }
 
+function fieldsOverlap(a: string[], b: string[]): boolean {
+  if (!a.length || !b.length) return false;
+  const set = new Set(a);
+  return b.some((f) => set.has(f));
+}
+
 export function HierarchyPanel() {
   const proj = project.value;
   const p = prefs.value;
@@ -64,9 +79,41 @@ export function HierarchyPanel() {
     [expandKeyPage(proj.activePageId)]: true,
   }));
   const [addOpen, setAddOpen] = useState(false);
+  const [hover, setHover] = useState<HoverPlay>({
+    kinKey: null,
+    fields: [],
+    blockId: null,
+  });
   const addRef = useRef<HTMLDivElement>(null);
+  const clearHoverTimer = useRef<number | null>(null);
 
   const showFormats = p.showFormatsInTree === true;
+
+  const scheduleClearHover = () => {
+    if (clearHoverTimer.current != null) {
+      window.clearTimeout(clearHoverTimer.current);
+    }
+    clearHoverTimer.current = window.setTimeout(() => {
+      setHover({ kinKey: null, fields: [], blockId: null });
+      clearHoverTimer.current = null;
+    }, 80);
+  };
+
+  const playHover = (next: HoverPlay) => {
+    if (clearHoverTimer.current != null) {
+      window.clearTimeout(clearHoverTimer.current);
+      clearHoverTimer.current = null;
+    }
+    setHover(next);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (clearHoverTimer.current != null) {
+        window.clearTimeout(clearHoverTimer.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!addOpen) return;
@@ -157,7 +204,16 @@ export function HierarchyPanel() {
   };
 
   return (
-    <div class="nav-outline" data-tour="hierarchy">
+    <div
+      class={[
+        "nav-outline",
+        hover.kinKey || hover.fields.length ? "nav-outline--play" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      data-tour="hierarchy"
+      onPointerLeave={scheduleClearHover}
+    >
       <BlockAssociations compact />
 
       <div class="nav-outline__controls">
@@ -308,17 +364,31 @@ export function HierarchyPanel() {
               const key = expandKeyPage(row.page.id);
               const open = expanded[key] !== false;
               const isActive = row.page.id === currentPageId;
+              const kinKey = outlineKinKey(row.page.id, null);
+              const accent = accentForKey(kinKey);
+              const kinHot = hover.kinKey === kinKey;
               return (
                 <div
-                  class={
-                    isActive
-                      ? "nav-page__row nav-page__row--active"
-                      : "nav-page__row"
-                  }
+                  class={[
+                    "nav-page__row",
+                    "nav-page__row--surface",
+                    isActive ? "nav-page__row--active" : "",
+                    kinHot ? "nav-page__row--kin" : "",
+                  ]
+                    .filter(Boolean)
+                    .join(" ")}
                   style={{
                     height: `${PAGE_ROW_H}px`,
                     paddingLeft: `${8 + row.depth * 10}px`,
+                    ["--group-accent" as string]: accent,
                   }}
+                  onPointerEnter={() =>
+                    playHover({
+                      kinKey,
+                      fields: [],
+                      blockId: null,
+                    })
+                  }
                 >
                   <button
                     type="button"
@@ -337,6 +407,7 @@ export function HierarchyPanel() {
                     aria-current={isActive ? "true" : undefined}
                     onClick={() => openPage(row.page.id)}
                   >
+                    <span class="nav-page__swatch" aria-hidden="true" />
                     <span class="nav-page__label">{row.page.name}</span>
                     <span class="nav-page__count">{row.count}</span>
                   </button>
@@ -390,27 +461,65 @@ export function HierarchyPanel() {
               );
             }
 
-            const { block, pageId, depth, hasChildren, dimmed, effectiveZ } =
-              row;
+            const {
+              block,
+              pageId,
+              depth,
+              parentId,
+              hasChildren,
+              dimmed,
+              effectiveZ,
+            } = row;
             const selected = sel?.kind === "block" && sel.id === block.id;
             const gKey = expandKeyGroup(block.id);
             const groupOpen = expanded[gKey] !== false;
+            const kinKey = outlineKinKey(pageId, parentId);
+            // Group header + its children share one accent / kinship key.
+            const wrapKey = hasChildren
+              ? outlineKinKey(pageId, block.id)
+              : kinKey;
+            const accent = accentForKey(wrapKey);
+            const binding = blockBindingHint(block);
+            const kinHot = Boolean(
+              hover.kinKey &&
+                (hover.kinKey === kinKey ||
+                  (hasChildren && hover.kinKey === wrapKey)),
+            );
+            const linked = Boolean(
+              binding &&
+                hover.fields.length &&
+                fieldsOverlap(binding.fields, hover.fields),
+            );
+            const selfHot = hover.blockId === block.id;
 
             return (
               <div
-                class={
-                  [
-                    "nav-block-row",
-                    selected ? "nav-block-row--selected" : "",
-                    dimmed ? "nav-block-row--dimmed" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")
-                }
+                class={[
+                  "nav-block-row",
+                  selected ? "nav-block-row--selected" : "",
+                  dimmed ? "nav-block-row--dimmed" : "",
+                  hasChildren ? "nav-block-row--group" : "nav-block-row--leaf",
+                  parentId
+                    ? "nav-block-row--nested"
+                    : "nav-block-row--surface-child",
+                  kinHot ? "nav-block-row--kin" : "",
+                  linked ? "nav-block-row--linked" : "",
+                  selfHot ? "nav-block-row--self" : "",
+                ]
+                  .filter(Boolean)
+                  .join(" ")}
                 style={{
                   height: `${BLOCK_ROW_H}px`,
                   paddingLeft: `${8 + depth * 10}px`,
+                  ["--group-accent" as string]: accent,
                 }}
+                onPointerEnter={() =>
+                  playHover({
+                    kinKey: wrapKey,
+                    fields: binding?.fields ?? [],
+                    blockId: block.id,
+                  })
+                }
               >
                 {hasChildren ? (
                   <button
@@ -432,9 +541,11 @@ export function HierarchyPanel() {
                 )}
                 <button
                   type="button"
-                  class={selected ? "nav-block nav-block--selected" : "nav-block"}
+                  class={
+                    selected ? "nav-block nav-block--selected" : "nav-block"
+                  }
                   aria-current={selected ? "true" : undefined}
-                  title={`${block.type} · z ${effectiveZ}${block.locked ? " · locked" : ""}`}
+                  title={`${block.type} · z ${effectiveZ}${block.locked ? " · locked" : ""}${binding ? ` · ${binding.label}` : ""}`}
                   onClick={(e) =>
                     selectBlockRow(pageId, block.id, e, hasChildren)
                   }
@@ -443,6 +554,26 @@ export function HierarchyPanel() {
                     <Icon name={BLOCK_TYPE_ICON[block.type]} size={12} />
                   </span>
                   <span class="nav-block__name">{block.name}</span>
+                  {binding && (
+                    <span
+                      class={[
+                        "nav-block__data-dot",
+                        linked ? "nav-block__data-dot--pulse" : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      title={binding.label}
+                      aria-label={binding.label}
+                      onPointerEnter={(e) => {
+                        e.stopPropagation();
+                        playHover({
+                          kinKey,
+                          fields: binding.fields,
+                          blockId: block.id,
+                        });
+                      }}
+                    />
+                  )}
                   {sort === "z" && (
                     <span class="nav-block__z">{effectiveZ}</span>
                   )}

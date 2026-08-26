@@ -9,6 +9,10 @@ edition = "2021"
 name = "texlooper_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
+[[bin]]
+name = "texlooper-cli"
+path = "src/bin/texlooper_cli.rs"
+
 [build-dependencies]
 tauri-build = { version = "2", features = [] }
 
@@ -21,3 +25,11 @@ rusqlite = { version = "0.32", features = ["bundled"] }
 uuid = { version = "1", features = ["v4", "serde"] }
 thiserror = "2"
 regex = "1"
+lopdf = "0.34"
+printpdf = "0.7"
+base64 = "0.22"
+clap = { version = "4", features = ["derive"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "net"] }
+axum = "0.8"
+tower-http = { version = "0.6", features = ["cors"] }
+zip = { version = "2", default-features = false, features = ["deflate"] }

@@ -19,7 +19,8 @@ export type UiOverlay =
   | "about"
   | "catalog"
   | "automation"
-  | "samples";
+  | "samples"
+  | "render";
 
 /** @deprecated Legacy mode strings; migrated on load to StudioView / UiOverlay */
 export type LegacyAppMode =
@@ -246,28 +247,73 @@ export type CanvasPresetId =
   | "mobile"
   | "notification"
   | "square"
-  | "landscape";
+  | "landscape"
+  | "fbCover"
+  | "fbPost"
+  | "igPost"
+  | "igStory"
+  | "igLandscape"
+  | "ytThumb"
+  | "ytCover"
+  | "linkedinCover"
+  | "xHeader"
+  | "xPost";
 
 export type PageViewMode = "single" | "continuous" | "spread";
 
 export const CANVAS_PRESETS: Record<
   CanvasPresetId,
-  { w: number; h: number; label: string }
+  { w: number; h: number; label: string; group?: string }
 > = {
-  document: { w: 720, h: 960, label: "Document" },
-  letter: { w: 720, h: 960, label: "US Letter" },
-  a4: { w: 714, h: 1010, label: "A4" },
-  a5: { w: 505, h: 714, label: "A5" },
-  mobile: { w: 390, h: 844, label: "Mobile phone" },
-  notification: { w: 360, h: 180, label: "Notification" },
-  square: { w: 720, h: 720, label: "Square" },
-  landscape: { w: 960, h: 540, label: "Landscape" },
+  document: { w: 720, h: 960, label: "Document", group: "Print" },
+  letter: { w: 720, h: 960, label: "US Letter", group: "Print" },
+  a4: { w: 714, h: 1010, label: "A4", group: "Print" },
+  a5: { w: 505, h: 714, label: "A5", group: "Print" },
+  mobile: { w: 390, h: 844, label: "Mobile phone", group: "Devices" },
+  notification: { w: 360, h: 180, label: "Notification", group: "Devices" },
+  square: { w: 720, h: 720, label: "Square", group: "Devices" },
+  landscape: { w: 960, h: 540, label: "Landscape", group: "Devices" },
+  fbCover: { w: 820, h: 312, label: "Facebook cover", group: "Social" },
+  fbPost: { w: 1200, h: 630, label: "Facebook post", group: "Social" },
+  igPost: { w: 1080, h: 1080, label: "Instagram post", group: "Social" },
+  igStory: { w: 1080, h: 1920, label: "Instagram story / Reel", group: "Social" },
+  igLandscape: { w: 1080, h: 566, label: "Instagram landscape", group: "Social" },
+  ytThumb: { w: 1280, h: 720, label: "YouTube thumbnail", group: "Social" },
+  ytCover: { w: 2560, h: 1440, label: "YouTube channel cover", group: "Social" },
+  linkedinCover: { w: 1584, h: 396, label: "LinkedIn cover", group: "Social" },
+  xHeader: { w: 1500, h: 500, label: "X / Twitter header", group: "Social" },
+  xPost: { w: 1200, h: 675, label: "X / Twitter post", group: "Social" },
 };
+
+/** Ordered ids for selects (grouped by print → devices → social). */
+export const CANVAS_PRESET_ORDER: CanvasPresetId[] = [
+  "document",
+  "letter",
+  "a4",
+  "a5",
+  "mobile",
+  "notification",
+  "square",
+  "landscape",
+  "fbCover",
+  "fbPost",
+  "igPost",
+  "igStory",
+  "igLandscape",
+  "ytThumb",
+  "ytCover",
+  "linkedinCover",
+  "xHeader",
+  "xPost",
+];
 
 export interface Page {
   id: string;
   name: string;
   blocks: Block[];
+  /** Optional surface size in CSS px (PDF import / custom pages) */
+  width?: number;
+  height?: number;
   /** Print margins shown as guides; used by margin-aligned inserts */
   margins?: PageMargins;
   /** Page backdrop behind all blocks (subtle tint or brand paper) */
@@ -347,6 +393,10 @@ export interface Project {
   datasets?: ProjectDataset[];
   /** Which dataset drives the preview row picker */
   primaryDatasetId?: string;
+  /** User-saved reusable text styles (typography presets) */
+  textStyles?: import("./styleLibrary").TextStylePreset[];
+  /** User-saved document / surface presets */
+  documentStyles?: import("./styleLibrary").DocumentStylePreset[];
 }
 
 export interface ProjectDataset {
@@ -429,6 +479,11 @@ export interface EditorPrefs {
   groupIsolationId?: string | null;
   /** Edit-mode preview for merge-bound blocks: inline swap vs popup */
   bindingPreviewMode?: BindingPreviewMode;
+  /**
+   * Edit only: rewrite weak ink and lighten merge chips against dark backdrops.
+   * Preview / export stay authored. Default on.
+   */
+  editContrastAssist?: boolean;
   /** Emmet-style text expansions in paragraph / text fields */
   textExpansionsEnabled?: boolean;
 }

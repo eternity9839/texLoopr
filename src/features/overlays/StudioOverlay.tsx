@@ -5,6 +5,7 @@ import { SettingsMode } from "../modes/SettingsMode";
 import { AboutMode } from "../modes/AboutMode";
 import { CatalogPanel } from "../catalog/CatalogPanel";
 import { AutomationPanel } from "../automation/AutomationPanel";
+import { RenderPanel } from "../render/RenderPanel";
 import { SamplesPanel } from "../samples/SamplesPanel";
 import { t } from "../../i18n";
 
@@ -62,13 +63,16 @@ export function StudioOverlay() {
         : current === "automation"
           ? t("automation")
           : current === "samples"
-            ? t("sampleDocuments")
+          ? t("sampleDocuments")
+          : current === "render"
+            ? t("render")
             : t("catalog");
 
   const wide =
     current === "automation" ||
     current === "catalog" ||
-    current === "samples";
+    current === "samples" ||
+    current === "render";
 
   return (
     <div
@@ -105,6 +109,8 @@ export function StudioOverlay() {
           <AutomationPanel />
         ) : current === "samples" ? (
           <SamplesPanel />
+        ) : current === "render" ? (
+          <RenderPanel />
         ) : (
           <CatalogPanel />
         )}

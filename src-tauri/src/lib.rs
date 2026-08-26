@@ -1,13 +1,22 @@
 mod data;
 mod db;
+pub mod pdf_import;
+pub mod render_batch;
+pub mod render_pdf;
 mod template;
 mod workflow;
 
 use data::{parse_data_input, DataError, ParseResult};
 use db::{CatalogDb, DbError};
+use pdf_import::{
+    import_pdf_from_base64, import_pdf_from_path, PdfImportProgress, PdfImportResult, ProgressFn,
+};
+use render_batch::{render_batch, RenderBatchRequest, RenderBatchResult};
+use render_pdf::render_project_pdf;
 use serde_json::Value;
+use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::{AppHandle, Manager, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 use template::{resolve_template, RuntimeContext};
 use workflow::{run_workflow, WorkflowResult};
 
@@ -29,7 +38,15 @@ fn get_runtime_info() -> Value {
     serde_json::json!({
         "version": env!("CARGO_PKG_VERSION"),
         "backbone": "rust",
-        "engines": ["catalog", "data_parse", "template_resolve", "workflow_run"],
+        "engines": [
+            "catalog",
+            "data_parse",
+            "template_resolve",
+            "workflow_run",
+            "pdf_import_structure",
+            "render_project_pdf",
+            "render_batch"
+        ],
     })
 }
 
@@ -87,6 +104,50 @@ fn workflow_run(
         vars.as_ref(),
         preview.unwrap_or(false),
     )
+}
+
+#[tauri::command]
+fn pdf_import_structure(
+    app: AppHandle,
+    path: Option<String>,
+    bytes_base64: Option<String>,
+) -> Result<PdfImportResult, String> {
+    let app_for_progress = app.clone();
+    let progress: ProgressFn = Box::new(move |p: PdfImportProgress| {
+        let _ = app_for_progress.emit("pdf-import-progress", &p);
+    });
+    if let Some(p) = path {
+        import_pdf_from_path(PathBuf::from(p).as_path(), Some(&progress)).map_err(|e| e.to_string())
+    } else if let Some(b64) = bytes_base64 {
+        import_pdf_from_base64(&b64, Some(&progress)).map_err(|e| e.to_string())
+    } else {
+        Err("Provide path or bytesBase64".into())
+    }
+}
+
+#[tauri::command]
+fn render_project_pdf_cmd(
+    project: Value,
+    row: Value,
+    output: Option<Value>,
+) -> Result<Vec<u8>, String> {
+    render_project_pdf(&project, &row, output.as_ref()).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn render_batch_cmd(
+    project: Value,
+    rows: Vec<Value>,
+    output: Option<Value>,
+    include_zip: Option<bool>,
+) -> Result<RenderBatchResult, String> {
+    let req = RenderBatchRequest {
+        project,
+        rows,
+        output,
+        include_zip: include_zip.unwrap_or(true),
+    };
+    render_batch(&req).map_err(|e| e.to_string())
 }
 
 #[tauri::command]
@@ -234,6 +295,9 @@ pub fn run() {
             data_parse,
             template_resolve,
             workflow_run,
+            pdf_import_structure,
+            render_project_pdf_cmd,
+            render_batch_cmd,
             catalog_db_path,
             catalog_list_filesystems,
             catalog_upsert_filesystem,

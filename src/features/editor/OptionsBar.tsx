@@ -1,6 +1,7 @@
 import type { ComponentChildren } from "preact";
 import {
   CANVAS_PRESETS,
+  CANVAS_PRESET_ORDER,
   type CanvasPresetId,
   type PageViewMode,
 } from "../../model/document";
@@ -71,10 +72,16 @@ export function OptionsBar() {
             updateProjectMeta({ artboard: next });
           }}
         >
-          {(Object.keys(CANVAS_PRESETS) as CanvasPresetId[]).map((id) => (
-            <option value={id} key={id}>
-              {CANVAS_PRESETS[id].label}
-            </option>
+          {(["Print", "Devices", "Social"] as const).map((group) => (
+            <optgroup key={group} label={group}>
+              {CANVAS_PRESET_ORDER.filter(
+                (id) => CANVAS_PRESETS[id].group === group,
+              ).map((id) => (
+                <option value={id} key={id}>
+                  {CANVAS_PRESETS[id].label}
+                </option>
+              ))}
+            </optgroup>
           ))}
         </select>
         <select

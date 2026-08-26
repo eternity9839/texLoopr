@@ -32,4 +32,20 @@ describe("styleFromBlock", () => {
     expect(s.borderRadius).toBe(999);
     expect(s.overflow).toBe("hidden");
   });
+
+  it("rewrites weak ink against dark backdrop when contrast assist is on", () => {
+    const s = styleFromBlock(block({ color: "#2a2622" }), {
+      contrastAssist: true,
+      backdrop: "#1a2332",
+    });
+    expect(s.color).toBe("#f4f7fb");
+  });
+
+  it("leaves authored ink when contrast assist is off", () => {
+    const s = styleFromBlock(block({ color: "#2a2622" }), {
+      contrastAssist: false,
+      backdrop: "#1a2332",
+    });
+    expect(s.color).toBe("#2a2622");
+  });
 });

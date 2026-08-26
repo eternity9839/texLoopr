@@ -31,3 +31,6 @@ Decision records for texLooper. Prefer short, dated ADRs over long living docs.
 | [0009](adr/0009-rust-runtime-backbone.md) | Rust runtime backbone (Tauri catalog + engines) | accepted |
 | [0010](adr/0010-project-artboard-datasets.md) | Project artboard + named datasets / lookup | accepted |
 | [0011](adr/0011-hosted-demo-deploy.md) | Hosted demo deploy (Pangolin + incremental CI) | accepted |
+| [0012](adr/0012-pdf-structure-import.md) | PDF structure import (v1) | accepted |
+| [0013](adr/0013-high-fidelity-pdf-import.md) | High-fidelity PDF import (later) | proposed |
+| [0014](adr/0014-headless-render-api-cli.md) | Headless render + API/CLI | accepted |

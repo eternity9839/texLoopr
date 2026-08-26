@@ -41,6 +41,30 @@ describe("canvasSizeFromPrefs", () => {
     });
   });
 
+  it("resolves social cover and post presets", () => {
+    expect(
+      canvasSizeFromPrefs({ ...basePrefs, canvasPreset: "fbCover" }),
+    ).toEqual({
+      w: 820,
+      h: 312,
+      preset: "fbCover",
+    });
+    expect(
+      canvasSizeFromPrefs({ ...basePrefs, canvasPreset: "igStory" }),
+    ).toEqual({
+      w: 1080,
+      h: 1920,
+      preset: "igStory",
+    });
+    expect(
+      canvasSizeFromPrefs({ ...basePrefs, canvasPreset: "ytThumb" }),
+    ).toEqual({
+      w: 1280,
+      h: 720,
+      preset: "ytThumb",
+    });
+  });
+
   it("prefers project artboard over mismatched prefs", () => {
     expect(
       canvasSizeForSession(
@@ -48,8 +72,8 @@ describe("canvasSizeFromPrefs", () => {
         { ...basePrefs, canvasPreset: "document" },
       ),
     ).toEqual({
-      w: 960,
-      h: 540,
+      w: CANVAS_PRESETS.landscape.w,
+      h: CANVAS_PRESETS.landscape.h,
       preset: "landscape",
     });
   });

@@ -121,4 +121,18 @@ describe("HierarchyPanel", () => {
     );
     expect(names).toEqual(["Card group", "Price list"]);
   });
+
+  it("shows a data dot for merge-bound components and surface accents", () => {
+    const p = nestedProject();
+    const bound = block("b1", "Headline", "text");
+    bound.content = { text: "Hello {{headline}}" };
+    p.pages[0].blocks.push(bound);
+    project.value = p;
+    const { container } = render(<HierarchyPanel />);
+    expect(container.querySelector(".nav-block__data-dot")).toBeTruthy();
+    expect(container.querySelector(".nav-page__swatch")).toBeTruthy();
+    expect(
+      container.querySelector(".nav-block-row--group"),
+    ).toBeTruthy();
+  });
 });

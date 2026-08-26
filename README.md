@@ -29,6 +29,19 @@ npm run test
 npm run build
 ```
 
+### Headless CLI / local API (ADR 0014)
+
+From `src-tauri` (Nix shell):
+
+```fish
+cargo run --bin texlooper-cli -- import-pdf --input ./sample.pdf --output ./project.json
+cargo run --bin texlooper-cli -- render --project ./project.json --data ./row.json --output ./out.pdf
+cargo run --bin texlooper-cli -- serve --bind 127.0.0.1:8787
+# POST /v1/render  { "project": {...}, "data": {...} } → application/pdf
+```
+
+Studio: **texLooper** menu → **Import PDF…** (structure pass, ADR 0012; desktop only).
+
 ### Hosted demo deploy (Orange Pi)
 
 Build the SPA locally or in CI, rsync to the Pi, path-aware restart (no full stack rebuild). Requires SSH to `orangepi5` (Tailscale) and secrets on the Pi only.

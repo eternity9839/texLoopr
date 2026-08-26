@@ -19,6 +19,7 @@ export interface BindingPreviewProps {
   editing?: boolean;
   editSlot?: ComponentChildren;
   onActivate?: () => void;
+  onChipContextMenu?: (e: MouseEvent) => void;
   ariaLabel?: string;
 }
 
@@ -34,6 +35,7 @@ export function BindingPreview({
   editing,
   editSlot,
   onActivate,
+  onChipContextMenu,
   ariaLabel,
 }: BindingPreviewProps) {
   const mode =
@@ -102,6 +104,12 @@ export function BindingPreview({
         onDblClick={(e) => {
           e.stopPropagation();
           onActivate?.();
+        }}
+        onContextMenu={(e) => {
+          if (!onChipContextMenu) return;
+          e.preventDefault();
+          e.stopPropagation();
+          onChipContextMenu(e);
         }}
       >
         {showInlinePreview && media ? media : triggerLabel}

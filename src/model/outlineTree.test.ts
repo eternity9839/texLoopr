@@ -1,13 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type { Block, Page, Project } from "./document";
 import {
+  accentForKey,
+  blockBindingHint,
   buildOutlineRows,
   expandKeyFormat,
   expandKeyGroup,
   expandKeyPage,
   expandKeyProject,
+  extractMergePaths,
   findBlockAncestors,
   isExpanded,
+  outlineKinKey,
 } from "./outlineTree";
 import { defaultOutputs } from "./workflow";
 
@@ -97,5 +101,40 @@ describe("outlineTree", () => {
     expect(isExpanded({ [expandKeyProject()]: false }, expandKeyProject())).toBe(
       false,
     );
+  });
+
+  it("extractMergePaths includes table cells, sourcePath, and datasets", () => {
+    const table: Block = {
+      ...b("t", "table"),
+      content: {
+        sourcePath: "skus",
+        datasetName: "stockists",
+        cells: [
+          ["SKU", "Price"],
+          ["{{sku}}", "{{price|currency:EUR}}"],
+        ],
+      },
+    };
+    const paths = extractMergePaths(table);
+    expect(paths).toContain("sku");
+    expect(paths).toContain("price");
+    expect(paths).toContain("skus");
+    expect(paths).toContain("dataset:stockists");
+  });
+
+  it("blockBindingHint summarizes bindings for Layers dots", () => {
+    const text: Block = {
+      ...b("x", "text"),
+      content: { text: "Hi {{cta}}" },
+    };
+    expect(blockBindingHint(text)?.label).toContain("cta");
+    expect(blockBindingHint(b("plain", "shape"))).toBeNull();
+  });
+
+  it("accentForKey is stable and outlineKinKey distinguishes page vs group", () => {
+    expect(accentForKey("page:a")).toBe(accentForKey("page:a"));
+    expect(accentForKey("page:a")).not.toBe(accentForKey("page:b"));
+    expect(outlineKinKey("p1", null)).toBe("page:p1");
+    expect(outlineKinKey("p1", "g1")).toBe("group:g1");
   });
 });

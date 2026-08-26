@@ -1,8 +1,10 @@
-import { useEffect, useState } from "preact/hooks";
+import { useEffect, useRef, useState } from "preact/hooks";
 import {
   dataRows,
+  dataStudioFocus,
   previewRowIndex,
   project,
+  setActiveOutputId,
   setDataFromText,
   setPreviewRowIndex,
   updateProject,
@@ -12,10 +14,12 @@ import {
   openIssuesPanel,
   reportStickyIssue,
 } from "../../state/issueLog";
-import { createId } from "../../model/document";
+import { createId, ensureProjectAutomation } from "../../model/document";
 import { SAMPLE_CSV, type DataRow } from "../../model/bindings";
 import type { ProjectDataset } from "../../model/document";
 import type { ExprValue } from "../../model/expr";
+import { OUTPUT_KIND_LABEL } from "../../model/workflow";
+import { t } from "../../i18n";
 import {
   cellDisplaySummary,
   complexFieldKeys,
@@ -194,18 +198,54 @@ function NestedArrayTable({
 
 /** Editable empty grid + named datasets (no default Ada CSV). */
 export function DataStudio() {
-  const proj = project.value;
+  const proj = ensureProjectAutomation(project.value);
   const datasets = ensureDatasetsRead(proj);
   const primaryId = proj.primaryDatasetId ?? datasets[0]?.id;
   const activeDs =
     datasets.find((d) => d.id === primaryId) ?? datasets[0]!;
   const rows = dataRows.value;
   const active = previewRowIndex.value;
+  const outputs = (proj.outputs ?? []).filter((o) => o.enabled !== false);
+  const activeOutputId = proj.activeOutputId ?? outputs[0]?.id ?? "";
   const [importOpen, setImportOpen] = useState(false);
   const [raw, setRaw] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [newCol, setNewCol] = useState("");
   const [nestedTab, setNestedTab] = useState<string | null>(null);
+  const [focusColumn, setFocusColumn] = useState<string | null>(null);
+  const tableWrapRef = useRef<HTMLDivElement>(null);
+  const pendingFocus = dataStudioFocus.value;
+
+  useEffect(() => {
+    if (!pendingFocus?.column) return;
+    const { column, nestedTab: focusNested } = pendingFocus;
+    dataStudioFocus.value = null;
+    setFocusColumn(column);
+    if (focusNested) {
+      setNestedTab(focusNested);
+    } else {
+      const row = dataRows.value[previewRowIndex.value];
+      if (row && isComplexValue(row[column])) {
+        setNestedTab(column);
+      }
+    }
+    requestAnimationFrame(() => {
+      const wrap = tableWrapRef.current;
+      if (!wrap) return;
+      const colEl = wrap.querySelector(
+        `[data-column="${CSS.escape(column)}"]`,
+      );
+      colEl?.scrollIntoView({ block: "nearest", inline: "nearest" });
+      const input = wrap.querySelector(
+        `[data-column="${CSS.escape(column)}"] input`,
+      );
+      if (input instanceof HTMLInputElement) {
+        input.focus({ preventScroll: true });
+      }
+    });
+    const timer = window.setTimeout(() => setFocusColumn(null), 2000);
+    return () => window.clearTimeout(timer);
+  }, [pendingFocus?.column, pendingFocus?.nestedTab]);
 
   const headers =
     rows[0] && Object.keys(rows[0]).length
@@ -391,6 +431,20 @@ export function DataStudio() {
                   title="Join key for lookup() from the primary row"
                 />
               </label>
+              <label>
+                {t("renderOutput")}
+                <select
+                  value={activeOutputId}
+                  onChange={(e) => setActiveOutputId(e.currentTarget.value)}
+                  aria-label={t("renderOutput")}
+                >
+                  {outputs.map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.name} ({OUTPUT_KIND_LABEL[o.kind] ?? o.kind})
+                    </option>
+                  ))}
+                </select>
+              </label>
             </div>
 
             <div class="data-studio__actions field-row">
@@ -458,13 +512,23 @@ export function DataStudio() {
                 Empty dataset — add a column or row, or paste CSV/JSON.
               </p>
             ) : (
-              <div class="data-studio__table-wrap">
+              <div class="data-studio__table-wrap" ref={tableWrapRef}>
                 <table class="data-studio__table">
                   <thead>
                     <tr>
                       <th>#</th>
                       {(headers.length ? headers : ["col1"]).map((h) => (
-                        <th key={h}>{h}</th>
+                        <th
+                          key={h}
+                          data-column={h}
+                          class={
+                            focusColumn === h
+                              ? "data-studio__col--focus"
+                              : undefined
+                          }
+                        >
+                          {h}
+                        </th>
                       ))}
                       <th />
                     </tr>
@@ -481,7 +545,16 @@ export function DataStudio() {
                           const cell = row[h];
                           const complex = isComplexValue(cell);
                           return (
-                            <td key={h} onClick={(e) => complex && e.stopPropagation()}>
+                            <td
+                              key={h}
+                              data-column={h}
+                              class={
+                                focusColumn === h
+                                  ? "data-studio__col--focus"
+                                  : undefined
+                              }
+                              onClick={(e) => complex && e.stopPropagation()}
+                            >
                               {complex ? (
                                 <button
                                   type="button"

@@ -19,10 +19,13 @@ import {
   resolveDataField,
 } from "../../../model/dataField";
 import {
+  fieldKeyFromHeader,
+  isLiteralColumnTemplate,
   mapTableItemToCells,
   resolveTableSourceRows,
   tableColumnTemplates,
 } from "../../../model/tableData";
+import { parseMergeSegments } from "../../../model/mergeSegments";
 import { noteIssue } from "../../../state/issueLog";
 import {
   applyMove,
@@ -56,6 +59,13 @@ import {
   selection,
   setGroupIsolation,
 } from "../../../state/store";
+import {
+  ensureReadableInk,
+  isDarkFill,
+  isLightInk,
+  isOpaqueFill,
+  resolveEditBackdrop,
+} from "../../../model/contrast";
 import { findBlockAncestors } from "../../../model/outlineTree";
 import { canvasSizeForSession } from "../../../model/canvasView";
 
@@ -71,6 +81,7 @@ export interface BlockViewProps {
   scale?: number;
   onSelect: (id: string, opts?: { toggle?: boolean }) => void;
   onContextMenu?: (id: string, e: MouseEvent) => void;
+  onChipContextMenu?: (id: string, mergePath: string, e: MouseEvent) => void;
   onChangeContent?: (id: string, content: Record<string, unknown>) => void;
   onGestureStart?: () => void;
   onMoveResize?: (
@@ -85,7 +96,11 @@ const DRAG_THRESHOLD = 3;
 
 export function styleFromBlock(
   block: Block,
-  opts?: { preview?: boolean },
+  opts?: {
+    preview?: boolean;
+    contrastAssist?: boolean;
+    backdrop?: string;
+  },
 ): Record<string, string | number | undefined> {
   const s = block.style;
   // Flex groups use padding as layout inset in computeFlexRects — skip CSS
@@ -95,10 +110,21 @@ export function styleFromBlock(
   const radius = s.borderRadius ?? 0;
   let color = s.color ?? "#2a2622";
   const background = s.background ?? "transparent";
-  // Edit: light ink on transparent frames is unreadable — force body ink.
-  if (!opts?.preview && isLightInk(color) && !isOpaqueFill(background)) {
-    color = "var(--ink)";
+  const assist = Boolean(opts?.contrastAssist) && !opts?.preview;
+  const backdrop = opts?.backdrop ?? background;
+
+  if (assist) {
+    color = ensureReadableInk(color, backdrop);
+    // Light ink on light transparent frames — force body ink (not on dark rails).
+    if (
+      isLightInk(s.color ?? "#2a2622") &&
+      !isOpaqueFill(background) &&
+      !isDarkFill(backdrop)
+    ) {
+      color = "var(--ink)";
+    }
   }
+
   return {
     fontSize: s.fontSize ?? 14,
     fontWeight: s.fontWeight ?? 400,
@@ -125,29 +151,6 @@ export function styleFromBlock(
         ? `${s.borderWidth}px solid ${s.borderColor ?? "#2a2622"}`
         : "none",
   };
-}
-
-function isOpaqueFill(bg: string): boolean {
-  const t = bg.trim().toLowerCase();
-  if (!t || t === "transparent" || t === "none") return false;
-  if (t.startsWith("rgba") && /,\s*0\s*\)$/.test(t)) return false;
-  return true;
-}
-
-function isLightInk(color: string): boolean {
-  const hex = color.trim();
-  const m = hex.match(/^#([0-9a-f]{3}|[0-9a-f]{6})$/i);
-  if (!m) return false;
-  let h = m[1]!;
-  if (h.length === 3) h = h.split("").map((c) => c + c).join("");
-  const r = parseInt(h.slice(0, 2), 16) / 255;
-  const g = parseInt(h.slice(2, 4), 16) / 255;
-  const b = parseInt(h.slice(4, 6), 16) / 255;
-  // Relative luminance (sRGB)
-  const lin = (c: number) =>
-    c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-  return L > 0.72;
 }
 
 /** CSS filter() string built from a picture block's filter params */
@@ -378,6 +381,17 @@ export function BlockFrame(
     sessionSize.h,
   );
   const pinned = pinIsActive(block.pin);
+  const contrastAssist =
+    !preview && prefs.value.editContrastAssist !== false;
+  const backdrop = contrastAssist
+    ? resolveEditBackdrop(
+        block,
+        page?.blocks ?? [],
+        page?.background ?? "#ffffff",
+      )
+    : (block.style.background ?? "transparent");
+  const darkFillAssist = contrastAssist && isDarkFill(backdrop);
+
 
   return (
     <BlockEditContext.Provider
@@ -458,10 +472,15 @@ export function BlockFrame(
               : block.style.verticalAlign === "bottom"
                 ? "block-body--valign-bottom"
                 : "",
+            darkFillAssist ? "block-body--dark-fill" : "",
           ]
             .filter(Boolean)
             .join(" ")}
-          style={styleFromBlock(block, { preview })}
+          style={styleFromBlock(block, {
+            preview,
+            contrastAssist,
+            backdrop,
+          })}
         >
           {children}
         </div>
@@ -485,7 +504,7 @@ export function BlockFrame(
 }
 
 export function ParagraphBlock(props: BlockViewProps) {
-  const { block, preview, row, runtime, selected, onChangeContent } = props;
+  const { block, preview, row, runtime, selected, onChangeContent, onChipContextMenu } = props;
   const value = textValue(block, row, preview, runtime);
   return (
     <BlockFrame {...props}>
@@ -502,6 +521,7 @@ export function ParagraphBlock(props: BlockViewProps) {
           runtime={runtime}
           selected={selected}
           onChangeContent={onChangeContent}
+          onChipContextMenu={(path, e) => onChipContextMenu?.(block.id, path, e)}
         />
       )}
     </BlockFrame>
@@ -513,7 +533,7 @@ export function TextBlock(props: BlockViewProps) {
 }
 
 export function DataBlock(props: BlockViewProps) {
-  const { block, preview, row, runtime, selected, onChangeContent } = props;
+  const { block, preview, row, runtime, selected, onChangeContent, onChipContextMenu } = props;
   const path = String(block.content.path ?? "");
   const label = dataFieldLabel(path);
   const frameEdit = useContext(BlockEditContext);
@@ -562,6 +582,7 @@ export function DataBlock(props: BlockViewProps) {
           setEditing(true);
           frameEdit?.requestEdit();
         }}
+        onChipContextMenu={(e) => onChipContextMenu?.(block.id, path, e)}
         editSlot={
           <input
             class="block-data__input"
@@ -673,7 +694,7 @@ export function LinkBlock(props: BlockViewProps) {
 }
 
 export function ListBlock(props: BlockViewProps) {
-  const { block, preview, row, runtime, selected, onChangeContent } = props;
+  const { block, preview, row, runtime, selected, onChangeContent, onChipContextMenu } = props;
   const items = (block.content.items as string[]) ?? [];
   const style = ORDERED.includes(
     (block.style.listStyle ?? "disc") as ListStyle,
@@ -709,6 +730,7 @@ export function ListBlock(props: BlockViewProps) {
                   next[i] = String(content.text ?? "");
                   onChangeContent?.(block.id, { items: next });
                 }}
+                onChipContextMenu={(path, e) => onChipContextMenu?.(block.id, path, e)}
               />
             )}
           </li>
@@ -859,7 +881,7 @@ export function ShapeBlock(props: BlockViewProps) {
 }
 
 export function TableBlock(props: BlockViewProps) {
-  const { block, preview, row, runtime, selected, onChangeContent } = props;
+  const { block, preview, row, runtime, selected, onChangeContent, onChipContextMenu } = props;
   const cells = (block.content.cells as string[][]) ?? [];
   const header = Boolean(block.content.header);
   const datasetName = String(block.content.datasetName ?? "").trim();
@@ -955,11 +977,35 @@ export function TableBlock(props: BlockViewProps) {
           next[rowIdx]![ci] = String(content.text ?? "");
           onChangeContent?.(block.id, { cells: next });
         }}
+        onChipContextMenu={(path, e) => onChipContextMenu?.(block.id, path, e)}
+      />
+    );
+  };
+
+  const boundCellChip = (ci: number, value: string) => {
+    const tpl = templates[ci] ?? "";
+    if (isLiteralColumnTemplate(tpl) || preview) return value;
+    const segs = parseMergeSegments(tpl);
+    const merge = segs.find((s) => s.kind === "merge");
+    const fieldLabel =
+      merge && merge.kind === "merge"
+        ? merge.label
+        : fieldKeyFromHeader(tpl) || tpl || "field";
+    // Show resolved value as the chip so multi-row tables stay readable;
+    // hover/popup reveals the binding (sku, color, …).
+    return (
+      <BindingPreview
+        class="block-data-wrap"
+        chipClass="block-data"
+        label={value || "(empty)"}
+        previewValue={fieldLabel}
+        ariaLabel={`${fieldLabel}: ${value}`}
       />
     );
   };
 
   const spaced = rowGap > 0 || colGap > 0;
+  const sourceHint = datasetName || sourcePath;
 
   return (
     <BlockFrame {...props}>
@@ -972,6 +1018,7 @@ export function TableBlock(props: BlockViewProps) {
           showBorders && !borderV ? "block-table--no-v-borders" : "",
           headerRule ? "block-table--header-rule" : "",
           spaced ? "block-table--spaced" : "",
+          bound && !preview ? "block-table--bound" : "",
         ]
           .filter(Boolean)
           .join(" ")}
@@ -981,6 +1028,11 @@ export function TableBlock(props: BlockViewProps) {
           "--row-gap": `${rowGap}px`,
           "--col-gap": `${colGap}px`,
         }}
+        title={
+          bound && !preview && sourceHint
+            ? `Rows from ${sourceHint}`
+            : undefined
+        }
       >
         {header && (
           <thead>
@@ -1014,7 +1066,7 @@ export function TableBlock(props: BlockViewProps) {
               {r.map((cell, ci) => (
                 <td key={ci}>
                   {bound
-                    ? String(cell)
+                    ? boundCellChip(ci, String(cell))
                     : renderEditCell(String(cell), ri, ci, false)}
                 </td>
               ))}

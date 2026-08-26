@@ -23,6 +23,16 @@ import {
 } from "../model/document";
 import { createDemoProject, getDemo } from "../model/demos/library";
 import { DataRow, parseDataInput, SAMPLE_CSV } from "../model/bindings";
+import { bindingPathToDataFocus } from "../model/dataField";
+import {
+  applyDocumentStylePreset,
+  documentStyleFromProject,
+  findDocumentStyle,
+  findTextStyle,
+  textStyleFromBlock,
+  type DocumentStylePreset,
+  type TextStylePreset,
+} from "../model/styleLibrary";
 import { normalizeRect, px } from "../model/geometry";
 import {
   buildPlaceDraft,
@@ -51,7 +61,7 @@ import type {
 } from "../model/workflow";
 import { EditHistory, isEditHistorySnapshot, type EditHistorySnapshot } from "../model/history";
 import type { InspectorTabId } from "../features/studio/inspectorTabs";
-import { clearAllIssues } from "./issueLog";
+import { clearAllIssues, noteIssue } from "./issueLog";
 import {
   clampZoom,
   stepZoom,
@@ -107,7 +117,8 @@ function migrateOverlay(saved: Partial<AppStateSnapshot> | null): UiOverlay {
     saved?.overlay === "about" ||
     saved?.overlay === "catalog" ||
     saved?.overlay === "automation" ||
-    saved?.overlay === "samples"
+    saved?.overlay === "samples" ||
+    saved?.overlay === "render"
   ) {
     return saved.overlay;
   }
@@ -144,10 +155,14 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
     locale: "en",
     canvasZoomMode: "fit",
     canvasZoom: 1,
+    editContrastAssist: true,
   };
   let next = base;
   if (saved?.prefs && saved.prefs.locale == null) {
     next = { ...next, locale: "en" };
+  }
+  if (saved?.prefs && saved.prefs.editContrastAssist == null) {
+    next = { ...next, editContrastAssist: true };
   }
   const artboard = saved?.project?.artboard;
   if (artboard && next.canvasPreset !== artboard) {
@@ -380,6 +395,25 @@ export function setStudioView(next: StudioView): void {
   }
 }
 
+export type DataStudioFocus = {
+  column: string;
+  nestedTab?: string;
+};
+
+export const dataStudioFocus = signal<DataStudioFocus | null>(null);
+
+export function focusDataField(focus: DataStudioFocus): void {
+  if (!focus.column.trim()) return;
+  dataStudioFocus.value = focus;
+  setStudioView("data");
+}
+
+export function focusDataFieldFromBindingPath(rawPath: string): void {
+  const { column, nestedTab } = bindingPathToDataFocus(rawPath);
+  if (!column) return;
+  focusDataField({ column, nestedTab });
+}
+
 export function setPreviewMode(on: boolean): void {
   previewMode.value = on;
   if (on) {
@@ -594,13 +628,38 @@ export function loadDemoSample(id: string): void {
       draft.datasets = list;
       return draft;
     });
-    const primary =
-      project.value.datasets?.find((d) => d.id === project.value.primaryDatasetId) ??
-      project.value.datasets?.find((d) => d.name === "primary") ??
-      project.value.datasets?.[0];
-    dataRows.value = (primary?.rows?.length
-      ? (primary.rows as DataRow[])
-      : parsed);
+    dataRows.value = parsed;
+  }
+}
+
+/** Replace the draft with a Project from PDF structure import (ADR 0012). */
+export function loadImportedProject(doc: Project, warnings: string[] = []): void {
+  editHistory.clear();
+  historyEpoch.value += 1;
+  clearAllIssues();
+  const built = ensureProjectAutomation(doc);
+  const artboard = (built.artboard ?? "document") as CanvasPresetId;
+  built.artboard = artboard;
+  project.value = built;
+  catalogProjectId.value = null;
+  selection.value = {
+    kind: "page",
+    id: built.activePageId,
+  };
+  placeCascade.value = 0;
+  studioView.value = "edit";
+  previewMode.value = false;
+  setOverlay(null);
+  updatePrefs({ canvasPreset: artboard });
+  dataRows.value = [];
+  previewRowIndex.value = 0;
+  for (const w of warnings) {
+    noteIssue({
+      category: "runtime",
+      severity: "warning",
+      message: w,
+      source: "manual",
+    });
   }
 }
 
@@ -1424,6 +1483,90 @@ export function deleteCustomObject(objectId: string): void {
   updateProject((draft) => ({
     ...draft,
     customObjects: (draft.customObjects ?? []).filter((o) => o.id !== objectId),
+  }));
+}
+
+export function saveTextStyleFromSelection(name: string): TextStylePreset | null {
+  const block = selectedBlock.value;
+  if (!block) return null;
+  const preset = textStyleFromBlock(block, name);
+  updateProject((draft) => ({
+    ...draft,
+    textStyles: [...(draft.textStyles ?? []), preset],
+  }));
+  return preset;
+}
+
+export function applyTextStyleToSelection(styleId: string): void {
+  const preset = findTextStyle(project.value, styleId);
+  if (!preset) return;
+  const ids = selectedBlocks.value.map((b) => b.id);
+  if (!ids.length) return;
+  for (const id of ids) {
+    updateBlock(id, { style: preset.style });
+  }
+}
+
+export function deleteTextStyle(styleId: string): void {
+  updateProject((draft) => ({
+    ...draft,
+    textStyles: (draft.textStyles ?? []).filter((s) => s.id !== styleId),
+  }));
+}
+
+export function saveDocumentStyleFromCurrent(name: string): DocumentStylePreset | null {
+  const page = activePage.value;
+  if (!page) return null;
+  const group = selectedBlock.value;
+  const groupStyle =
+    group && (group.type === "group" || group.type === "repeat")
+      ? {
+          layout: group.style.layout,
+          direction: group.style.direction,
+          justify: group.style.justify,
+          alignItems: group.style.alignItems,
+          gap: group.style.gap,
+          padding: group.style.padding,
+          borderRadius: group.style.borderRadius,
+        }
+      : undefined;
+  const preset = documentStyleFromProject(
+    project.value,
+    page,
+    name,
+    groupStyle,
+  );
+  updateProject((draft) => ({
+    ...draft,
+    documentStyles: [...(draft.documentStyles ?? []), preset],
+  }));
+  return preset;
+}
+
+export function applyDocumentStyle(styleId: string): void {
+  const page = activePage.value;
+  if (!page) return;
+  const preset = findDocumentStyle(project.value, styleId);
+  if (!preset) return;
+  const { projectPatch, pagePatch } = applyDocumentStylePreset(
+    { project: project.value, page },
+    preset,
+  );
+  if (Object.keys(projectPatch).length) {
+    updateProjectMeta(projectPatch);
+  }
+  if (Object.keys(pagePatch).length) {
+    updatePage(page.id, pagePatch);
+  }
+  if (preset.artboard) {
+    updatePrefs({ canvasPreset: preset.artboard });
+  }
+}
+
+export function deleteDocumentStyle(styleId: string): void {
+  updateProject((draft) => ({
+    ...draft,
+    documentStyles: (draft.documentStyles ?? []).filter((s) => s.id !== styleId),
   }));
 }
 

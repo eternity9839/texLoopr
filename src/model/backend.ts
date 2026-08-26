@@ -72,6 +72,7 @@ export async function runWorkflowBackend(
       scriptResults: Record<string, unknown>;
       logs: WorkflowResult["logs"];
       emit: WorkflowResult["emit"];
+      pdfBase64?: string | null;
     }>("workflow_run", {
       project: opts.project,
       row: opts.row,
@@ -86,6 +87,7 @@ export async function runWorkflowBackend(
       scriptResults: result.scriptResults as WorkflowResult["scriptResults"],
       logs: result.logs,
       emit: result.emit,
+      pdfBase64: result.pdfBase64,
     };
   } catch {
     return runWorkflowJs(opts);
@@ -109,4 +111,85 @@ export async function getRuntimeInfo(): Promise<{
   } catch {
     return null;
   }
+}
+
+export type PdfImportProgress = {
+  phase: string;
+  page: number;
+  total: number;
+};
+
+export type PdfImportResult = {
+  project: import("./document").Project;
+  warnings: string[];
+};
+
+/** Rust structure import (ADR 0012). Web builds return null. */
+export async function importPdfStructureBackend(
+  opts: { path?: string; bytesBase64?: string },
+  onProgress?: (p: PdfImportProgress) => void,
+): Promise<PdfImportResult | null> {
+  if (!isTauri()) return null;
+  let unlisten: (() => void) | undefined;
+  try {
+    if (onProgress) {
+      const { listen } = await import("@tauri-apps/api/event");
+      unlisten = await listen<PdfImportProgress>("pdf-import-progress", (e) => {
+        onProgress(e.payload);
+      });
+    }
+    return await invoke<PdfImportResult>("pdf_import_structure", {
+      path: opts.path ?? null,
+      bytesBase64: opts.bytesBase64 ?? null,
+    });
+  } finally {
+    unlisten?.();
+  }
+}
+
+/** Rust PDF render (ADR 0014). Requires desktop runtime. */
+export async function renderProjectPdfBackend(
+  project: import("./document").Project,
+  row: DataRow,
+  output?: unknown,
+): Promise<Uint8Array> {
+  if (!isTauri()) {
+    throw new Error("PDF rendering requires the desktop app (Rust runtime).");
+  }
+  const bytes = await invoke<number[]>("render_project_pdf_cmd", {
+    project,
+    row,
+    output: output ?? null,
+  });
+  return new Uint8Array(bytes);
+}
+
+export type RenderBatchFile = {
+  name: string;
+  bytesBase64: string;
+  rowIndex: number;
+};
+
+export type RenderBatchResult = {
+  files: RenderBatchFile[];
+  zipBase64: string | null;
+  errors: string[];
+};
+
+/** Rust batch render + optional ZIP (ADR 0014). No JS fallback. */
+export async function renderBatchBackend(opts: {
+  project: import("./document").Project;
+  rows: DataRow[];
+  output?: unknown;
+  includeZip?: boolean;
+}): Promise<RenderBatchResult> {
+  if (!isTauri()) {
+    throw new Error("Rendering requires the desktop app (Rust runtime).");
+  }
+  return invoke<RenderBatchResult>("render_batch_cmd", {
+    project: opts.project,
+    rows: opts.rows,
+    output: opts.output ?? null,
+    includeZip: opts.includeZip ?? true,
+  });
 }

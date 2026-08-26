@@ -1,5 +1,6 @@
 import { resolveTemplate, type DataRow } from "./bindings";
 import type { RuntimeContext } from "./expr";
+import { parseFilterPipe } from "./templateFilters";
 
 /** Default ink for data-field blocks in the editor. */
 export const DATA_FIELD_COLOR = "#2f7d5c";
@@ -31,4 +32,20 @@ export function resolveDataField(
   const tpl = dataFieldTemplate(path);
   if (!tpl) return "";
   return resolveTemplate(tpl, row, { missingAsEmpty: true, ctx });
+}
+
+/** Map a binding path to a Data studio column focus target. */
+export function bindingPathToDataFocus(rawPath: string): {
+  column: string;
+  nestedTab?: string;
+} {
+  const normalized = normalizeDataFieldPath(rawPath);
+  if (!normalized) return { column: "" };
+  const { path } = parseFilterPipe(normalized);
+  const top = path.split(".")[0] ?? path;
+  if (!top) return { column: "" };
+  return {
+    column: top,
+    nestedTab: path.includes(".") ? top : undefined,
+  };
 }

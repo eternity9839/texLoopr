@@ -55,6 +55,10 @@ import {
   type AppearanceCtx,
 } from "./appearance";
 import { BlockAssociations } from "./BlockAssociations";
+import {
+  DocumentStyleLibrary,
+  TextStyleLibrary,
+} from "./StyleLibraryControls";
 
 const TYPE_LABELS: Record<string, string> = {
   paragraph: "Paragraph",
@@ -329,6 +333,7 @@ export function ComponentProps() {
 
       {showTypo && (
         <Section title="Typography" defaultOpen>
+          <TextStyleLibrary />
           <div class="design-typo">
             <FontFamilySelect ctx={typoCtx} />
             <SizeStepper ctx={typoCtx} />
@@ -1333,6 +1338,9 @@ export function PageSetup() {
 
   return (
     <>
+      <Section title={t("documentStyles")} defaultOpen>
+        <DocumentStyleLibrary />
+      </Section>
       <Section title={t("margins")} defaultOpen>
         <div class="prop-grid prop-grid--2">
           <MarginFields margins={margins} pageId={page.id} />

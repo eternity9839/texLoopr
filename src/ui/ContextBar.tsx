@@ -26,6 +26,7 @@ import {
 } from "../state/store";
 import { findBlockAncestors } from "../model/outlineTree";
 import { isEphemeral } from "../runtimeConfig";
+import { usePdfImport } from "../features/import/PdfImportControl";
 
 const VIEWS: { id: StudioView; labelKey: "edit" | "data"; icon: IconName }[] = [
   { id: "edit", labelKey: "edit", icon: "edit" },
@@ -106,9 +107,12 @@ export function ContextBar() {
       ? t("saveToCatalog")
       : t("saveDraftToCatalog");
   const closeProjectMenu = () => setProjectMenuOpen(false);
+  const pdfImport = usePdfImport(closeProjectMenu);
 
   return (
     <header class="context-bar" role="banner">
+      {pdfImport.fileInput}
+      {pdfImport.modal}
       <div class="context-bar__brand-wrap" ref={projectMenuRef}>
         <button
           type="button"
@@ -141,6 +145,15 @@ export function ContextBar() {
             >
               {t("open")}
             </MenuItem>
+            <MenuItem
+              icon="file"
+              onClick={() => {
+                pdfImport.openPicker();
+                closeProjectMenu();
+              }}
+            >
+              {t("importPdf")}
+            </MenuItem>
             {!ephemeral && (
               <MenuItem
                 icon="save"
@@ -170,6 +183,15 @@ export function ContextBar() {
               }}
             >
               {t("automation")}
+            </MenuItem>
+            <MenuItem
+              icon="play"
+              onClick={() => {
+                setOverlay("render");
+                closeProjectMenu();
+              }}
+            >
+              {t("render")}
             </MenuItem>
             <MenuItem
               icon="settings"
@@ -277,6 +299,19 @@ export function ContextBar() {
           </button>
         ))}
       </nav>
+
+      {view === "edit" && (
+        <button
+          type="button"
+          class="btn btn--small btn--icon"
+          title={t("render")}
+          aria-label={t("render")}
+          data-tour="render"
+          onClick={() => setOverlay("render")}
+        >
+          <Icon name="play" size={15} />
+        </button>
+      )}
 
       {view === "edit" && (
         <button

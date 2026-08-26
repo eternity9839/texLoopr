@@ -40,6 +40,7 @@ import {
   nudgeCanvasZoom,
   canvasViewScale,
   updatePage,
+  focusDataFieldFromBindingPath,
 } from "../../state/store";
 import {
   beginIssuePass,
@@ -65,6 +66,7 @@ import {
 } from "../../model/document";
 import { BLOCK_TYPE_ICON } from "../../ui/icons";
 import { BLOCK_TOOLS } from "./Toolbox";
+import { t } from "../../i18n";
 import {
   formatZoomPercent,
   resolveCanvasScale,
@@ -78,8 +80,10 @@ interface EditorCanvasProps {
 type CanvasMenu = {
   x: number;
   y: number;
-  scope: "block" | "page";
+  scope: "block" | "page" | "mergeChip";
   placeAt?: { x: number; y: number };
+  mergePath?: string;
+  blockId?: string;
 };
 
 function pageCoordsFromEvent(
@@ -210,6 +214,22 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
     setMenu({ x: e.clientX, y: e.clientY, scope: "block" });
   }, []);
 
+  const openMergeChipMenu = useCallback(
+    (blockId: string, mergePath: string, e: MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      select({ kind: "block", id: blockId });
+      setMenu({
+        x: e.clientX,
+        y: e.clientY,
+        scope: "mergeChip",
+        mergePath,
+        blockId,
+      });
+    },
+    [],
+  );
+
   const openPageMenu = useCallback((e: MouseEvent, pageEl: Element) => {
     e.preventDefault();
     e.stopPropagation();
@@ -329,6 +349,16 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
 
   const menuItems: ContextMenuEntry[] = (() => {
     if (!menu) return [];
+    if (menu.scope === "mergeChip" && menu.mergePath) {
+      return [
+        {
+          id: "open-in-data",
+          label: t("openInData"),
+          icon: "database",
+          action: () => focusDataFieldFromBindingPath(menu.mergePath!),
+        },
+      ];
+    }
     if (menu.scope === "page") {
       return [
         ...createItems,
@@ -449,6 +479,19 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
           ]
         : [];
 
+    const dataJumpItem: ContextMenuEntry[] =
+      block?.type === "data"
+        ? [
+            {
+              id: "open-in-data",
+              label: t("openInData"),
+              icon: "database",
+              action: () =>
+                focusDataFieldFromBindingPath(String(block.content.path ?? "")),
+            },
+          ]
+        : [];
+
     return [
       {
         id: "cut",
@@ -520,6 +563,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
         action: toggleLockSelected,
       },
       ...fieldItems,
+      ...dataJumpItem,
       { id: "s1", type: "sep" },
       {
         id: "comment",
@@ -856,6 +900,9 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               },
               onContextMenu: isInteractive
                 ? (_id, ev) => openBlockMenu(ev)
+                : undefined,
+              onChipContextMenu: isInteractive
+                ? (id, path, ev) => openMergeChipMenu(id, path, ev)
                 : undefined,
               onChangeContent: isInteractive
                 ? (id, content) => updateBlock(id, { content })

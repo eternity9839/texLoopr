@@ -17,14 +17,19 @@
 - [ ] Viewport rulers dock to the canvas chrome; margin flags on all four sides (drag to set); hover shows px + chosen unit (Settings → Page → Ruler units)
 - [ ] Language: Settings → General; default English; inspector/toolbox/Surface setup follow locale
 - [ ] Edit contrast: transparent block frames; light sample ink forced to --ink when no fill; muted footers readable
+- [ ] Edit contrast assist (Settings → Editor, default on): resume dark rail / CTA chips whitish in Edit; toggle off restores authored; Preview unchanged
 - [ ] Merge herestrings in text/list/table show green chips until double-click edit (literal {{}})
+- [ ] Dark-fill blocks (ad CTA `#0f6b63`): merge chips use light ink; bound SKU table cells chip resolved values (hover = field)
 - [ ] Data studio: empty editable table by default; + Dataset tabs; key field; nested tabs for JSON arrays (line_items, product_files); optional Paste CSV
 - [ ] `lookup('dataset', key, 'field')` resolves in Preview when datasets are linked
 - [ ] Studio switch: Edit ↔ Data; Preview toggle / `Ctrl+.`; preview row `[` `]` / Alt+←→; output Shift+`[` `]`
 - [ ] Print advertisement: reload from Samples if an old session still shows overlapping back-page chrome
-- [ ] Brand **texLooper** opens project menu (New / Open / Save / Samples…)
+- [ ] Brand **texLooper** opens project menu (New / Open / Import PDF… / Save / Samples…)
+- [ ] Import PDF (desktop): loading modal; structure project with text + image placeholders; warnings in Issues
+- [ ] Headless: `cargo run -p texlooper --bin texlooper-cli -- render|import-pdf|serve` (ADR 0014)
 - [ ] Inspector tabs: Layers · Design · Data · Notes · Meta; condition presets on Data tab
 - [ ] Layers navigator: project root, surface twisties, group expand/collapse, sort (Order / Pile / Name / Type)
+- [ ] Layers: surfaces/groups tinted with shared accent; data-bound rows show green dots; hover lights kin + linked fields
 - [ ] Send forward/back and Front/Back on ribbon or Design → Stack changes visible paint order
 - [ ] Group: select nested child in Layers → canvas highlights child; double-click group or Isolate → drill-in; Esc exits isolation
 - [ ] Context bar breadcrumb when a nested block is selected (Surface › Group › …)

@@ -1,5 +1,6 @@
 //! Workflow runner — canonical emit / dry-run path for desktop and future CLI.
 
+use crate::render_pdf::render_project_pdf;
 use crate::template::{
     evaluate_condition, evaluate_expr, resolve_template, RuntimeContext,
 };
@@ -27,6 +28,8 @@ pub struct WorkflowResult {
     pub script_results: Map<String, Value>,
     pub logs: Vec<StepLog>,
     pub emit: Option<Value>,
+    /// PDF bytes when render produced a PDF (base64 for JSON transport).
+    pub pdf_base64: Option<String>,
 }
 
 pub fn run_workflow(
@@ -57,6 +60,7 @@ pub fn run_workflow(
     let mut script_results = Map::new();
     let mut skipped_row = false;
     let mut emit = None;
+    let mut pdf_base64 = None;
 
     for step in &steps {
         let step_id = step
@@ -211,21 +215,61 @@ pub fn run_workflow(
                 }
             }
             "render" => {
-                logs.push(StepLog {
-                    step_id,
-                    name,
-                    step_type,
-                    skipped: skipped_row,
-                    ok: true,
-                    detail: Some(
-                        if skipped_row {
-                            "skipped (row)"
-                        } else {
-                            "render ready"
+                if skipped_row {
+                    logs.push(StepLog {
+                        step_id,
+                        name,
+                        step_type,
+                        skipped: true,
+                        ok: true,
+                        detail: Some("skipped (row)".into()),
+                    });
+                } else {
+                    let kind = ctx
+                        .output
+                        .get("kind")
+                        .and_then(|v| v.as_str())
+                        .unwrap_or("preview");
+                    if kind == "pdf" {
+                        match render_project_pdf(
+                            project,
+                            &Value::Object(ctx.data.clone()),
+                            Some(output),
+                        ) {
+                            Ok(bytes) => {
+                                use base64::Engine;
+                                pdf_base64 = Some(
+                                    base64::engine::general_purpose::STANDARD.encode(&bytes),
+                                );
+                                logs.push(StepLog {
+                                    step_id,
+                                    name,
+                                    step_type,
+                                    skipped: false,
+                                    ok: true,
+                                    detail: Some(format!("pdf {} bytes", bytes.len())),
+                                });
+                            }
+                            Err(e) => logs.push(StepLog {
+                                step_id,
+                                name,
+                                step_type,
+                                skipped: false,
+                                ok: false,
+                                detail: Some(e.to_string()),
+                            }),
                         }
-                        .into(),
-                    ),
-                });
+                    } else {
+                        logs.push(StepLog {
+                            step_id,
+                            name,
+                            step_type,
+                            skipped: false,
+                            ok: true,
+                            detail: Some(format!("render ready ({kind})")),
+                        });
+                    }
+                }
             }
             "emit" => {
                 let kind = ctx
@@ -234,15 +278,22 @@ pub fn run_workflow(
                     .and_then(|v| v.as_str())
                     .unwrap_or("preview")
                     .to_string();
+                let mut payload = json!({
+                    "outputId": ctx.output.get("id"),
+                    "device": ctx.device,
+                    "api": output.get("api"),
+                    "data": ctx.data,
+                    "scripts": script_results,
+                });
+                if let Some(b64) = &pdf_base64 {
+                    payload
+                        .as_object_mut()
+                        .unwrap()
+                        .insert("pdfBase64".into(), Value::String(b64.clone()));
+                }
                 emit = Some(json!({
                     "kind": kind,
-                    "payload": {
-                        "outputId": ctx.output.get("id"),
-                        "device": ctx.device,
-                        "api": output.get("api"),
-                        "data": ctx.data,
-                        "scripts": script_results,
-                    }
+                    "payload": payload
                 }));
                 logs.push(StepLog {
                     step_id,
@@ -274,6 +325,7 @@ pub fn run_workflow(
         script_results,
         logs,
         emit,
+        pdf_base64,
     }
 }
 
