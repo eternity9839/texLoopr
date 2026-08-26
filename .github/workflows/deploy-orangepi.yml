@@ -63,15 +63,12 @@ jobs:
       - name: Build SPA (Nix devShell)
         run: bash deploy/orangepi/ci-build.sh
 
+      # Optional cache warm — never block deploy on Attic auth / path-info issues
       - name: Push devShell to Attic
+        continue-on-error: true
         env:
           ATTIC_TOKEN: ${{ secrets.ATTIC_TOKEN }}
-        run: |
-          if [[ -z "${ATTIC_TOKEN:-}" ]]; then
-            echo "ATTIC_TOKEN not configured — skip push"
-            exit 0
-          fi
-          bash deploy/orangepi/ci-attic-push.sh
+        run: bash deploy/orangepi/ci-attic-push.sh
 
       - name: Deploy to Pi (Tailscale SSH)
         run: bash deploy/orangepi/ci-deploy-remote.sh
