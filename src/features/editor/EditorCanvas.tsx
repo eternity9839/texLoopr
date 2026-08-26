@@ -649,18 +649,27 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   );
 
   const allPages = project.value.pages;
-  const activeIdx = Math.max(
+  const visiblePages = allPages.filter((p) => {
+    if (!p.condition?.trim()) return true;
+    if (!runtime) return true;
+    // Edit: only apply pure output.kind gates; language/data conditions apply in preview.
+    if (!preview && !isOutputFormatCondition(p.condition)) return true;
+    return evaluateCondition(p.condition, row, runtime, {
+      diagnose: preview,
+    });
+  });
+  const activeVisibleIdx = Math.max(
     0,
-    allPages.findIndex((p) => p.id === page?.id),
+    visiblePages.findIndex((p) => p.id === page?.id),
   );
   const pagesToShow: Page[] =
     viewMode === "continuous"
-      ? allPages
+      ? visiblePages
       : viewMode === "spread"
-        ? allPages.slice(activeIdx, activeIdx + 2)
-        : page
+        ? visiblePages.slice(activeVisibleIdx, activeVisibleIdx + 2)
+        : page && (!preview || visiblePages.some((p) => p.id === page.id))
           ? [page]
-          : [];
+          : visiblePages.slice(0, 1);
 
   const sheetGap = 28;
   const sheetsWide = viewMode === "spread" ? Math.min(2, pagesToShow.length) : 1;

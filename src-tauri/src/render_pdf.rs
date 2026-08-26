@@ -171,9 +171,29 @@ pub fn render_project_pdf(
     }
 
     let output_val = output.cloned().unwrap_or_else(|| json_output_pdf(project));
-    let ctx = RuntimeContext::from_row(row, &output_val, false);
+    let project_lang = project
+        .get("language")
+        .and_then(|v| v.as_str());
+    let ctx = RuntimeContext::from_row_with_language(row, &output_val, false, project_lang);
 
-    let (first_w, first_h) = page_size_px(project, &pages[0]);
+    // First visible page determines initial PDF page size.
+    let visible: Vec<(usize, &Value)> = pages
+        .iter()
+        .enumerate()
+        .filter(|(_, page)| {
+            match page.get("condition").and_then(|v| v.as_str()) {
+                Some(c) if !c.trim().is_empty() => evaluate_condition(c, row, Some(&ctx)),
+                _ => true,
+            }
+        })
+        .collect();
+    if visible.is_empty() {
+        return Err(RenderError::Msg(
+            "no pages visible for this language/row".into(),
+        ));
+    }
+
+    let (first_w, first_h) = page_size_px(project, visible[0].1);
     let (doc, page_idx, layer_idx) = PdfDocument::new(
         project
             .get("name")
@@ -187,12 +207,12 @@ pub fn render_project_pdf(
         .add_builtin_font(BuiltinFont::Helvetica)
         .map_err(|e| RenderError::Pdf(e.to_string()))?;
 
-    for (i, page) in pages.iter().enumerate() {
+    for (vis_i, (_orig_i, page)) in visible.iter().enumerate() {
         let (w, h) = page_size_px(project, page);
-        let (p_idx, l_idx) = if i == 0 {
+        let (p_idx, l_idx) = if vis_i == 0 {
             (page_idx, layer_idx)
         } else {
-            doc.add_page(px_to_mm(w), px_to_mm(h), format!("Page {}", i + 1))
+            doc.add_page(px_to_mm(w), px_to_mm(h), format!("Page {}", vis_i + 1))
         };
         let layer = doc.get_page(p_idx).get_layer(l_idx);
 
@@ -290,5 +310,42 @@ mod tests {
         let bytes = render_project_pdf(&project, &row, None).expect("pdf");
         assert!(bytes.starts_with(b"%PDF"));
         assert!(bytes.len() > 100);
+    }
+
+    #[test]
+    fn skips_pages_for_mismatched_language() {
+        let project = json!({
+            "name": "Lang",
+            "language": "en",
+            "artboard": { "w": 400, "h": 300 },
+            "pages": [
+                {
+                    "id": "en",
+                    "condition": "vars.language == 'en'",
+                    "blocks": [{
+                        "id": "b1",
+                        "type": "text",
+                        "x": 10, "y": 10, "w": 100, "h": 30,
+                        "content": { "text": "Hello" },
+                        "style": { "fontSize": 12 }
+                    }]
+                },
+                {
+                    "id": "fr",
+                    "condition": "vars.language == 'fr'",
+                    "blocks": [{
+                        "id": "b2",
+                        "type": "text",
+                        "x": 10, "y": 10, "w": 100, "h": 30,
+                        "content": { "text": "Bonjour" },
+                        "style": { "fontSize": 12 }
+                    }]
+                }
+            ],
+            "outputs": [{ "id": "out-pdf", "kind": "pdf" }]
+        });
+        let row_fr = json!({ "language": "fr", "name": "Ada" });
+        let bytes = render_project_pdf(&project, &row_fr, None).expect("pdf");
+        assert!(bytes.starts_with(b"%PDF"));
     }
 }

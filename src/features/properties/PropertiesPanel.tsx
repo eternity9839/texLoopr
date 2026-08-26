@@ -277,6 +277,10 @@ export function MetadataPanel() {
               onInput={meta("language")}
               placeholder="en · fr · nl"
             />
+            <p class="muted prop-hint">
+              Default document language (<code>vars.language</code>). Rows may
+              override via <code>language</code> / <code>lang</code>.
+            </p>
           </Field>
           <Field label="Version" forId="meta-version">
             <input

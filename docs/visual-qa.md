@@ -16,6 +16,7 @@
 - [ ] Tables: Design → separators (H/V), cell pad, row/col gap, named header styles, Literal columns (`=`), Named dataset / field path / Edit in Data for CSV·JSON
 - [ ] Viewport rulers dock to the canvas chrome; margin flags on all four sides (drag to set); hover shows px + chosen unit (Settings → Page → Ruler units)
 - [ ] Language: Settings → General; default English; inspector/toolbox/Surface setup follow locale
+- [ ] Document language (ADR 0015): Meta default + row `language`/`lang` → `vars.language`; block/page conditions; Preview hides mismatched pages
 - [ ] Edit contrast: transparent block frames; light sample ink forced to --ink when no fill; muted footers readable
 - [ ] Edit contrast assist (Settings → Editor, default on): resume dark rail / CTA chips whitish in Edit; toggle off restores authored; Preview unchanged
 - [ ] Merge herestrings in text/list/table show green chips until double-click edit (literal {{}})

@@ -181,6 +181,10 @@ export const en: Messages = {
   saveDocumentStyleAs: "Save surface as",
   documentStyleNamePlaceholder: "Brand letter…",
   documentStyles: "Document styles",
+  pageVisibility: "Visibility",
+  pageCondition: "Page condition",
+  pageConditionHint:
+    "Hide this page in Preview/Render when false. Use vars.language from the data row or project default.",
   saveStyle: "Save",
   deleteStyle: "Delete style",
   colorPalette: "Palette",

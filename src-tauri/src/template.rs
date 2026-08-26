@@ -28,6 +28,16 @@ pub struct RuntimeContext {
 
 impl RuntimeContext {
     pub fn from_row(row: &Value, output: &Value, preview: bool) -> Self {
+        Self::from_row_with_language(row, output, preview, None)
+    }
+
+    /// Build context and seed `vars.language` / `env.language` (ADR 0015).
+    pub fn from_row_with_language(
+        row: &Value,
+        output: &Value,
+        preview: bool,
+        project_language: Option<&str>,
+    ) -> Self {
         let data = match row {
             Value::Object(m) => m.clone(),
             _ => Map::new(),
@@ -53,11 +63,15 @@ impl RuntimeContext {
                 ),
             ),
         );
+        let language = resolve_document_language(row, project_language);
+        let mut vars = Map::new();
+        vars.insert("language".into(), Value::String(language.clone()));
+        env.insert("language".into(), Value::String(language));
         Self {
             data,
             output: output_map,
             device,
-            vars: Map::new(),
+            vars,
             env,
         }
     }
@@ -71,6 +85,25 @@ impl RuntimeContext {
         m.insert("env".into(), Value::Object(self.env.clone()));
         Value::Object(m)
     }
+}
+
+/// Resolve document language: row `language`/`lang` → project → `"en"`.
+pub fn resolve_document_language(row: &Value, project_language: Option<&str>) -> String {
+    for key in ["language", "lang"] {
+        if let Some(v) = row.get(key).and_then(|x| x.as_str()) {
+            let t = v.trim().to_lowercase();
+            if !t.is_empty() {
+                return t;
+            }
+        }
+    }
+    if let Some(p) = project_language {
+        let t = p.trim().to_lowercase();
+        if !t.is_empty() {
+            return t;
+        }
+    }
+    "en".into()
 }
 
 pub fn resolve_template(
@@ -370,5 +403,34 @@ mod tests {
         let row = json!({"name": "Ada"});
         let out = resolve_template("Hi {{name|upper}}", &row, None, true);
         assert_eq!(out, "Hi ADA");
+    }
+
+    #[test]
+    fn resolves_document_language_priority() {
+        let row = json!({ "lang": "FR", "name": "Ada" });
+        assert_eq!(resolve_document_language(&row, Some("en")), "fr");
+        let row2 = json!({ "name": "Ada" });
+        assert_eq!(resolve_document_language(&row2, Some("NL")), "nl");
+        assert_eq!(resolve_document_language(&row2, None), "en");
+    }
+
+    #[test]
+    fn seeds_vars_language_in_context() {
+        let row = json!({ "language": "de" });
+        let output = json!({ "kind": "pdf" });
+        let ctx = RuntimeContext::from_row_with_language(&row, &output, false, Some("en"));
+        assert_eq!(
+            ctx.vars.get("language").and_then(|v| v.as_str()),
+            Some("de")
+        );
+        assert_eq!(
+            ctx.env.get("language").and_then(|v| v.as_str()),
+            Some("de")
+        );
+        assert!(evaluate_condition(
+            "vars.language == 'de'",
+            &row,
+            Some(&ctx)
+        ));
     }
 }

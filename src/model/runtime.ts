@@ -14,6 +14,7 @@ import {
   type WorkflowStep,
 } from "./workflow";
 import { noteIssue } from "../state/issueLog";
+import { injectDocumentLanguage } from "./documentLanguage";
 
 export interface RunOptions {
   project: Project;
@@ -58,6 +59,7 @@ function buildContext(opts: RunOptions): RuntimeContext {
       timestamp: Date.now(),
     },
   };
+  injectDocumentLanguage(ctx, opts.project, opts.row);
   attachProjectDatasets(opts.project, ctx, opts.row);
   return ctx;
 }
@@ -127,6 +129,7 @@ export function enrichPreviewContext(
   vars: Record<string, ExprValue> = {},
 ): RuntimeContext {
   const ctx = previewContext(row, output, vars, true);
+  injectDocumentLanguage(ctx, project, row);
   attachProjectDatasets(project, ctx, row);
   const steps: WorkflowStep[] = (project.workflow ?? []).filter(
     (s) => s.type === "bind" || s.type === "script" || s.type === "condition",
@@ -337,7 +340,7 @@ export function previewContext(
     data: { ...((row ?? {}) as Record<string, ExprValue>) },
     output: o,
     device,
-    vars,
+    vars: { ...vars },
     env: { preview, timestamp: Date.now() },
   };
 }

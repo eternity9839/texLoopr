@@ -385,6 +385,13 @@ export function DataStudio() {
               Edit rows for merge fields. Scalars inline; arrays/objects open in
               nested tabs below. Use <code>{"{{field}}"}</code> or{" "}
               <code>{"lookup('salary', id, 'amount')"}</code> in Preview.
+              {(headers.includes("language") || headers.includes("lang")) && (
+                <>
+                  {" "}
+                  Column <code>language</code>/<code>lang</code> drives{" "}
+                  <code>vars.language</code> for multi-language templates.
+                </>
+              )}
             </span>
           </div>
           <div class="view-body data-studio__body">

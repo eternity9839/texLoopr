@@ -34,3 +34,4 @@ Decision records for texLooper. Prefer short, dated ADRs over long living docs.
 | [0012](adr/0012-pdf-structure-import.md) | PDF structure import (v1) | accepted |
 | [0013](adr/0013-high-fidelity-pdf-import.md) | High-fidelity PDF import (later) | proposed |
 | [0014](adr/0014-headless-render-api-cli.md) | Headless render + API/CLI | accepted |
+| [0015](adr/0015-document-language.md) | Document language (dataset + conditions) | accepted |

@@ -10,6 +10,7 @@ import { dataColumnNames } from "../../model/bindings";
 import { defaultRepeatChildren } from "../../model/repeat";
 import { getChildBlocks, isContainerBlock } from "../../model/groups";
 import { OUTPUT_KINDS, OUTPUT_KIND_LABEL } from "../../model/workflow";
+import { LANGUAGE_CONDITION_PRESETS } from "../../model/documentLanguage";
 import { LINK_HOOKS, LINK_HOOK_LABEL } from "../../model/linkHook";
 import { Field, Section, SelectField } from "../../ui/controls";
 
@@ -18,6 +19,7 @@ const CONDITION_PRESETS: { label: string; value: string }[] = [
     label: OUTPUT_KIND_LABEL[kind],
     value: `output.kind == '${kind}'`,
   })),
+  ...LANGUAGE_CONDITION_PRESETS,
   { label: "Has role", value: "role" },
   { label: "Not empty email", value: "!empty(email)" },
   { label: "Status paid", value: "status == 'paid'" },
@@ -53,11 +55,11 @@ export function DataBindingsPanel() {
         <Field
           label="Condition"
           forId="data-condition"
-          hint="Show only when true in Preview. Use output.kind or CSV fields."
+          hint="Show only when true in Preview. Use vars.language, output.kind, or CSV fields."
         >
           <input
             id="data-condition"
-            placeholder="data.role · output.kind == 'print'"
+            placeholder="vars.language == 'fr' · output.kind == 'print'"
             value={block.condition ?? ""}
             onInput={(e) =>
               updateBlock(block.id, { condition: e.currentTarget.value })

@@ -328,6 +328,8 @@ export interface Page {
   mirrorX?: boolean;
   /** Mirror the surface vertically */
   mirrorY?: boolean;
+  /** Expr — hide page in preview/render when false (same dialect as Block.condition) */
+  condition?: string;
 }
 
 /** Configures automatic page numbering in preview / print */

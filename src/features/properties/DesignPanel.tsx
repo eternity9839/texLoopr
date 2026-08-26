@@ -59,6 +59,7 @@ import {
   DocumentStyleLibrary,
   TextStyleLibrary,
 } from "./StyleLibraryControls";
+import { LANGUAGE_CONDITION_PRESETS } from "../../model/documentLanguage";
 
 const TYPE_LABELS: Record<string, string> = {
   paragraph: "Paragraph",
@@ -1340,6 +1341,45 @@ export function PageSetup() {
     <>
       <Section title={t("documentStyles")} defaultOpen>
         <DocumentStyleLibrary />
+      </Section>
+      <Section title={t("pageVisibility")} defaultOpen={false}>
+        <Field
+          label={t("pageCondition")}
+          forId="page-condition"
+          hint={t("pageConditionHint")}
+          compact
+        >
+          <input
+            id="page-condition"
+            placeholder="vars.language == 'fr'"
+            value={page.condition ?? ""}
+            onInput={(e) =>
+              updatePage(page.id, {
+                condition: e.currentTarget.value || undefined,
+              })
+            }
+          />
+        </Field>
+        <div class="condition-presets" role="group" aria-label={t("pageCondition")}>
+          {LANGUAGE_CONDITION_PRESETS.map((p) => (
+            <button
+              type="button"
+              key={p.value}
+              class="condition-presets__btn"
+              title={p.value}
+              onClick={() => updatePage(page.id, { condition: p.value })}
+            >
+              {p.label}
+            </button>
+          ))}
+          <button
+            type="button"
+            class="condition-presets__btn"
+            onClick={() => updatePage(page.id, { condition: undefined })}
+          >
+            Clear
+          </button>
+        </div>
       </Section>
       <Section title={t("margins")} defaultOpen>
         <div class="prop-grid prop-grid--2">

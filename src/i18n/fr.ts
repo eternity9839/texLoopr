@@ -182,6 +182,10 @@ export const fr: Messages = {
   saveDocumentStyleAs: "Enregistrer la surface sous",
   documentStyleNamePlaceholder: "Lettre de marque…",
   documentStyles: "Styles de document",
+  pageVisibility: "Visibilité",
+  pageCondition: "Condition de page",
+  pageConditionHint:
+    "Masque cette page en aperçu/rendu si faux. Utilisez vars.language (ligne de données ou défaut du projet).",
   saveStyle: "Enregistrer",
   deleteStyle: "Supprimer le style",
   colorPalette: "Palette",

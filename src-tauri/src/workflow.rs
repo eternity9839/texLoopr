@@ -39,9 +39,20 @@ pub fn run_workflow(
     vars: Option<&Value>,
     preview: bool,
 ) -> WorkflowResult {
-    let mut ctx = RuntimeContext::from_row(row, output, preview);
+    let project_lang = project.get("language").and_then(|v| v.as_str());
+    let mut ctx =
+        RuntimeContext::from_row_with_language(row, output, preview, project_lang);
     if let Some(Value::Object(m)) = vars {
-        ctx.vars = m.clone();
+        for (k, v) in m {
+            ctx.vars.insert(k.clone(), v.clone());
+        }
+        // Keep resolved language unless caller explicitly set it.
+        if !ctx.vars.contains_key("language") {
+            let lang = crate::template::resolve_document_language(row, project_lang);
+            ctx.vars
+                .insert("language".into(), Value::String(lang.clone()));
+            ctx.env.insert("language".into(), Value::String(lang));
+        }
     }
 
     let steps = project
