@@ -806,7 +806,10 @@ export function addPage(name?: string): void {
 export function updatePage(
   pageId: string,
   patch: Partial<
-    Pick<Page, "name" | "background" | "rotate" | "mirrorX" | "mirrorY">
+    Pick<
+      Page,
+      "name" | "background" | "rotate" | "mirrorX" | "mirrorY" | "condition"
+    >
   > & {
     margins?: Partial<PageMargins>;
     watermark?: Watermark | null;

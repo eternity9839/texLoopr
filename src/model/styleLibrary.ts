@@ -170,7 +170,7 @@ export const BUILTIN_DOCUMENT_STYLES: DocumentStylePreset[] = [
     margins: { top: 48, right: 48, bottom: 48, left: 48 },
     background: "#ffffff",
     colorPalette: ["#ffffff", "#000000", "#e1306c", "#833ab4", "#fccc63"],
-    groupStyle: { layout: "flex", direction: "column", gap: 16, justify: 24 },
+    groupStyle: { layout: "flex", direction: "column", gap: 16, padding: 24 },
   },
   {
     id: "builtin-yt-thumb",
@@ -306,7 +306,7 @@ export type DocumentStyleApplyTarget = {
 };
 
 export function applyDocumentStylePreset(
-  target: DocumentStyleApplyTarget,
+  _target: DocumentStyleApplyTarget,
   preset: DocumentStylePreset,
 ): { projectPatch: Partial<Project>; pagePatch: Partial<Page> } {
   const projectPatch: Partial<Project> = {};
