@@ -36,14 +36,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Tailnet first — Attic substituter is only reachable over Tailscale
+      # Tailnet first — Attic substituter is only reachable over Tailscale.
+      # v4 supports `ping` (v3 ignored it and raced the peer netmap).
       - name: Tailscale
-        uses: tailscale/github-action@v3
+        uses: tailscale/github-action@v4
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: ${{ env.TS_CI_TAG }}
-          ping: orangepi5.tail48a8e.ts.net
+          ping: orangepi5
+
+      - name: Tailnet identity
+        run: |
+          echo "self:"
+          tailscale status --self
+          echo "tags:"
+          tailscale status --json | jq -r '.Self.Tags // empty'
+          echo "ping orangepi5:"
+          tailscale ping -c 3 orangepi5
 
       - name: Attic smoke (tailnet)
         run: |
