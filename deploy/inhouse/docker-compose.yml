@@ -1,0 +1,49 @@
+# In-house / official API stack (ADR 0016)
+# Usage:
+#   docker compose --profile inhouse up -d
+#   docker compose --profile official up -d
+
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: deploy/inhouse/Dockerfile.api
+    profiles: ["inhouse", "official"]
+    ports:
+      - "8787:8787"
+    environment:
+      TEXLOOPER_API_KEY: ${TEXLOOPER_API_KEY:-dev-change-me}
+      TEXLOOPER_DATA_DIR: /data
+      TEXLOOPER_CATALOG: ${TEXLOOPER_CATALOG:-sqlite}
+      DATABASE_URL: ${DATABASE_URL:-}
+    volumes:
+      - texlooper-data:/data
+    command: ["serve", "--bind", "0.0.0.0:8787"]
+
+  spa:
+    image: nginx:1.27-alpine
+    profiles: ["inhouse", "official"]
+    ports:
+      - "8080:80"
+    volumes:
+      - ./spa-config.js:/usr/share/nginx/html/config.js:ro
+      - ../../dist:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["official"]
+    environment:
+      POSTGRES_USER: texlooper
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-texlooper}
+      POSTGRES_DB: texlooper
+    volumes:
+      - texlooper-pg:/var/lib/postgresql/data
+      - ../../src-tauri/src/sql/catalog_postgres.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    ports:
+      - "5432:5432"
+
+volumes:
+  texlooper-data:
+  texlooper-pg:

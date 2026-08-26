@@ -36,8 +36,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Tailnet first — Attic substituter is only reachable over Tailscale.
-      # Stay on v3 (v4 rejected this OAuth client with "invalid key"); ping manually.
+      # Build first without Attic — Pi OOM/offline must not block typecheck/test.
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            substituters = https://cache.nixos.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+
+      - name: Typecheck, test, and build SPA
+        run: bash deploy/orangepi/ci-build.sh
+
+      # Tailnet for Attic + deploy. Stay on v3 (v4 rejected this OAuth client).
       - name: Tailscale
         uses: tailscale/github-action@v3
         with:
@@ -51,36 +62,56 @@ jobs:
           echo "self:"
           tailscale status --self || true
           echo "tags: $(tailscale status --json | jq -r '.Self.Tags // empty | join(",")')"
-          for i in $(seq 1 30); do
+
+          # Fail fast when control already marks the Pi offline; then backoff.
+          # ~5 minutes total — enough for a reboot, not an overnight OOM storm.
+          deadline=$((SECONDS + 300))
+          attempt=0
+          while (( SECONDS < deadline )); do
+            attempt=$((attempt + 1))
+            peer="$(tailscale status --json | jq -r '
+              .Peer[]?
+              | select(.HostName=="orangepi5" or .DNSName=="orangepi5.tail48a8e.ts.net." or (.DNSName|endswith("orangepi5.tail48a8e.ts.net.")))
+              | "online=\(.Online) last=\(.LastSeen // "n/a")"
+            ' | head -1 || true)"
+            echo "peer: ${peer:-not in netmap yet}"
+
+            if [[ "${peer}" == online=false* ]] && (( attempt >= 3 )); then
+              echo "error: orangepi5 is Offline in Tailscale (likely host reboot/OOM). Skip burn; retry later." >&2
+              tailscale status || true
+              exit 1
+            fi
+
             if tailscale ping -c 1 --timeout 3s orangepi5 >/dev/null 2>&1; then
-              echo "orangepi5 reachable after ${i} attempt(s)"
+              echo "orangepi5 reachable after ${attempt} attempt(s)"
               tailscale ping -c 3 orangepi5
               exit 0
             fi
-            echo "waiting for orangepi5 (${i}/30)…"
-            sleep 2
+
+            sleep $(( attempt < 5 ? 2 : 5 ))
           done
-          echo "error: orangepi5 never answered ping" >&2
+
+          echo "error: orangepi5 never answered ping within 5m" >&2
           tailscale status || true
           exit 1
 
+      - name: Enable Attic substituter
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.config/nix
+          cat >> ~/.config/nix/nix.conf <<EOF
+          extra-substituters = ${ATTIC_URL}/${ATTIC_CACHE}
+          extra-trusted-public-keys = ${ATTIC_PUBKEY}
+          EOF
+
       - name: Attic smoke (tailnet)
+        continue-on-error: true
         run: |
           curl -fsS "${ATTIC_URL}/${ATTIC_CACHE}/nix-cache-info" | head -5
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@v31
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-          extra_nix_config: |
-            substituters = https://cache.nixos.org ${{ env.ATTIC_URL }}/${{ env.ATTIC_CACHE }}
-            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= ${{ env.ATTIC_PUBKEY }}
-
       - name: Install attic-client
+        continue-on-error: true
         run: nix profile install nixpkgs#attic-client
-
-      - name: Typecheck, test, and build SPA
-        run: bash deploy/orangepi/ci-build.sh
 
       # Optional cache warm — never block deploy on Attic auth / path-info issues
       - name: Push devShell to Attic

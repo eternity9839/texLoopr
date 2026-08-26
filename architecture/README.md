@@ -35,3 +35,4 @@ Decision records for texLooper. Prefer short, dated ADRs over long living docs.
 | [0013](adr/0013-high-fidelity-pdf-import.md) | High-fidelity PDF import (later) | proposed |
 | [0014](adr/0014-headless-render-api-cli.md) | Headless render + API/CLI | accepted |
 | [0015](adr/0015-document-language.md) | Document language (dataset + conditions) | accepted |
+| [0016](adr/0016-unified-rust-service-topologies.md) | Unified Rust service topologies (desktop / web / in-house / cluster) | accepted |

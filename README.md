@@ -1,10 +1,11 @@
 # texLooper
 
-Open-source editor for tailored bulk documents via templating and simple data formats. Runs on the web and as a Tauri desktop app.
+Closed-source document studio for tailored bulk documents via templating and simple data formats. Runs on the web (official or in-house API), as a Tauri desktop app, and against a shared Rust backend (ADR 0016).
 
 Hosted demo (Orange Pi): see [deploy/orangepi/README.md](deploy/orangepi/README.md).  
+In-house / official API + SPA: see [deploy/inhouse/README.md](deploy/inhouse/README.md).  
 Public via **Pangolin Newt** (NixOS systemd) → `http://127.0.0.1:8788`.  
-Architecture: [ADR 0011](architecture/adr/0011-hosted-demo-deploy.md).
+Architecture: [ADR 0011](architecture/adr/0011-hosted-demo-deploy.md) · [ADR 0016](architecture/adr/0016-unified-rust-service-topologies.md).
 
 ## Requirements
 
@@ -38,9 +39,12 @@ cargo run --bin texlooper-cli -- import-pdf --input ./sample.pdf --output ./proj
 cargo run --bin texlooper-cli -- render --project ./project.json --data ./row.json --output ./out.pdf
 cargo run --bin texlooper-cli -- serve --bind 127.0.0.1:8787
 # POST /v1/render  { "project": {...}, "data": {...} } → application/pdf
+# or: nix run .#texlooper-serve
 ```
 
-Studio: **texLooper** menu → **Import PDF…** (structure pass, ADR 0012; desktop only).
+Point the SPA at the API with `window.__TEXLOOPER__.apiBaseUrl` (see `deploy/inhouse/spa-config.js`).
+
+Studio: **texLooper** menu → **Import PDF…** (structure pass, ADR 0012; desktop or HTTP).
 
 ### Hosted demo deploy (Orange Pi)
 

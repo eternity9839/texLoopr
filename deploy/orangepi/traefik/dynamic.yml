@@ -37,6 +37,17 @@ http:
       service: auth
       priority: 100
 
+    # Rust API (same origin as SPA — config.js apiBaseUrl: "/")
+    texlooper-api:
+      rule: PathPrefix(`/v1`) || PathPrefix(`/health`)
+      entryPoints:
+        - web
+      middlewares:
+        - crowdsec
+        - texlooper-auth
+      service: api
+      priority: 50
+
     texlooper-app:
       rule: PathPrefix(`/`)
       entryPoints:
@@ -56,3 +67,7 @@ http:
       loadBalancer:
         servers:
           - url: http://app:80
+    api:
+      loadBalancer:
+        servers:
+          - url: http://api:8787

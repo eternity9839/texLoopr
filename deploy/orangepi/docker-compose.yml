@@ -29,6 +29,7 @@ services:
     restart: unless-stopped
     networks:
       - texlooper
+    mem_limit: 256m
     healthcheck:
       test: ["CMD", "cscli", "lapi", "status"]
       interval: 30s
@@ -67,9 +68,12 @@ services:
         condition: service_started
       app:
         condition: service_started
+      api:
+        condition: service_started
     restart: unless-stopped
     networks:
       - texlooper
+    mem_limit: 256m
 
   auth:
     build:
@@ -85,6 +89,7 @@ services:
     restart: unless-stopped
     networks:
       - texlooper
+    mem_limit: 128m
     healthcheck:
       test:
         [
@@ -109,6 +114,31 @@ services:
     restart: unless-stopped
     networks:
       - texlooper
+    mem_limit: 64m
+
+  # Rust engines (ADR 0016) — PDF import/render/workflow. Auth is at Traefik.
+  api:
+    build:
+      context: ../..
+      dockerfile: deploy/inhouse/Dockerfile.api
+    container_name: texlooper-api
+    environment:
+      TEXLOOPER_TRUST_EDGE: "1"
+    command: ["serve", "--bind", "0.0.0.0:8787", "--no-catalog"]
+    restart: unless-stopped
+    networks:
+      - texlooper
+    mem_limit: 512m
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "command -v curl >/dev/null && curl -sf http://127.0.0.1:8787/v1/health || exit 1",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 8
+      start_period: 20s
 
   db:
     image: docker.io/library/postgres:16-alpine
@@ -122,6 +152,7 @@ services:
     restart: unless-stopped
     networks:
       - texlooper
+    mem_limit: 256m
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 15s

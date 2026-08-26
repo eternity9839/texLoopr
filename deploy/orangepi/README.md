@@ -9,8 +9,11 @@ and exposes Traefik only on loopback.
 ```text
 Browser → Pangolin (TLS)
        → Newt (systemd on Pi)
-       → http://127.0.0.1:8788  (Traefik + CrowdSec + auth + SPA)
+       → http://127.0.0.1:8788  (Traefik + CrowdSec + auth + SPA + Rust /v1)
 ```
+
+Postgres is provisioned but **not** wired to the catalog yet (ephemeral demo uses `--no-catalog`).
+PDF import/render need the **`texlooper-api`** container — without it the SPA has no Rust backbone.
 
 ## CI/CD (incremental)
 
@@ -20,6 +23,7 @@ Goal: **no full `docker compose build` on every change.**
 |--------|--------|
 | SPA (`src/`, …) | CI builds `dist/` → rsync → `app/html` bind-mount → nginx reload |
 | `deploy/orangepi/auth/` | `docker compose build auth` + recreate auth only |
+| Rust API (`src-tauri/`, Dockerfile.api) | `docker compose build api` (slow first time) + recreate |
 | Traefik / CrowdSec / compose | recreate those services only |
 | `.env` / Newt | never from CI (stay on the Pi) |
 
@@ -81,4 +85,4 @@ docker exec texlooper-crowdsec cscli decisions list
 | `newt.service` | Pangolin site connector |
 | `texlooper-traefik` | `127.0.0.1:8788` + CrowdSec + ForwardAuth |
 | `texlooper-crowdsec` | LAPI |
-| `texlooper-auth` / `app` / `db` | Demo login, SPA (bind-mounted html), Postgres |
+| `texlooper-auth` / `app` / `api` / `db` | Demo login, SPA, Rust engines (`/v1`), Postgres (unused catalog) |

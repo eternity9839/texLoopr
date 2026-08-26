@@ -1,2 +1,6 @@
-/* Local / Tauri default — overridden by nginx on the Orange Pi demo. */
-window.__TEXLOOPER__ = { ephemeral: false };
+/* Local / Tauri default — override apiBaseUrl to hit `texlooper-cli serve` (ADR 0016). */
+window.__TEXLOOPER__ = {
+  profile: "dev",
+  ephemeral: false,
+  // apiBaseUrl: "http://127.0.0.1:8787",
+};

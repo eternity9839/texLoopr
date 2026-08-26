@@ -51,6 +51,40 @@
             '';
           }}/bin/deploy-orangepi";
         };
+        # Local / in-house API (ADR 0016) — builds texlooper-cli then serves.
+        texlooper-serve = {
+          type = "app";
+          program = "${pkgs.writeShellApplication {
+            name = "texlooper-serve";
+            runtimeInputs = with pkgs; [ cargo rustc pkg-config openssl ];
+            text = ''
+              set -euo pipefail
+              ROOT="${self}"
+              cd "$ROOT/src-tauri"
+              export TEXLOOPER_API_KEY="''${TEXLOOPER_API_KEY:-dev-change-me}"
+              export TEXLOOPER_DATA_DIR="''${TEXLOOPER_DATA_DIR:-$ROOT/.data/texlooper}"
+              export TEXLOOPER_CATALOG="''${TEXLOOPER_CATALOG:-sqlite}"
+              mkdir -p "$TEXLOOPER_DATA_DIR"
+              BIND="''${1:-127.0.0.1:8787}"
+              exec cargo run --release --bin texlooper-cli -- serve --bind "$BIND"
+            '';
+          }}/bin/texlooper-serve";
+        };
+      };
+
+      packages.${system} = {
+        # Wrapper around deploy/inhouse compose docs; binary build stays cargo/Docker.
+        texlooper-inhouse = pkgs.writeShellApplication {
+          name = "texlooper-inhouse";
+          runtimeInputs = with pkgs; [ docker-compose docker ];
+          text = ''
+            set -euo pipefail
+            cd ${self}/deploy/inhouse
+            PROFILE="''${1:-inhouse}"
+            if [[ "$#" -gt 0 ]]; then shift; fi
+            exec docker compose --profile "$PROFILE" up --build "$@"
+          '';
+        };
       };
 
       devShells.${system} = {

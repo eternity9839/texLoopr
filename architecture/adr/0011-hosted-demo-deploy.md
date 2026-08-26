@@ -24,13 +24,14 @@ Earlier experiments used Tailscale Serve VIPs and direct Traefik TLS on the Pi; 
    - auth gate (demo user/password),
    - nginx SPA with **bind-mounted** `app/html` (no `npm run build` on the Pi),
    - Postgres provisioned but unused for catalog in this phase.
-3. **Ephemeral demo:** runtime `config.js` sets `window.__TEXLOOPER__.ephemeral = true` — no localStorage autosave, no catalog writes (see app changes in `runtimeConfig.ts` / store guards).
-4. **Deploy pipeline (incremental):**
+3. **Ephemeral demo:** runtime `config.js` sets `window.__TEXLOOPER__.ephemeral = true` and `apiBaseUrl: "/"` so the SPA calls same-origin `/v1` (Traefik → Rust API). No localStorage autosave / catalog writes.
+4. **Rust API:** `texlooper-api` (`texlooper-cli serve --no-catalog`) behind Traefik `PathPrefix(/v1)` with the same ForwardAuth as the SPA. `TEXLOOPER_TRUST_EDGE=1` so clients need no API key (edge already authenticated). Postgres remains provisioned for a later catalog phase.
+5. **Deploy pipeline (incremental):**
    - **Build** Vite `dist/` on CI or laptop (Nix: `nix develop`, `nix run .#deploy-orangepi`).
    - **Rsync** `deploy/orangepi/` + `dist/` → `/home/orangepi/src/texLooper/` on the Pi (never `.env`, stamps, or CrowdSec keys).
-   - **Apply** via `deploy/orangepi/ci-deploy.sh`: content stamps decide whether to reload **app**, rebuild **auth**, or recreate **traefik/crowdsec** only.
-5. **Automation:** GitHub Actions (see [deploy/orangepi/ci-pipeline.md](../../deploy/orangepi/ci-pipeline.md)): Tailscale `tag:texloopr-ci` → [install-nix-action](https://github.com/cachix/install-nix-action) + Attic pull → Nix build → optional Attic push → SSH deploy. All homelab access over tailnet; dedicated ACL (`443`/`22` to `tag:homelab` only).
-6. **Secrets:** demo credentials, `SESSION_SECRET`, Postgres, CrowdSec bouncer key, and Newt env live **only on the Pi** (`deploy/orangepi/.env`, `/etc/newt/newt.env`). Attic server secret stays on QNAP; CI token in GitHub `ATTIC_TOKEN`.
+   - **Apply** via `deploy/orangepi/ci-deploy.sh`: content stamps decide whether to reload **app**, rebuild **auth**/**api**, or recreate **traefik/crowdsec** only.
+6. **Automation:** GitHub Actions (see [deploy/orangepi/ci-pipeline.md](../../deploy/orangepi/ci-pipeline.md)): Tailscale `tag:texloopr-ci` → [install-nix-action](https://github.com/cachix/install-nix-action) + Attic pull → Nix build → optional Attic push → SSH deploy. All homelab access over tailnet; dedicated ACL (`443`/`22` to `tag:homelab` only).
+7. **Secrets:** demo credentials, `SESSION_SECRET`, Postgres, CrowdSec bouncer key, and Newt env live **only on the Pi** (`deploy/orangepi/.env`, `/etc/newt/newt.env`). Attic server secret stays on QNAP; CI token in GitHub `ATTIC_TOKEN`.
 
 ## Consequences
 
