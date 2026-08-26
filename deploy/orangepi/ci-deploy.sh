@@ -30,8 +30,17 @@ mkdir -p "$ROOT/.deploy-stamps"
 
 # Aggregate stamps for trees
 hash_tree() {
-  # portable content fingerprint of listed paths
-  find "$@" -type f 2>/dev/null | sort | xargs -r sha256sum 2>/dev/null | sha256sum | awk '{print $1}'
+  # portable content fingerprint of listed paths (missing paths → empty stamp)
+  local paths=()
+  local p
+  for p in "$@"; do
+    [[ -e "$p" ]] && paths+=("$p")
+  done
+  if [[ ${#paths[@]} -eq 0 ]]; then
+    echo none
+    return 0
+  fi
+  find "${paths[@]}" -type f 2>/dev/null | sort | xargs -r sha256sum 2>/dev/null | sha256sum | awk '{print $1}'
 }
 
 DIST_DIR="$ROOT/app/html"
