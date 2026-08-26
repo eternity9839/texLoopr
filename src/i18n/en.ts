@@ -84,6 +84,7 @@ export const en: Messages = {
   shortcutPreview: "Preview toggle",
   shortcutPreviewRow: "Previous / next preview row",
   shortcutPreviewOutput: "Previous / next output kind",
+  shortcutPreviewPage: "Previous / next page",
   shortcutUndo: "Undo / Redo",
   shortcutClipboard: "Cut / Copy / Paste / Duplicate",
   shortcutGroup: "Group / Ungroup",
@@ -156,7 +157,7 @@ export const en: Messages = {
     "Generate PDFs with the Rust renderer (desktop). Output comes from Data studio; pick rows here, then download files or a ZIP.",
   renderOutput: "Output profile",
   renderOutputFromData:
-    "Chosen on the Data view (or Preview / Automation). Change it there before rendering.",
+    "Chosen on the Data view or Preview. Change it there before rendering.",
   renderChangeOutput: "Open Data…",
   renderRows: "Data rows",
   renderRowCurrent: "Current preview row",

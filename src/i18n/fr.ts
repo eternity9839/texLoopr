@@ -84,6 +84,7 @@ export const fr: Messages = {
   shortcutPreview: "Basculer l’aperçu",
   shortcutPreviewRow: "Ligne d’aperçu précédente / suivante",
   shortcutPreviewOutput: "Type de sortie précédent / suivant",
+  shortcutPreviewPage: "Page précédente / suivante",
   shortcutUndo: "Annuler / Rétablir",
   shortcutClipboard: "Couper / Copier / Coller / Dupliquer",
   shortcutGroup: "Grouper / Dégrouper",
@@ -157,7 +158,7 @@ export const fr: Messages = {
     "Générez des PDF via le moteur Rust (bureau). La sortie vient de la vue Données ; choisissez les lignes ici, puis téléchargez les fichiers ou un ZIP.",
   renderOutput: "Profil de sortie",
   renderOutputFromData:
-    "Choisi dans la vue Données (ou Aperçu / Automation). Modifiez-le là avant le rendu.",
+    "Choisi dans la vue Données ou Aperçu. Modifiez-le là avant le rendu.",
   renderChangeOutput: "Ouvrir Données…",
   renderRows: "Lignes de données",
   renderRowCurrent: "Ligne d’aperçu actuelle",

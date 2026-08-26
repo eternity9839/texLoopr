@@ -27,6 +27,10 @@ import {
   resolveTableSourceRows,
   tableColumnTemplates,
 } from "../../../model/tableData";
+import {
+  resolveListItems,
+  type ListItemNode,
+} from "../../../model/listData";
 import { parseMergeSegments } from "../../../model/mergeSegments";
 import { noteIssue } from "../../../state/issueLog";
 import {
@@ -722,49 +726,67 @@ export function LinkBlock(props: BlockViewProps) {
 
 export function ListBlock(props: BlockViewProps) {
   const { block, preview, row, runtime, selected, onChangeContent, onChipContextMenu } = props;
-  const items = (block.content.items as string[]) ?? [];
+  const nodes = resolveListItems(block.content, row, runtime);
   const style = ORDERED.includes(
     (block.style.listStyle ?? "disc") as ListStyle,
   )
     ? "ol"
     : "ul";
   const Tag = style as "ol" | "ul";
-  return (
-    <BlockFrame {...props}>
-      <Tag
-        class="block-list"
-        start={Tag === "ol" ? Number(block.content.start ?? 1) : undefined}
-      >
-        {items.map((item, i) => (
-          <li key={i}>
+
+  const renderNodes = (items: ListItemNode[], path: number[] = []) => (
+    <Tag
+      class="block-list"
+      start={
+        Tag === "ol" && path.length === 0
+          ? Number(block.content.start ?? 1)
+          : undefined
+      }
+    >
+      {items.map((item, i) => {
+        const key = [...path, i].join(".");
+        return (
+          <li key={key}>
             {preview ? (
               <RichText
-                text={resolveTemplate(item, row, {
+                text={resolveTemplate(item.text, row, {
                   missingAsEmpty: true,
                   ctx: runtime,
                 })}
               />
             ) : (
               <MergeAwareText
-                text={item}
+                text={item.text}
                 blockId={block.id}
-                blockName={`${block.name} item ${i + 1}`}
+                blockName={`${block.name} item ${key}`}
                 row={row}
                 runtime={runtime}
                 selected={selected}
                 onChangeContent={(_id, content) => {
-                  const next = [...items];
-                  next[i] = String(content.text ?? "");
+                  const next = structuredClone(nodes) as ListItemNode[];
+                  let cursor: ListItemNode[] = next;
+                  for (let d = 0; d < path.length; d++) {
+                    cursor = cursor[path[d]!]!.children!;
+                  }
+                  cursor[i] = {
+                    ...cursor[i]!,
+                    text: String(content.text ?? ""),
+                  };
                   onChangeContent?.(block.id, { items: next });
                 }}
-                onChipContextMenu={(path, e) => onChipContextMenu?.(block.id, path, e)}
+                onChipContextMenu={(p, e) => onChipContextMenu?.(block.id, p, e)}
               />
             )}
+            {item.children?.length
+              ? renderNodes(item.children, [...path, i])
+              : null}
           </li>
-        ))}
-      </Tag>
-    </BlockFrame>
+        );
+      })}
+    </Tag>
   );
+
+  return <BlockFrame {...props}>{renderNodes(nodes)}</BlockFrame>;
 }
 
 export function PictureBlock(props: BlockViewProps) {

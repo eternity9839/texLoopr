@@ -317,7 +317,22 @@ export function extractMergePaths(block: Block): string[] {
   if (block.content.src) scan(String(block.content.src));
   if (block.content.alt) scan(String(block.content.alt));
   if (Array.isArray(block.content.items)) {
-    for (const item of block.content.items as string[]) scan(String(item));
+    const walk = (nodes: unknown[]) => {
+      for (const item of nodes) {
+        if (typeof item === "string") scan(item);
+        else if (item && typeof item === "object") {
+          const rec = item as Record<string, unknown>;
+          if (rec.text != null) scan(String(rec.text));
+          if (rec.label != null) scan(String(rec.label));
+          if (Array.isArray(rec.children)) walk(rec.children);
+          if (Array.isArray(rec.items)) walk(rec.items);
+        }
+      }
+    };
+    walk(block.content.items as unknown[]);
+  }
+  if (String(block.content.itemText ?? "").trim()) {
+    scan(String(block.content.itemText));
   }
   if (Array.isArray(block.content.cells)) {
     for (const row of block.content.cells as unknown[]) {

@@ -15,28 +15,17 @@ import type {
   OutputProfile,
   ProjectScript,
   ScriptKind,
-  WorkflowStep,
-  WorkflowStepType,
 } from "../../model/workflow";
 import { OUTPUT_KINDS, outputToCtx } from "../../model/workflow";
 import { Icon, type IconName } from "../../ui/icons";
-const STEP_TYPES: WorkflowStepType[] = [
-  "bind",
-  "filter",
-  "condition",
-  "script",
-  "render",
-  "emit",
-];
 const SCRIPT_KINDS: ScriptKind[] = ["expr", "template"];
 
 const AUTO_TABS: {
-  id: "outputs" | "workflow" | "scripts" | "run";
+  id: "outputs" | "scripts" | "run";
   label: string;
   icon: IconName;
 }[] = [
   { id: "outputs", label: "Outputs", icon: "layout" },
-  { id: "workflow", label: "Workflow", icon: "workflow" },
   { id: "scripts", label: "Scripts", icon: "code" },
   { id: "run", label: "Run", icon: "play" },
 ];
@@ -45,11 +34,8 @@ export function AutomationPanel() {
   const raw = project.value;
   const proj = ensureProjectAutomation(raw);
   const outputs = proj.outputs ?? [];
-  const workflow = proj.workflow ?? [];
   const scripts = proj.scripts ?? [];
-  const [tab, setTab] = useState<"outputs" | "workflow" | "scripts" | "run">(
-    "outputs",
-  );
+  const [tab, setTab] = useState<"outputs" | "scripts" | "run">("outputs");
   const [runLog, setRunLog] = useState<string>("");
 
   const activeOutput =
@@ -57,10 +43,6 @@ export function AutomationPanel() {
 
   const patchOutputs = (next: OutputProfile[]) => {
     updateProjectAutomation({ outputs: next });
-  };
-
-  const patchWorkflow = (next: WorkflowStep[]) => {
-    updateProjectAutomation({ workflow: next });
   };
 
   const patchScripts = (next: ProjectScript[]) => {
@@ -105,9 +87,9 @@ export function AutomationPanel() {
   return (
     <div class="automation-panel panel-pad">
       <p class="muted" style={{ marginTop: 0 }}>
-        Outputs, workflow steps, and sandboxed scripts (ADR 0005). Conditions
-        can use <code>data.*</code>, <code>output.*</code>,{" "}
-        <code>device.*</code>, <code>vars.*</code>, <code>env.*</code>.
+        Outputs and sandboxed scripts. Conditions can use <code>data.*</code>,{" "}
+        <code>output.*</code>, <code>device.*</code>, <code>vars.*</code>,{" "}
+        <code>env.*</code>.
       </p>
 
       <div class="studio-switch" role="tablist" aria-label="Automation sections">
@@ -298,130 +280,6 @@ export function AutomationPanel() {
         </div>
       )}
 
-      {tab === "workflow" && (
-        <div class="automation-section">
-          {workflow.map((step, i) => (
-            <div class="automation-card" key={step.id}>
-              <div class="field-row">
-                <select
-                  value={step.type}
-                  onChange={(e) => {
-                    const nextWorkflow = [...workflow];
-                    nextWorkflow[i] = {
-                      ...step,
-                      type: e.currentTarget.value as WorkflowStepType,
-                    };
-                    patchWorkflow(nextWorkflow);
-                  }}
-                >
-                  {STEP_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {t}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  style={{ flex: 1 }}
-                  value={step.name}
-                  onInput={(e) => {
-                    const nextWorkflow = [...workflow];
-                    nextWorkflow[i] = { ...step, name: e.currentTarget.value };
-                    patchWorkflow(nextWorkflow);
-                  }}
-                />
-                <button
-                  type="button"
-                  class="btn btn--ghost btn--small"
-                  onClick={() =>
-                    patchWorkflow(workflow.filter((s) => s.id !== step.id))
-                  }
-                >
-                  Remove
-                </button>
-              </div>
-              <input
-                placeholder="when: expression (optional)"
-                value={step.when ?? ""}
-                onInput={(e) => {
-                  const nextWorkflow = [...workflow];
-                  nextWorkflow[i] = {
-                    ...step,
-                    when: e.currentTarget.value || undefined,
-                  };
-                  patchWorkflow(nextWorkflow);
-                }}
-              />
-              {step.type === "script" && (
-                <select
-                  value={String(step.config.scriptId ?? "")}
-                  onChange={(e) => {
-                    const nextWorkflow = [...workflow];
-                    nextWorkflow[i] = {
-                      ...step,
-                      config: { ...step.config, scriptId: e.currentTarget.value },
-                    };
-                    patchWorkflow(nextWorkflow);
-                  }}
-                >
-                  <option value="">Select script…</option>
-                  {scripts.map((s) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name}
-                    </option>
-                  ))}
-                </select>
-              )}
-              {step.type === "filter" && (
-                <select
-                  value={String(step.config.action ?? "skip-row")}
-                  onChange={(e) => {
-                    const nextWorkflow = [...workflow];
-                    nextWorkflow[i] = {
-                      ...step,
-                      config: { ...step.config, action: e.currentTarget.value },
-                    };
-                    patchWorkflow(nextWorkflow);
-                  }}
-                >
-                  <option value="skip-row">skip-row</option>
-                </select>
-              )}
-              {step.type === "condition" && (
-                <input
-                  placeholder="config.expr"
-                  value={String(step.config.expr ?? "")}
-                  onInput={(e) => {
-                    const nextWorkflow = [...workflow];
-                    nextWorkflow[i] = {
-                      ...step,
-                      config: { ...step.config, expr: e.currentTarget.value },
-                    };
-                    patchWorkflow(nextWorkflow);
-                  }}
-                />
-              )}
-            </div>
-          ))}
-          <button
-            type="button"
-            class="btn btn--small"
-            onClick={() =>
-              patchWorkflow([
-                ...workflow,
-                {
-                  id: createId(),
-                  type: "condition",
-                  name: "New step",
-                  config: { expr: "true" },
-                },
-              ])
-            }
-          >
-            Add step
-          </button>
-        </div>
-      )}
-
       {tab === "scripts" && (
         <div class="automation-section">
           {scripts.map((script, i) => (
@@ -496,11 +354,11 @@ export function AutomationPanel() {
       {tab === "run" && (
         <div class="automation-section">
           <p class="muted">
-            Dry-run the workflow against the current preview row and active
-            output. Emit does not hit the network yet — it builds a payload.
+            Dry-run against the current preview row and active output. Emit does
+            not hit the network yet — it builds a payload.
           </p>
           <button type="button" class="btn" onClick={onRun}>
-            Run workflow
+            Run
           </button>
           {runLog && <pre class="automation-log">{runLog}</pre>}
         </div>

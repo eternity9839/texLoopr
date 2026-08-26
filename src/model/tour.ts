@@ -7,7 +7,6 @@ export type TourStepId =
   | "comments"
   | "data"
   | "preview"
-  | "automation"
   | "done";
 
 export interface TourStep {
@@ -19,7 +18,7 @@ export interface TourStep {
   /** Studio view to open before showing */
   view?: "edit" | "data";
   preview?: boolean;
-  overlay?: "automation" | null;
+  overlay?: null;
 }
 
 export const TOUR_STORAGE_KEY = "texlooper.tour.done.v1";
@@ -32,7 +31,7 @@ const COPY: Record<Locale, TourCopy> = {
   fr: {
     welcome: {
       title: "Bienvenue dans l’atelier d’édition",
-      body: "Cette visite couvre la palette, le canevas, la barre contextuelle, l’inspecteur, les données, l’aperçu et l’automatisation. Vous pouvez quitter à tout moment.",
+      body: "Cette visite couvre la palette, le canevas, la barre contextuelle, l’inspecteur, les données et l’aperçu. Vous pouvez quitter à tout moment.",
     },
     toolbox: {
       title: "Palette d’outils — insérer des blocs",
@@ -62,10 +61,6 @@ const COPY: Record<Locale, TourCopy> = {
       title: "Aperçu — résoudre contre une sortie",
       body: "Basculez l’aperçu pour résoudre les champs de fusion. Choisissez une ligne, une pastille de langue (ou Depuis la ligne) et un type de sortie — Welcome SMS FR vs PDF EN utilise des conditions différentes.",
     },
-    automation: {
-      title: "Automatisation — essai à blanc du flux",
-      body: "Ouvrez ··· → Automatisation pour éditer les sorties, les étapes et les scripts, puis lancez un essai sur la ligne courante.",
-    },
     done: {
       title: "Vous êtes prêt",
       body: "Ouvrez Exemples pour des modèles complets, ou partez d’une surface vide. Relancez cette visite à tout moment via ··· → Visite guidée.",
@@ -74,7 +69,7 @@ const COPY: Record<Locale, TourCopy> = {
   en: {
     welcome: {
       title: "Welcome to the edition studio",
-      body: "This short tour covers the insert palette, canvas, contextual bar, inspector tabs, data, preview, and automation. Skip anytime.",
+      body: "This short tour covers the insert palette, canvas, contextual bar, inspector tabs, data, and preview. Skip anytime.",
     },
     toolbox: {
       title: "Tool palette — insert blocks",
@@ -103,10 +98,6 @@ const COPY: Record<Locale, TourCopy> = {
     preview: {
       title: "Preview — resolve against output",
       body: "Toggle Preview to resolve merge fields on the same canvas. Pick a data row, a language chip (or From row), and an output kind — Welcome SMS FR vs PDF EN uses different conditions.",
-    },
-    automation: {
-      title: "Automation — workflow dry-run",
-      body: "Open ··· → Automation to edit outputs, workflow steps, and scripts, then dry-run against the current row.",
     },
     done: {
       title: "You're ready",
@@ -157,12 +148,6 @@ const STRUCTURE: Omit<TourStep, "title" | "body">[] = [
     target: '[data-tour="preview-toggle"]',
     view: "edit",
     preview: true,
-  },
-  {
-    id: "automation",
-    target: null,
-    view: "edit",
-    overlay: "automation",
   },
   {
     id: "done",

@@ -204,7 +204,7 @@ export function SettingsMode() {
           <SelectField
             id="settings-page-view"
             label={t("view")}
-            value={p.pageViewMode ?? "single"}
+            value={p.pageViewMode ?? "continuous"}
             options={[
               { value: "single", label: t("onePage") },
               { value: "continuous", label: t("continuous") },

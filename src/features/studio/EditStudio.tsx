@@ -187,7 +187,7 @@ export function EditStudio() {
                       title={
                         enabled
                           ? `${OUTPUT_KIND_LABEL[kind]} preview`
-                          : `Add ${OUTPUT_KIND_LABEL[kind]} output in Automation`
+                          : `No ${OUTPUT_KIND_LABEL[kind]} output yet`
                       }
                       aria-label={OUTPUT_KIND_LABEL[kind]}
                       aria-pressed={active}

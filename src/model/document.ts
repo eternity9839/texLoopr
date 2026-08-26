@@ -569,6 +569,10 @@ export const BLOCK_DEFAULTS: Record<
       items: ["First item", "Second item", "Third item"],
       start: 1,
       markerColor: "",
+      datasetName: "",
+      sourcePath: "",
+      itemText: "{{label}}",
+      childrenPath: "children",
     },
   },
   picture: {

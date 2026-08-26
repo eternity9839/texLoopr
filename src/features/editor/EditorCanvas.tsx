@@ -42,6 +42,7 @@ import {
   updatePage,
   focusDataFieldFromBindingPath,
   previewLanguageOverride,
+  cycleActiveVisiblePage,
 } from "../../state/store";
 import {
   beginIssuePass,
@@ -125,7 +126,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   const canvasSize = canvasSizeForSession(project.value, prefs.value);
   const pageW = canvasSize.w;
   const pageH = canvasSize.h;
-  const viewMode = prefs.value.pageViewMode ?? "single";
+  const viewMode = prefs.value.pageViewMode ?? "continuous";
   const boardRotate = prefs.value.canvasRotate ?? 0;
   const zoomMode = (prefs.value.canvasZoomMode ?? "fit") as CanvasZoomMode;
   const zoomPref = prefs.value.canvasZoom ?? 1;
@@ -198,16 +199,24 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
 
   useEffect(() => {
     const board = boardRef.current;
-    if (!board || preview) return;
+    if (!board) return;
     const onWheel = (e: WheelEvent) => {
-      if (!(e.ctrlKey || e.metaKey)) return;
-      e.preventDefault();
-      const direction: 1 | -1 = e.deltaY < 0 ? 1 : -1;
-      nudgeCanvasZoom(direction, scale);
+      if (e.ctrlKey || e.metaKey) {
+        if (preview) return;
+        e.preventDefault();
+        const direction: 1 | -1 = e.deltaY < 0 ? 1 : -1;
+        nudgeCanvasZoom(direction, scale);
+        return;
+      }
+      // Single-page: wheel flips pages (especially useful in preview).
+      if (viewMode === "single" && Math.abs(e.deltaY) > 8) {
+        e.preventDefault();
+        cycleActiveVisiblePage(e.deltaY > 0 ? 1 : -1, { preview });
+      }
     };
     board.addEventListener("wheel", onWheel, { passive: false });
     return () => board.removeEventListener("wheel", onWheel);
-  }, [preview, scale]);
+  }, [preview, scale, viewMode]);
 
   const closeMenu = useCallback(() => setMenu(null), []);
 
@@ -698,6 +707,39 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
     sheetH * sheetsTall +
     (sheetsTall > 1 ? sheetGap * (sheetsTall - 1) * scale : 0);
 
+  // Continuous: sync active page to the sheet most visible in the viewport.
+  useEffect(() => {
+    if (viewMode !== "continuous") return;
+    const board = boardRef.current;
+    if (!board) return;
+    const sheets = board.querySelectorAll<HTMLElement>("[data-page-sheet]");
+    if (sheets.length === 0) return;
+    const ratios = new Map<string, number>();
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const id = (entry.target as HTMLElement).dataset.pageSheet;
+          if (!id) continue;
+          ratios.set(id, entry.intersectionRatio);
+        }
+        let bestId = "";
+        let best = 0;
+        for (const [id, r] of ratios) {
+          if (r > best) {
+            best = r;
+            bestId = id;
+          }
+        }
+        if (bestId && bestId !== project.value.activePageId && best > 0.35) {
+          setActivePage(bestId);
+        }
+      },
+      { root: board, threshold: [0.2, 0.35, 0.5, 0.65, 0.8] },
+    );
+    sheets.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, [viewMode, pagesToShow.length, fitH, scale, preview]);
+
   const boardStyle = {
     "--board-grid-x": `${spacing.x}px`,
     "--board-grid-y": `${spacing.y}px`,
@@ -749,6 +791,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
       <div
         key={sheet.id}
         class="editor-sheet"
+        data-page-sheet={sheet.id}
         style={{
           flexShrink: 0,
           width: `${pageW * scale}px`,
@@ -1127,7 +1170,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
                     <p class="muted">
                       {preview
                         ? "Page or language conditions hide every page for the active output and data row. Switch output, row, or edit conditions."
-                        : "This output kind has no matching pages. Switch output in Automation or Preview, or clear page conditions."}
+                        : "This output kind has no matching pages. Switch output in Preview, or clear page conditions."}
                     </p>
                   </div>
                 ) : (

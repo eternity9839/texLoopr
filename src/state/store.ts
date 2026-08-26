@@ -24,7 +24,8 @@ import {
 } from "../model/document";
 import { CANVAS_PRESETS } from "../model/document";
 import { createDemoProject, getDemo } from "../model/demos/library";
-import { DataRow, parseDataInput, SAMPLE_CSV } from "../model/bindings";
+import { DataRow, parseDataInput, SAMPLE_CSV, pageMeetsCondition } from "../model/bindings";
+import { enrichPreviewContext } from "../model/runtime";
 import { bindingPathToDataFocus } from "../model/dataField";
 import {
   applyDocumentStylePreset,
@@ -165,6 +166,7 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
     canvasZoom: 1,
     editContrastAssist: true,
     showInactiveBranches: false,
+    pageViewMode: "continuous",
   };
   let next = base;
   if (saved?.prefs && saved.prefs.locale == null) {
@@ -175,6 +177,9 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
   }
   if (saved?.prefs && saved.prefs.showInactiveBranches == null) {
     next = { ...next, showInactiveBranches: false };
+  }
+  if (saved?.prefs && saved.prefs.pageViewMode == null) {
+    next = { ...next, pageViewMode: "continuous" };
   }
   const artboard = saved?.project?.artboard;
   if (artboard && next.canvasPreset !== artboard) {
@@ -1405,8 +1410,7 @@ function applyTourStep(index: number): void {
   if (!step) return;
   if (step.view) setStudioView(step.view);
   if (typeof step.preview === "boolean") setPreviewMode(step.preview);
-  if (step.overlay === "automation") setOverlay("automation");
-  else if (step.overlay === null) setOverlay(null);
+  if (step.overlay === null) setOverlay(null);
   if (step.id === "comments") inspectorTab.value = "comments";
   if (step.id === "inspector") inspectorTab.value = "design";
 }
@@ -1455,6 +1459,34 @@ export function cycleActiveOutput(delta: 1 | -1): void {
   if (i < 0) i = 0;
   const next = ids[(i + delta + ids.length) % ids.length]!;
   setActiveOutputId(next);
+}
+
+/**
+ * Step the active page among condition-visible pages (wraps).
+ * Used by continuous scroll-spy, single-page wheel, and PageUp/PageDown.
+ */
+export function cycleActiveVisiblePage(
+  delta: 1 | -1,
+  opts?: { preview?: boolean },
+): void {
+  const p = project.value;
+  if (p.pages.length === 0) return;
+  const row = previewRow.value;
+  const output = activeOutputProfile();
+  const preview = opts?.preview ?? previewMode.value;
+  let list = p.pages;
+  if (output) {
+    const runtime = enrichPreviewContext(p, row, output);
+    const visible = p.pages.filter((pg) =>
+      pageMeetsCondition(pg, row, runtime, { preview }),
+    );
+    if (visible.length > 0) list = visible;
+  }
+  const curId = p.activePageId;
+  let i = list.findIndex((pg) => pg.id === curId);
+  if (i < 0) i = 0;
+  const next = list[(i + delta + list.length) % list.length]!;
+  if (next.id !== curId) setActivePage(next.id);
 }
 
 export function updatePrefs(patch: Partial<EditorPrefs>): void {

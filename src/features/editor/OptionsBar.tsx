@@ -39,7 +39,7 @@ export function OptionsBar() {
   const preset = (project.value.artboard ??
     p.canvasPreset ??
     "document") as CanvasPresetId;
-  const viewMode = (p.pageViewMode ?? "single") as PageViewMode;
+  const viewMode = (p.pageViewMode ?? "continuous") as PageViewMode;
   const rotate = p.canvasRotate ?? 0;
   const pageCount = project.value.pages.length;
   const placing = Boolean(activeTool.value);

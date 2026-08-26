@@ -176,15 +176,6 @@ export function ContextBar() {
               {t("samples")}
             </MenuItem>
             <MenuItem
-              icon="workflow"
-              onClick={() => {
-                setOverlay("automation");
-                closeProjectMenu();
-              }}
-            >
-              {t("automation")}
-            </MenuItem>
-            <MenuItem
               icon="play"
               onClick={() => {
                 setOverlay("render");

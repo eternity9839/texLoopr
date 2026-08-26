@@ -5,6 +5,7 @@ import {
   updateBlock,
   dataRows,
   saveSelectionAsCustomObject,
+  project,
 } from "../../state/store";
 import { dataColumnNames } from "../../model/bindings";
 import { defaultRepeatChildren } from "../../model/repeat";
@@ -17,6 +18,11 @@ import {
 } from "../../model/conditionCompose";
 import { LINK_HOOKS, LINK_HOOK_LABEL } from "../../model/linkHook";
 import { Field, Section, SelectField } from "../../ui/controls";
+import {
+  indentedTextToListItems,
+  listItemsToIndentedText,
+  normalizeListItems,
+} from "../../model/listData";
 
 const CONDITION_PRESETS: { label: string; value: string }[] = [
   ...OUTPUT_KINDS.map((kind) => ({
@@ -241,17 +247,138 @@ export function DataBindingsPanel() {
           </>
         )}
         {block.type === "list" && (
-          <Field label="List items (one per line)" forId="data-list">
-            <textarea
-              id="data-list"
-              value={((block.content.items as string[]) ?? []).join("\n")}
-              onInput={(e) =>
-                updateBlock(block.id, {
-                  content: { items: e.currentTarget.value.split("\n") },
-                })
-              }
-            />
-          </Field>
+          <>
+            <Field
+              label="Items from"
+              forId="data-list-mode"
+              hint="Static (Tab-indent for nesting), JSON path, or named dataset."
+            >
+              <select
+                id="data-list-mode"
+                value={
+                  String(block.content.datasetName ?? "").trim()
+                    ? "dataset"
+                    : String(block.content.sourcePath ?? "").trim()
+                      ? "path"
+                      : "static"
+                }
+                onChange={(e) => {
+                  const mode = e.currentTarget.value;
+                  if (mode === "static") {
+                    updateBlock(block.id, {
+                      content: { datasetName: "", sourcePath: "" },
+                    });
+                  } else if (mode === "path") {
+                    updateBlock(block.id, {
+                      content: {
+                        datasetName: "",
+                        sourcePath:
+                          String(block.content.sourcePath ?? "").trim() ||
+                          "line_items",
+                      },
+                    });
+                  } else {
+                    const first = project.value.datasets?.[0]?.name ?? "";
+                    updateBlock(block.id, {
+                      content: {
+                        sourcePath: "",
+                        datasetName:
+                          String(block.content.datasetName ?? "").trim() ||
+                          first,
+                      },
+                    });
+                  }
+                }}
+              >
+                <option value="static">Static items</option>
+                <option value="path">Field on row</option>
+                <option value="dataset">Named dataset</option>
+              </select>
+            </Field>
+            {String(block.content.datasetName ?? "").trim() ? (
+              <SelectField
+                id="data-list-dataset"
+                label="Dataset"
+                value={String(block.content.datasetName ?? "")}
+                options={[
+                  { value: "", label: "— choose —" },
+                  ...(project.value.datasets ?? []).map((d) => ({
+                    value: d.name,
+                    label: d.name,
+                  })),
+                ]}
+                onChange={(v) =>
+                  updateBlock(block.id, {
+                    content: { datasetName: v, sourcePath: "" },
+                  })
+                }
+              />
+            ) : null}
+            {String(block.content.sourcePath ?? "").trim() ? (
+              <Field label="Array path" forId="data-list-path">
+                <input
+                  id="data-list-path"
+                  value={String(block.content.sourcePath ?? "")}
+                  onInput={(e) =>
+                    updateBlock(block.id, {
+                      content: {
+                        sourcePath: e.currentTarget.value,
+                        datasetName: "",
+                      },
+                    })
+                  }
+                />
+              </Field>
+            ) : null}
+            {(String(block.content.datasetName ?? "").trim() ||
+              String(block.content.sourcePath ?? "").trim()) && (
+              <>
+                <Field label="Item text" forId="data-list-item-text">
+                  <input
+                    id="data-list-item-text"
+                    value={String(block.content.itemText ?? "{{label}}")}
+                    onInput={(e) =>
+                      updateBlock(block.id, {
+                        content: { itemText: e.currentTarget.value },
+                      })
+                    }
+                  />
+                </Field>
+                <Field label="Children field" forId="data-list-children">
+                  <input
+                    id="data-list-children"
+                    value={String(block.content.childrenPath ?? "children")}
+                    onInput={(e) =>
+                      updateBlock(block.id, {
+                        content: { childrenPath: e.currentTarget.value },
+                      })
+                    }
+                  />
+                </Field>
+              </>
+            )}
+            {!String(block.content.datasetName ?? "").trim() &&
+              !String(block.content.sourcePath ?? "").trim() && (
+                <Field
+                  label="List items (Tab = nest)"
+                  forId="data-list"
+                >
+                  <textarea
+                    id="data-list"
+                    value={listItemsToIndentedText(
+                      normalizeListItems(block.content.items),
+                    )}
+                    onInput={(e) =>
+                      updateBlock(block.id, {
+                        content: {
+                          items: indentedTextToListItems(e.currentTarget.value),
+                        },
+                      })
+                    }
+                  />
+                </Field>
+              )}
+          </>
         )}
       </Section>
 

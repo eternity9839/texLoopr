@@ -30,6 +30,8 @@ import {
   toggleLockSelected,
   undoEdit,
   ungroupSelection,
+  cycleActiveVisiblePage,
+  previewMode,
 } from "../../state/store";
 
 export type ShortcutRow = { keys: string; actionKey: string };
@@ -46,6 +48,7 @@ export const SHORTCUT_SECTIONS: {
       { keys: "Ctrl/⌘ + Shift + E", actionKey: "shortcutToggleStudio" },
       { keys: "[ ] · Alt+←→", actionKey: "shortcutPreviewRow" },
       { keys: "Shift+[ ] · Alt+Shift+←→", actionKey: "shortcutPreviewOutput" },
+      { keys: "PageUp / PageDown", actionKey: "shortcutPreviewPage" },
     ],
   },
   {
@@ -184,7 +187,25 @@ export function handleEditorShortcut(
     return true;
   }
 
-  if (opts.preview) return false;
+  if (opts.preview) {
+    if (e.key === "PageDown" || e.key === "PageUp") {
+      e.preventDefault();
+      cycleActiveVisiblePage(e.key === "PageDown" ? 1 : -1, { preview: true });
+      return true;
+    }
+    return false;
+  }
+
+  if (e.key === "PageDown" || e.key === "PageUp") {
+    const mode = prefs.value.pageViewMode ?? "continuous";
+    if (mode === "single" || mode === "continuous" || mode === "spread") {
+      e.preventDefault();
+      cycleActiveVisiblePage(e.key === "PageDown" ? 1 : -1, {
+        preview: previewMode.value,
+      });
+      return true;
+    }
+  }
 
   if (m && key === "l" && !e.shiftKey) {
     e.preventDefault();

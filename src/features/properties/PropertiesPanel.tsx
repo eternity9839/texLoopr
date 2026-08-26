@@ -31,6 +31,11 @@ import {
 import { INSPECTOR_TABS } from "../studio/inspectorTabs";
 import { t } from "../../i18n";
 import { ClearFormatButton, type AppearanceCtx } from "./appearance";
+import {
+  indentedTextToListItems,
+  listItemsToIndentedText,
+  normalizeListItems,
+} from "../../model/listData";
 
 function FieldPicker({
   block,
@@ -671,13 +676,17 @@ export function PropertiesPanel() {
             </>
           )}
           {block.type === "list" && (
-            <Field label="List items (one per line)" forId="list-items">
+            <Field label="List items (Tab = nest)" forId="list-items">
               <textarea
                 id="list-items"
-                value={((block.content.items as string[]) ?? []).join("\n")}
+                value={listItemsToIndentedText(
+                  normalizeListItems(block.content.items),
+                )}
                 onInput={(e) =>
                   updateBlock(block.id, {
-                    content: { items: e.currentTarget.value.split("\n") },
+                    content: {
+                      items: indentedTextToListItems(e.currentTarget.value),
+                    },
                   })
                 }
               />

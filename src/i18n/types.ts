@@ -82,6 +82,7 @@ export type MessageKey =
   | "shortcutPreview"
   | "shortcutPreviewRow"
   | "shortcutPreviewOutput"
+  | "shortcutPreviewPage"
   | "shortcutUndo"
   | "shortcutClipboard"
   | "shortcutGroup"

@@ -704,6 +704,128 @@ export function ComponentProps() {
               updateBlock(sel.id, { style: { listStyle: v as ListStyle } })
             }
           />
+          <Field
+            label="Items from"
+            forId="prop-list-mode"
+            compact
+            hint="Static lines (indent with Tab for nesting), a JSON array on the row, or a named dataset."
+          >
+            <select
+              id="prop-list-mode"
+              value={
+                String(sel.content.datasetName ?? "").trim()
+                  ? "dataset"
+                  : String(sel.content.sourcePath ?? "").trim()
+                    ? "path"
+                    : "static"
+              }
+              onChange={(e) => {
+                const mode = e.currentTarget.value;
+                if (mode === "static") {
+                  updateBlock(sel.id, {
+                    content: { datasetName: "", sourcePath: "" },
+                  });
+                } else if (mode === "path") {
+                  updateBlock(sel.id, {
+                    content: {
+                      datasetName: "",
+                      sourcePath:
+                        String(sel.content.sourcePath ?? "").trim() ||
+                        "line_items",
+                    },
+                  });
+                } else {
+                  const first = project.value.datasets?.[0]?.name ?? "";
+                  updateBlock(sel.id, {
+                    content: {
+                      sourcePath: "",
+                      datasetName:
+                        String(sel.content.datasetName ?? "").trim() || first,
+                    },
+                  });
+                }
+              }}
+            >
+              <option value="static">Static items</option>
+              <option value="path">Field on row (JSON array)</option>
+              <option value="dataset">Named dataset</option>
+            </select>
+          </Field>
+          {String(sel.content.datasetName ?? "").trim() ? (
+            <SelectField
+              id="prop-list-dataset"
+              label="Dataset"
+              value={String(sel.content.datasetName ?? "")}
+              options={[
+                { value: "", label: "— choose —" },
+                ...(project.value.datasets ?? []).map((d) => ({
+                  value: d.name,
+                  label: d.keyField
+                    ? `${d.name} (key: ${d.keyField})`
+                    : d.name,
+                })),
+              ]}
+              onChange={(v) =>
+                updateBlock(sel.id, {
+                  content: { datasetName: v, sourcePath: "" },
+                })
+              }
+            />
+          ) : null}
+          {String(sel.content.sourcePath ?? "").trim() ? (
+            <Field label="Array path" forId="prop-list-path" compact>
+              <input
+                id="prop-list-path"
+                value={String(sel.content.sourcePath ?? "")}
+                placeholder="line_items"
+                onInput={(e) =>
+                  updateBlock(sel.id, {
+                    content: {
+                      sourcePath: e.currentTarget.value,
+                      datasetName: "",
+                    },
+                  })
+                }
+              />
+            </Field>
+          ) : null}
+          {(String(sel.content.datasetName ?? "").trim() ||
+            String(sel.content.sourcePath ?? "").trim()) && (
+            <>
+              <Field
+                label="Item text"
+                forId="prop-list-item-text"
+                compact
+                hint="Template per row, e.g. {{label}} or {{name}}"
+              >
+                <input
+                  id="prop-list-item-text"
+                  value={String(sel.content.itemText ?? "{{label}}")}
+                  onInput={(e) =>
+                    updateBlock(sel.id, {
+                      content: { itemText: e.currentTarget.value },
+                    })
+                  }
+                />
+              </Field>
+              <Field
+                label="Children field"
+                forId="prop-list-children"
+                compact
+                hint="Nested array field on each row (default: children)"
+              >
+                <input
+                  id="prop-list-children"
+                  value={String(sel.content.childrenPath ?? "children")}
+                  onInput={(e) =>
+                    updateBlock(sel.id, {
+                      content: { childrenPath: e.currentTarget.value },
+                    })
+                  }
+                />
+              </Field>
+            </>
+          )}
         </Section>
       )}
 
