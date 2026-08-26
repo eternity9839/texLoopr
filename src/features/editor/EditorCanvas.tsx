@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "preact/hooks";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
 import {
   AppContextMenu,
   type ContextMenuEntry,
@@ -39,11 +39,18 @@ import {
   setActivePage,
   nudgeCanvasZoom,
   canvasViewScale,
+  updatePage,
 } from "../../state/store";
+import {
+  beginIssuePass,
+  endIssuePass,
+} from "../../state/issueLog";
 import { rectsIntersect } from "../../model/geometry";
 import { PageWatermark } from "./PageWatermark";
+import { EditorRulers } from "./EditorRulers";
 import { canvasSizeForSession, gridSpacing } from "../../model/canvasView";
 import type { Page } from "../../model/document";
+import { isRulerUnit } from "../../model/rulerUnits";
 import { enrichPreviewContext } from "../../model/runtime";
 import { effectiveZ } from "../../model/layerStack";
 import { findBlockDeep, flattenBlocksForPreview } from "../../model/groups";
@@ -93,6 +100,11 @@ function pageCoordsFromEvent(
 }
 
 export function EditorCanvas({ preview = false }: EditorCanvasProps) {
+  beginIssuePass();
+  useLayoutEffect(() => {
+    endIssuePass();
+  });
+
   const page = activePage.value;
   const sel = selection.value;
   const tool = activeTool.value;
@@ -227,7 +239,9 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
       if (!b.condition) return true;
       // Edit: only apply pure output.kind gates so SMS/mobile cards stay off-canvas.
       if (!preview && !isOutputFormatCondition(b.condition)) return true;
-      return evaluateCondition(b.condition, row, runtime);
+      return evaluateCondition(b.condition, row, runtime, {
+        diagnose: preview,
+      });
     });
     if (!preview) {
       return {
@@ -569,12 +583,19 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
 
   const boardClass = [
     "editor-board",
+    tool && !preview ? "editor-board--placing" : "",
+    showRulers && !preview ? "editor-board--rulers" : "",
+    `editor-board--view-${viewMode}`,
+  ]
+    .filter(Boolean)
+    .join(" ");
+
+  const scrollClass = [
+    "editor-board__scroll",
     showGrid ? "editor-board--grid" : "",
     showGrid && prefs.value.gridStyle === "dots"
       ? "editor-board--grid-dots"
       : "",
-    tool && !preview ? "editor-board--placing" : "",
-    `editor-board--view-${viewMode}`,
   ]
     .filter(Boolean)
     .join(" ");
@@ -598,12 +619,11 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
           : [];
 
   const sheetGap = 28;
-  const rulerGutter = showRulers && !preview ? 18 : 0;
   const sheetsWide = viewMode === "spread" ? Math.min(2, pagesToShow.length) : 1;
   const sheetsTall =
     viewMode === "continuous" ? pagesToShow.length : 1;
-  const sheetW = pageW * scale + rulerGutter;
-  const sheetH = pageH * scale + rulerGutter;
+  const sheetW = pageW * scale;
+  const sheetH = pageH * scale;
   const fitW =
     sheetW * sheetsWide +
     (sheetsWide > 1 ? sheetGap * (sheetsWide - 1) * scale : 0);
@@ -639,7 +659,9 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
     const formatFiltered = source.filter((b) => {
       if (!b.condition) return true;
       if (!preview && !isOutputFormatCondition(b.condition)) return true;
-      return evaluateCondition(b.condition, row, runtime);
+      return evaluateCondition(b.condition, row, runtime, {
+        diagnose: preview,
+      });
     });
     if (!preview) {
       return {
@@ -660,30 +682,12 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
       isActive,
     );
     const m = normalizeMargins(sheet.margins);
-    const showPageRulers = showRulers && !preview;
     return (
       <div
         key={sheet.id}
-        class={[
-          "editor-sheet",
-          showPageRulers ? "editor-sheet--rulers" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
+        class="editor-sheet"
         style={{
           flexShrink: 0,
-        }}
-      >
-        {showPageRulers && (
-          <>
-            <div class="editor-ruler editor-ruler--corner" aria-hidden="true" />
-            <div class="editor-ruler editor-ruler--x" aria-hidden="true" />
-            <div class="editor-ruler editor-ruler--y" aria-hidden="true" />
-          </>
-        )}
-      <div
-        class="editor-sheet__viewport"
-        style={{
           width: `${pageW * scale}px`,
           height: `${pageH * scale}px`,
         }}
@@ -908,71 +912,89 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
         </div>
       </div>
       </div>
-      </div>
     );
   };
 
   return (
     <>
-      <div
-        class={boardClass}
-        role="application"
-        aria-label={
-          preview
-            ? "Document preview"
-            : `Document editor · ${formatZoomPercent(scale)}`
-        }
-        data-tour="canvas"
-        ref={boardRef}
-        style={boardStyle}
-        onClick={onBoardClick}
-        onContextMenu={(e) => {
-          if (preview) return;
-          select(null);
-          const pageEl = (e.currentTarget as HTMLElement).querySelector(
-            ".editor-page--active, .editor-page",
-          );
-          if (pageEl) openPageMenu(e, pageEl);
-        }}
-      >
+      <div class={boardClass}>
+        {showRulers && !preview && page && (
+          <EditorRulers
+            scrollRef={boardRef}
+            pageW={pageW}
+            pageH={pageH}
+            scale={scale}
+            margins={normalizeMargins(page.margins)}
+            unit={
+              isRulerUnit(prefs.value.rulerUnit)
+                ? prefs.value.rulerUnit
+                : "px"
+            }
+            onMarginsChange={(patch) =>
+              updatePage(page.id, { margins: patch })
+            }
+          />
+        )}
         <div
-          class="editor-fit-area"
-          ref={fitAreaRef}
-          style={{
-            transform:
-              boardRotate !== 0 ? `rotate(${boardRotate}deg)` : undefined,
-            transformOrigin: "center center",
+          class={scrollClass}
+          role="application"
+          aria-label={
+            preview
+              ? "Document preview"
+              : `Document editor · ${formatZoomPercent(scale)}`
+          }
+          data-tour="canvas"
+          ref={boardRef}
+          style={boardStyle}
+          onClick={onBoardClick}
+          onContextMenu={(e) => {
+            if (preview) return;
+            select(null);
+            const pageEl = (e.currentTarget as HTMLElement).querySelector(
+              ".editor-page--active, .editor-page",
+            );
+            if (pageEl) openPageMenu(e, pageEl);
           }}
         >
-          <div class="editor-stack">
-            <div
-              class={
-                viewMode === "spread"
-                  ? "editor-fit editor-fit--spread"
-                  : viewMode === "continuous"
-                    ? "editor-fit editor-fit--continuous"
-                    : "editor-fit"
-              }
-              style={{
-                width: `${fitW}px`,
-                height: `${fitH}px`,
-                gap:
-                  viewMode === "continuous" || viewMode === "spread"
-                    ? `${sheetGap * scale}px`
-                    : undefined,
-              }}
-            >
-              {pagesToShow.map((sheet) =>
-                renderPageSheet(sheet, sheet.id === page?.id),
-              )}
+          <div
+            class="editor-fit-area"
+            ref={fitAreaRef}
+            style={{
+              transform:
+                boardRotate !== 0 ? `rotate(${boardRotate}deg)` : undefined,
+              transformOrigin: "center center",
+            }}
+          >
+            <div class="editor-stack">
+              <div
+                class={
+                  viewMode === "spread"
+                    ? "editor-fit editor-fit--spread"
+                    : viewMode === "continuous"
+                      ? "editor-fit editor-fit--continuous"
+                      : "editor-fit"
+                }
+                style={{
+                  width: `${fitW}px`,
+                  height: `${fitH}px`,
+                  gap:
+                    viewMode === "continuous" || viewMode === "spread"
+                      ? `${sheetGap * scale}px`
+                      : undefined,
+                }}
+              >
+                {pagesToShow.map((sheet) =>
+                  renderPageSheet(sheet, sheet.id === page?.id),
+                )}
+              </div>
             </div>
           </div>
+          {!preview && selectedBlock.value && (
+            <span class="visually-hidden">
+              Selected {selectedBlock.value.name}
+            </span>
+          )}
         </div>
-        {!preview && selectedBlock.value && (
-          <span class="visually-hidden">
-            Selected {selectedBlock.value.name}
-          </span>
-        )}
       </div>
       {!preview && menu && (
         <AppContextMenu

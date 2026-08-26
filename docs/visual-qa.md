@@ -10,7 +10,11 @@
 - [ ] Landscape sample (`landscape-slide`) opens 960×540; Screen/PDF/Email hide different blocks
 - [ ] Preview kinds include Image; hint explains condition filtering; Edit hides pure output.kind layouts (SMS/mobile) unless that output is active
 - [ ] Continuous Edit: idle pages stay in edit chrome ({{}} / chips), not preview-resolved; click activates page
-- [ ] Per-page rulers hug each artboard (not outer pasteboard); continuous gaps are pasteboard-only
+- [ ] Merge filters: `trim()` / `add(1)` / `split`→`join` / `mul`→`currency` / `date`; blur asserts vs row 1 → Issues + warn chips
+- [ ] Issues log (status bar ⚠): Preview missing merges / empty datasets / bad conditions; Data import parse errors; Clear / dismiss
+- [ ] Double-click (or second click) a selected paragraph / merge chips / data / link to edit on canvas
+- [ ] Tables: Design → separators (H/V), cell pad, row/col gap, named header styles, Literal columns (`=`), Named dataset / field path / Edit in Data for CSV·JSON
+- [ ] Viewport rulers dock to the canvas chrome; margin flags on all four sides (drag to set); hover shows px + chosen unit (Settings → Page → Ruler units)
 - [ ] Language: Settings → General; default English; inspector/toolbox/Surface setup follow locale
 - [ ] Edit contrast: transparent block frames; light sample ink forced to --ink when no fill; muted footers readable
 - [ ] Merge herestrings in text/list/table show green chips until double-click edit (literal {{}})

@@ -11,6 +11,7 @@ import {
   updatePrefs,
 } from "../../state/store";
 import { t } from "../../i18n";
+import { IssuesStatusControl } from "./IssuesStatusControl";
 import {
   ZOOM_PRESETS,
   formatZoomPercent,
@@ -31,6 +32,7 @@ export function StatusBar() {
   return (
     <div class="status-bar" role="status" aria-label={t("status")}>
       <div class="status-bar__group">
+        <IssuesStatusControl />
         <button
           type="button"
           class={

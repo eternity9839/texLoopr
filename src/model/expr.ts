@@ -326,140 +326,21 @@ export function evaluateExpr(source: string, ctx: RuntimeContext): ExprValue {
 export function evaluateConditionExpr(
   source: string | undefined,
   ctx: RuntimeContext,
+  options?: { onError?: (err: Error) => void },
 ): boolean {
   if (!source || !source.trim()) return true;
   try {
     return truthy(evaluateExpr(source, ctx));
-  } catch {
+  } catch (err) {
+    options?.onError?.(
+      err instanceof Error ? err : new Error(String(err)),
+    );
     // Fail open in authoring when expression is invalid
     return true;
   }
 }
 
-export function applyTemplateFilters(
-  value: string,
-  filters: string[],
-): string {
-  let out = value;
-  for (const raw of filters) {
-    const [name, ...rest] = raw.split(":");
-    const arg = rest.join(":");
-    switch (name) {
-      case "upper":
-        out = out.toUpperCase();
-        break;
-      case "lower":
-        out = out.toLowerCase();
-        break;
-      case "trim":
-        out = out.trim();
-        break;
-      case "default":
-        if (!out) out = arg;
-        break;
-      case "replace": {
-        // replace:old:new  (first match); use \/ for literal :
-        const parts = splitFilterArgs(arg);
-        const from = parts[0] ?? "";
-        const to = parts[1] ?? "";
-        if (from) out = out.split(from).join(to);
-        break;
-      }
-      case "slice": {
-        const parts = splitFilterArgs(arg);
-        const start = Number(parts[0] ?? 0);
-        const end = parts[1] != null && parts[1] !== "" ? Number(parts[1]) : undefined;
-        out = out.slice(
-          Number.isFinite(start) ? start : 0,
-          end != null && Number.isFinite(end) ? end : undefined,
-        );
-        break;
-      }
-      case "pad": {
-        // pad:width:char  (left-pad)
-        const parts = splitFilterArgs(arg);
-        const width = Number(parts[0] ?? 0);
-        const ch = (parts[1] ?? " ").slice(0, 1) || " ";
-        if (Number.isFinite(width) && width > out.length) {
-          out = out.padStart(width, ch);
-        }
-        break;
-      }
-      case "join": {
-        // value may be JSON array string
-        try {
-          const parsed = JSON.parse(out) as unknown;
-          if (Array.isArray(parsed)) {
-            out = parsed.map((x) => String(x ?? "")).join(arg || ", ");
-          }
-        } catch {
-          /* keep */
-        }
-        break;
-      }
-      case "number": {
-        const n = Number(out.replace(/[^0-9.-]/g, ""));
-        if (!Number.isFinite(n)) break;
-        const digits = arg !== "" && Number.isFinite(Number(arg)) ? Number(arg) : 0;
-        out = n.toFixed(digits);
-        break;
-      }
-      case "currency": {
-        const n = Number(out.replace(/[^0-9.-]/g, ""));
-        if (!Number.isFinite(n)) break;
-        const currency = arg || "EUR";
-        try {
-          out = new Intl.NumberFormat(undefined, {
-            style: "currency",
-            currency,
-          }).format(n);
-        } catch {
-          out = `${n.toFixed(2)} ${currency}`;
-        }
-        break;
-      }
-      case "date": {
-        // date:iso | date:short | date:long — parses ISO / epoch ms
-        const d = parseLooseDate(out);
-        if (!d) break;
-        if (arg === "iso" || !arg) out = d.toISOString().slice(0, 10);
-        else if (arg === "long")
-          out = d.toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          });
-        else
-          out = d.toLocaleDateString(undefined, {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          });
-        break;
-      }
-      default:
-        break;
-    }
-  }
-  return out;
-}
-
-function splitFilterArgs(arg: string): string[] {
-  if (!arg) return [];
-  return arg.split(":").map((p) => p.replace(/\\:/g, ":"));
-}
-
-function parseLooseDate(raw: string): Date | null {
-  if (!raw) return null;
-  if (/^\d{10,13}$/.test(raw)) {
-    const n = Number(raw);
-    const ms = raw.length <= 10 ? n * 1000 : n;
-    const d = new Date(ms);
-    return Number.isNaN(d.getTime()) ? null : d;
-  }
-  const d = new Date(raw);
-  return Number.isNaN(d.getTime()) ? null : d;
-}
+export { applyTemplateFilters } from "./templateFilters";
 
 /** Walk dotted path on a value (objects / arrays by index). */
 export function getAtPath(root: unknown, path: string): unknown {

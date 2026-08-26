@@ -1,12 +1,13 @@
 import {
-  applyTemplateFilters,
   evaluateConditionExpr,
   getAtPath,
   type ExprValue,
   type RuntimeContext,
 } from "./expr";
+import { applyTemplateFilters, normalizeFilterList } from "./templateFilters";
 import { previewContext } from "./runtime";
 import type { OutputProfile } from "./workflow";
+import { noteIssue } from "../state/issueLog";
 
 /** Row values may be strings (CSV) or richer JSON shapes (arrays/objects). */
 export type DataRow = Record<string, ExprValue>;
@@ -26,18 +27,29 @@ function valueToString(v: unknown): string {
 export function resolveTemplate(
   template: string,
   row: DataRow | undefined,
-  options: { missingAsEmpty?: boolean; ctx?: RuntimeContext } = {},
+  options: {
+    missingAsEmpty?: boolean;
+    ctx?: RuntimeContext;
+    /** When true (preview), missing fields are logged to the in-app issue panel. */
+    diagnose?: boolean;
+  } = {},
 ): string {
-  const withConditionals = expandConditionals(template, row, options);
+  const diagnose = options.diagnose === true;
+  const withConditionals = expandConditionals(template, row, {
+    ...options,
+    diagnose,
+  });
   return withConditionals.replace(
     /\{\{\s*([^}#/][^}|]*?)(?:\|([^}]+))?\s*\}\}/g,
     (_m, pathRaw: string, filterRaw?: string) => {
       const path = pathRaw.trim();
       if (!path || path.startsWith("#") || path === "else") return "";
-      const filters = (filterRaw ?? "")
-        .split("|")
-        .map((f) => f.trim())
-        .filter(Boolean);
+      const filters = normalizeFilterList(
+        (filterRaw ?? "")
+          .split("|")
+          .map((f) => f.trim())
+          .filter(Boolean),
+      );
 
       let value: string | undefined;
       const looked = lookupValue(path, row, options.ctx);
@@ -45,11 +57,29 @@ export function resolveTemplate(
         value = valueToString(looked);
       } else if (options.missingAsEmpty || filters.length > 0) {
         value = "";
+        if (diagnose && !filters.some((f) => f.startsWith("default"))) {
+          noteIssue({
+            category: "missing-data",
+            severity: "warning",
+            message: `Missing field «${path}»`,
+            detail: path,
+            source: "preview",
+          });
+        }
       } else {
+        if (diagnose) {
+          noteIssue({
+            category: "missing-data",
+            severity: "warning",
+            message: `Unresolved merge «${path}»`,
+            detail: path,
+            source: "resolve",
+          });
+        }
         return `{{${path}}}`;
       }
 
-      return applyTemplateFilters(value, filters);
+      return applyTemplateFilters(value, filters, { seedKey: path });
     },
   );
 }
@@ -61,7 +91,11 @@ export function resolveTemplate(
 export function expandConditionals(
   template: string,
   row: DataRow | undefined,
-  options: { missingAsEmpty?: boolean; ctx?: RuntimeContext } = {},
+  options: {
+    missingAsEmpty?: boolean;
+    ctx?: RuntimeContext;
+    diagnose?: boolean;
+  } = {},
 ): string {
   let out = template;
   const re =
@@ -71,9 +105,20 @@ export function expandConditionals(
       const expr = String(exprRaw).trim();
       let ok = false;
       try {
-        ok = evaluateCondition(expr, row, options.ctx);
-      } catch {
+        ok = evaluateCondition(expr, row, options.ctx, {
+          diagnose: options.diagnose,
+        });
+      } catch (err) {
         ok = false;
+        if (options.diagnose) {
+          noteIssue({
+            category: "impossible-condition",
+            severity: "error",
+            message: `Conditional failed: ${err instanceof Error ? err.message : "invalid expression"}`,
+            detail: expr,
+            source: "preview",
+          });
+        }
       }
       return ok ? thenPart : (elsePart ?? "");
     });
@@ -153,6 +198,7 @@ export function evaluateCondition(
   condition: string | undefined,
   row: DataRow | undefined,
   ctx?: RuntimeContext,
+  options: { diagnose?: boolean } = {},
 ): boolean {
   if (!condition || !condition.trim()) return true;
   const trimmed = condition.trim();
@@ -180,7 +226,19 @@ export function evaluateCondition(
       kind: "preview",
     } satisfies OutputProfile);
 
-  return evaluateConditionExpr(trimmed, runtime);
+  return evaluateConditionExpr(trimmed, runtime, {
+    onError: options.diagnose
+      ? (err) => {
+          noteIssue({
+            category: "impossible-condition",
+            severity: "error",
+            message: `Condition cannot be evaluated: ${err.message}`,
+            detail: trimmed,
+            source: "preview",
+          });
+        }
+      : undefined,
+  });
 }
 
 /** Resolve an array for repeater blocks (JSON rows or JSON-encoded string). */

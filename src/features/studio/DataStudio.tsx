@@ -7,6 +7,11 @@ import {
   setPreviewRowIndex,
   updateProject,
 } from "../../state/store";
+import {
+  clearStickyIssues,
+  openIssuesPanel,
+  reportStickyIssue,
+} from "../../state/issueLog";
 import { createId } from "../../model/document";
 import { SAMPLE_CSV, type DataRow } from "../../model/bindings";
 import type { ProjectDataset } from "../../model/document";
@@ -227,9 +232,18 @@ export function DataStudio() {
       await setDataFromText(raw);
       syncRowsToPrimary(dataRows.value);
       setError(null);
+      clearStickyIssues("data");
       setImportOpen(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Invalid data");
+      const message = err instanceof Error ? err.message : "Invalid data";
+      setError(message);
+      reportStickyIssue({
+        category: "data-parse",
+        severity: "error",
+        message: `Data import failed: ${message}`,
+        source: "data",
+      });
+      openIssuesPanel(true);
     }
   };
 

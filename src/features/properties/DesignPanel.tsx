@@ -27,7 +27,12 @@ import { MIN_BLOCK_H, MIN_BLOCK_W, px } from "../../model/geometry";
 import { effectiveZ, stackIndexAmongSiblings } from "../../model/layerStack";
 import { dataColumnNames } from "../../model/bindings";
 import { resizeTableCells } from "../../model/placeTools";
-import { fieldKeyFromHeader } from "../../model/tableData";
+import { fieldKeyFromHeader, isLiteralColumnTemplate, toLiteralColumnTemplate, fromLiteralColumnTemplate } from "../../model/tableData";
+import {
+  TABLE_HEADER_STYLES,
+  applyTableHeaderStyle,
+  type TableHeaderStyleId,
+} from "../../model/tableHeaderStyles";
 import { t } from "../../i18n";
 import {
   CheckRow,
@@ -750,11 +755,187 @@ export function ComponentProps() {
           >
             Show borders
           </CheckRow>
+          {sel.content.showBorders !== false && (
+            <Grid2>
+              <CheckRow
+                checked={sel.content.borderHorizontal !== false}
+                onChange={(v) =>
+                  updateBlock(sel.id, { content: { borderHorizontal: v } })
+                }
+              >
+                Horizontal lines
+              </CheckRow>
+              <CheckRow
+                checked={sel.content.borderVertical !== false}
+                onChange={(v) =>
+                  updateBlock(sel.id, { content: { borderVertical: v } })
+                }
+              >
+                Vertical lines
+              </CheckRow>
+            </Grid2>
+          )}
+          <Grid2>
+            <NumField
+              id="table-cell-pad"
+              label="Cell pad"
+              compact
+              value={Number(sel.content.cellPadding ?? 6)}
+              min={0}
+              max={48}
+              onValue={(v) =>
+                updateBlock(sel.id, {
+                  content: { cellPadding: Math.round(v) },
+                })
+              }
+            />
+            <ColorField
+              id="table-border"
+              label="Border"
+              value={String(sel.content.borderColor ?? "#cfc8bc")}
+              fallback="#cfc8bc"
+              onValue={(v) =>
+                updateBlock(sel.id, { content: { borderColor: v } })
+              }
+            />
+          </Grid2>
+          <Grid2>
+            <NumField
+              id="table-row-gap"
+              label="Row gap"
+              compact
+              value={Number(sel.content.rowGap ?? 0)}
+              min={0}
+              max={48}
+              onValue={(v) =>
+                updateBlock(sel.id, { content: { rowGap: Math.round(v) } })
+              }
+            />
+            <NumField
+              id="table-col-gap"
+              label="Col gap"
+              compact
+              value={Number(sel.content.colGap ?? 0)}
+              min={0}
+              max={48}
+              onValue={(v) =>
+                updateBlock(sel.id, { content: { colGap: Math.round(v) } })
+              }
+            />
+          </Grid2>
+          <SelectField
+            id="table-header-style"
+            label="Header style"
+            value={String(sel.content.headerStyle ?? "default")}
+            options={[
+              ...TABLE_HEADER_STYLES.map((s) => ({
+                value: s.id,
+                label: s.label,
+              })),
+              { value: "custom", label: "Custom" },
+            ]}
+            onChange={(v) => {
+              const id = v as TableHeaderStyleId;
+              updateBlock(sel.id, {
+                content: applyTableHeaderStyle(id),
+              });
+            }}
+          />
+          <Grid2>
+            <ColorField
+              id="table-header-bg"
+              label="Header fill"
+              value={String(sel.content.headerBackground ?? "#f0ebe3")}
+              fallback="#f0ebe3"
+              onValue={(v) =>
+                updateBlock(sel.id, {
+                  content: {
+                    headerBackground: v,
+                    headerStyle: "custom",
+                  },
+                })
+              }
+            />
+            <ColorField
+              id="table-header-color"
+              label="Header ink"
+              value={String(sel.content.headerColor || "#2a2622")}
+              fallback="#2a2622"
+              onValue={(v) =>
+                updateBlock(sel.id, {
+                  content: { headerColor: v, headerStyle: "custom" },
+                })
+              }
+            />
+          </Grid2>
+          <Grid2>
+            <NumField
+              id="table-header-weight"
+              label="Header weight"
+              compact
+              value={Number(sel.content.headerFontWeight ?? 600)}
+              min={400}
+              max={800}
+              step={100}
+              onValue={(v) =>
+                updateBlock(sel.id, {
+                  content: {
+                    headerFontWeight: Math.round(v),
+                    headerStyle: "custom",
+                  },
+                })
+              }
+            />
+            <NumField
+              id="table-header-size"
+              label="Header size"
+              compact
+              value={Number(sel.content.headerFontSize ?? 0)}
+              min={0}
+              max={48}
+              onValue={(v) =>
+                updateBlock(sel.id, {
+                  content: {
+                    headerFontSize: Math.round(v),
+                    headerStyle: "custom",
+                  },
+                })
+              }
+            />
+          </Grid2>
+          <SelectField
+            id="table-header-align"
+            label="Header align"
+            value={String(sel.content.headerTextAlign ?? "left")}
+            options={[
+              { value: "left", label: "Left" },
+              { value: "center", label: "Center" },
+              { value: "right", label: "Right" },
+            ]}
+            onChange={(v) =>
+              updateBlock(sel.id, {
+                content: {
+                  headerTextAlign: v,
+                  headerStyle: "custom",
+                },
+              })
+            }
+          />
+          <CheckRow
+            checked={Boolean(sel.content.headerRule)}
+            onChange={(v) =>
+              updateBlock(sel.id, {
+                content: { headerRule: v, headerStyle: "custom" },
+              })
+            }
+          >
+            Header rule (thicker bottom)
+          </CheckRow>
           <Field
             label="Rows from"
             forId="prop-table-mode"
             compact
-            hint="Static cells, a JSON array on the preview row, or a named dataset."
+            hint="Static cells, a JSON array on the preview row, or a named dataset (paste CSV/JSON in Data)."
           >
             <select
               id="prop-table-mode"
@@ -982,11 +1163,37 @@ function TableTemplateEditor({
     });
   };
 
+  const addColumn = (literal: boolean) => {
+    const n = headers.length + 1;
+    const nextH = [...headers, `Col ${n}`];
+    const nextT = [
+      ...templates,
+      literal ? toLiteralColumnTemplate("") : `{{field_${n}}}`,
+    ];
+    write(nextH, nextT);
+  };
+
   if (!headers.length && !templates.length) {
     return (
-      <p class="muted small">
-        Set columns first — header labels map to fields, or edit templates.
-      </p>
+      <div class="design-table-actions">
+        <p class="muted small">
+          Set columns first — or add a bound / literal column.
+        </p>
+        <button
+          type="button"
+          class="btn btn--ghost btn--small"
+          onClick={() => addColumn(false)}
+        >
+          + Field column
+        </button>
+        <button
+          type="button"
+          class="btn btn--ghost btn--small"
+          onClick={() => addColumn(true)}
+        >
+          + Literal column
+        </button>
+      </div>
     );
   }
 
@@ -995,7 +1202,7 @@ function TableTemplateEditor({
       label="Columns"
       forId="table-col-map"
       compact
-      hint="Header = label. Template = per-row merge (e.g. {{amount|currency:EUR}})."
+      hint="Template: {{field}} merges, or Literal (=text) for fixed cells unbound from data."
     >
       <div class="table-cells-editor" id="table-col-map">
         <div class="table-cells-editor__row">
@@ -1013,19 +1220,68 @@ function TableTemplateEditor({
           ))}
         </div>
         <div class="table-cells-editor__row">
-          {templates.map((t, ci) => (
-            <input
-              key={`t-${ci}`}
-              aria-label={`Template ${ci + 1}`}
-              value={t}
-              onInput={(e) => {
-                const nextT = [...templates];
-                nextT[ci] = e.currentTarget.value;
-                write(headers.length ? headers : nextT.map(() => "Col"), nextT);
-              }}
-            />
-          ))}
+          {templates.map((t, ci) => {
+            const literal = isLiteralColumnTemplate(t);
+            return (
+              <input
+                key={`t-${ci}`}
+                aria-label={`Template ${ci + 1}`}
+                value={literal ? fromLiteralColumnTemplate(t) : t}
+                placeholder={literal ? "Fixed text" : "{{field}}"}
+                onInput={(e) => {
+                  const nextT = [...templates];
+                  const v = e.currentTarget.value;
+                  nextT[ci] = literal ? toLiteralColumnTemplate(v) : v;
+                  write(
+                    headers.length ? headers : nextT.map(() => "Col"),
+                    nextT,
+                  );
+                }}
+              />
+            );
+          })}
         </div>
+        <div class="table-cells-editor__row table-cells-editor__row--flags">
+          {templates.map((t, ci) => {
+            const literal = isLiteralColumnTemplate(t);
+            return (
+              <label key={`lit-${ci}`} class="table-col-literal">
+                <input
+                  type="checkbox"
+                  checked={literal}
+                  onChange={(e) => {
+                    const nextT = [...templates];
+                    const on = e.currentTarget.checked;
+                    const cur = fromLiteralColumnTemplate(String(t));
+                    nextT[ci] = on
+                      ? toLiteralColumnTemplate(cur.replace(/^\{\{|\}\}$/g, ""))
+                      : cur.includes("{{")
+                        ? cur
+                        : `{{${fieldKeyFromHeader(cur) || "field"}}}`;
+                    write(headers, nextT);
+                  }}
+                />
+                Literal
+              </label>
+            );
+          })}
+        </div>
+      </div>
+      <div class="design-table-actions">
+        <button
+          type="button"
+          class="btn btn--ghost btn--small"
+          onClick={() => addColumn(false)}
+        >
+          + Field column
+        </button>
+        <button
+          type="button"
+          class="btn btn--ghost btn--small"
+          onClick={() => addColumn(true)}
+        >
+          + Literal column
+        </button>
       </div>
     </Field>
   );

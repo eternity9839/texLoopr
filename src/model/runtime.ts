@@ -13,6 +13,7 @@ import {
   type ProjectScript,
   type WorkflowStep,
 } from "./workflow";
+import { noteIssue } from "../state/issueLog";
 
 export interface RunOptions {
   project: Project;
@@ -78,6 +79,14 @@ export function attachProjectDatasets(
         const hit = ds.rows.find((r) => String(r[keyField] ?? "") === want);
         if (hit) {
           ctx.data[ds.name] = hit as ExprValue;
+        } else if (ds.rows.length > 0) {
+          noteIssue({
+            category: "dataset",
+            severity: "warning",
+            message: `No linked row in «${ds.name}» for ${keyField}=${want}`,
+            detail: `${ds.name}.${keyField}`,
+            source: "preview",
+          });
         }
       }
     }
@@ -137,8 +146,14 @@ export function enrichPreviewContext(
           ctx.vars[key] = value;
         }
       }
-    } catch {
-      /* fail open for preview */
+    } catch (err) {
+      noteIssue({
+        category: "runtime",
+        severity: "error",
+        message: `Workflow step «${step.name ?? step.id}» failed: ${err instanceof Error ? err.message : "error"}`,
+        detail: step.id,
+        source: "workflow",
+      });
     }
   }
   return ctx;

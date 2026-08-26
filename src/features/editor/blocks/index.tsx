@@ -1,5 +1,6 @@
 import type { ComponentChildren, VNode } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
+import { useContext, useEffect, useRef, useState } from "preact/hooks";
+import { BlockEditContext } from "../BlockEditContext";
 import type { Block, BlockType, ListStyle } from "../../../model/document";
 import { computeFlexRects } from "../../../model/flex";
 import {
@@ -22,6 +23,7 @@ import {
   resolveTableSourceRows,
   tableColumnTemplates,
 } from "../../../model/tableData";
+import { noteIssue } from "../../../state/issueLog";
 import {
   applyMove,
   px,
@@ -169,7 +171,11 @@ function textValue(
   runtime?: RuntimeContext,
 ): string {
   const raw = String(block.content.text ?? "");
-  return resolveTemplate(raw, row, { missingAsEmpty: preview, ctx: runtime });
+  return resolveTemplate(raw, row, {
+    missingAsEmpty: preview,
+    ctx: runtime,
+    diagnose: preview,
+  });
 }
 
 export function BlockFrame(
@@ -220,7 +226,11 @@ export function BlockFrame(
       const dx = (e.clientX - g.ox) / scale;
       const dy = (e.clientY - g.oy) / scale;
       if (!g.moved && Math.hypot(dx, dy) < DRAG_THRESHOLD) return;
-      g.moved = true;
+      if (!g.moved) {
+        g.moved = true;
+        // Defer preventDefault until real drag so dblclick still fires.
+        e.preventDefault();
+      }
       e.preventDefault();
 
       if (g.mode === "resize" && g.handle) {
@@ -257,18 +267,21 @@ export function BlockFrame(
       } catch {
         /* ignore */
       }
-      // Second click on a selected text block opens editing
-      if (
-        wasClick &&
-        selected &&
-        frameRef.current?.querySelector("textarea")
-      ) {
-        setEditing(true);
-        queueMicrotask(() => {
-          frameRef.current
-            ?.querySelector<HTMLTextAreaElement>("textarea")
-            ?.focus();
-        });
+      // Second click (or after merge chips mount a field) opens editing
+      if (wasClick && selected && frameRef.current) {
+        const editable = frameRef.current.querySelector(
+          "textarea, input, .merge-aware-text, .binding-preview",
+        );
+        if (editable) {
+          setEditing(true);
+          queueMicrotask(() => {
+            frameRef.current
+              ?.querySelector<HTMLTextAreaElement | HTMLInputElement>(
+                "textarea, input",
+              )
+              ?.focus();
+          });
+        }
       }
     };
 
@@ -282,7 +295,10 @@ export function BlockFrame(
     };
   }, [onMoveResize, snapStep, selected, scale]);
 
-  if (!evaluateCondition(block.condition, row, runtime) && preview) {
+  if (
+    !evaluateCondition(block.condition, row, runtime, { diagnose: preview }) &&
+    preview
+  ) {
     return null;
   }
 
@@ -297,7 +313,7 @@ export function BlockFrame(
     if (editing && (e.target as HTMLElement).closest("textarea, input")) {
       return;
     }
-    e.preventDefault();
+    // Do not preventDefault here — it cancels the dblclick sequence.
     onSelect(block.id, {
       toggle: e.shiftKey || e.ctrlKey || e.metaKey,
     });
@@ -364,97 +380,107 @@ export function BlockFrame(
   const pinned = pinIsActive(block.pin);
 
   return (
-    <div
-      ref={frameRef}
-      class={[
-        className,
-        pinned ? "block-frame--pinned" : "",
-      ]
-        .filter(Boolean)
-        .join(" ")}
-      role="group"
-      aria-label={`${block.name}, ${px(layout.w)} by ${px(layout.h)} pixels`}
-      style={{
-        left: `${px(layout.x)}px`,
-        top: `${px(layout.y)}px`,
-        width: `${px(layout.w)}px`,
-        height: `${px(layout.h)}px`,
-        margin: block.style.margin ? `${block.style.margin}px` : undefined,
-        zIndex: effectiveZ(block),
-        transform: frameTransform || undefined,
-        transformOrigin: "center center",
-      }}
-      onPointerDown={beginDrag}
-      onClick={(e) => {
-        e.stopPropagation();
-      }}
-      onContextMenu={(e) => {
-        if (preview) return;
-        e.preventDefault();
-        e.stopPropagation();
-        onSelect(block.id);
-        onContextMenu?.(block.id, e);
-      }}
-      onDblClick={(e) => {
-        if (preview || block.locked) return;
-        e.stopPropagation();
-        setEditing(true);
-        onSelect(block.id);
-        queueMicrotask(() => {
-          frameRef.current
-            ?.querySelector<HTMLTextAreaElement>("textarea")
-            ?.focus();
-        });
+    <BlockEditContext.Provider
+      value={{
+        editing,
+        requestEdit: () => setEditing(true),
+        endEdit: () => setEditing(false),
       }}
     >
-      {commentCount > 0 && !preview && (
-        <span class="block-comment-badge" title={`${commentCount} comment(s)`}>
-          {commentCount}
-        </span>
-      )}
-      {block.locked && !preview && (
-        <span class="block-lock-badge" title="Locked">
-          Locked
-        </span>
-      )}
-      {pinned && !preview && !block.locked && (
-        <span class="block-pin-badge" title="Pinned to surface edge">
-          Pin
-        </span>
-      )}
       <div
+        ref={frameRef}
         class={[
-          "block-body",
-          block.type === "picture" || block.type === "shape"
-            ? "block-body--clip"
-            : "",
-          block.style.verticalAlign === "middle"
-            ? "block-body--valign-middle"
-            : block.style.verticalAlign === "bottom"
-              ? "block-body--valign-bottom"
-              : "",
+          className,
+          pinned ? "block-frame--pinned" : "",
         ]
           .filter(Boolean)
           .join(" ")}
-        style={styleFromBlock(block, { preview })}
+        role="group"
+        aria-label={`${block.name}, ${px(layout.w)} by ${px(layout.h)} pixels`}
+        style={{
+          left: `${px(layout.x)}px`,
+          top: `${px(layout.y)}px`,
+          width: `${px(layout.w)}px`,
+          height: `${px(layout.h)}px`,
+          margin: block.style.margin ? `${block.style.margin}px` : undefined,
+          zIndex: effectiveZ(block),
+          transform: frameTransform || undefined,
+          transformOrigin: "center center",
+        }}
+        onPointerDown={beginDrag}
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+        onContextMenu={(e) => {
+          if (preview) return;
+          e.preventDefault();
+          e.stopPropagation();
+          onSelect(block.id);
+          onContextMenu?.(block.id, e);
+        }}
+        onDblClick={(e) => {
+          if (preview || block.locked) return;
+          e.stopPropagation();
+          setEditing(true);
+          onSelect(block.id);
+          queueMicrotask(() => {
+            frameRef.current
+              ?.querySelector<HTMLTextAreaElement | HTMLInputElement>(
+                "textarea, input",
+              )
+              ?.focus();
+          });
+        }}
       >
-        {children}
-      </div>
-      {selected && !preview && !block.locked &&
-        HANDLES.map((h) => (
-          <div
-            key={h}
-            class={`resize-handle resize-handle--${h}`}
-            data-handle={h}
-            onPointerDown={beginResize(h)}
-          />
-        ))}
-      {selected && !preview && liveSize && (
-        <div class="block-size-badge" aria-live="polite">
-          {liveSize.w}×{liveSize.h}px
+        {commentCount > 0 && !preview && (
+          <span class="block-comment-badge" title={`${commentCount} comment(s)`}>
+            {commentCount}
+          </span>
+        )}
+        {block.locked && !preview && (
+          <span class="block-lock-badge" title="Locked">
+            Locked
+          </span>
+        )}
+        {pinned && !preview && !block.locked && (
+          <span class="block-pin-badge" title="Pinned to surface edge">
+            Pin
+          </span>
+        )}
+        <div
+          class={[
+            "block-body",
+            block.type === "picture" || block.type === "shape"
+              ? "block-body--clip"
+              : "",
+            block.style.verticalAlign === "middle"
+              ? "block-body--valign-middle"
+              : block.style.verticalAlign === "bottom"
+                ? "block-body--valign-bottom"
+                : "",
+          ]
+            .filter(Boolean)
+            .join(" ")}
+          style={styleFromBlock(block, { preview })}
+        >
+          {children}
         </div>
-      )}
-    </div>
+        {selected && !preview && !block.locked &&
+          HANDLES.map((h) => (
+            <div
+              key={h}
+              class={`resize-handle resize-handle--${h}`}
+              data-handle={h}
+              onPointerDown={beginResize(h)}
+            />
+          ))}
+        {selected && !preview && liveSize && (
+          <div class="block-size-badge" aria-live="polite">
+            {liveSize.w}×{liveSize.h}px
+          </div>
+        )}
+      </div>
+    </BlockEditContext.Provider>
   );
 }
 
@@ -490,12 +516,20 @@ export function DataBlock(props: BlockViewProps) {
   const { block, preview, row, runtime, selected, onChangeContent } = props;
   const path = String(block.content.path ?? "");
   const label = dataFieldLabel(path);
+  const frameEdit = useContext(BlockEditContext);
   const [editing, setEditing] = useState(false);
   const firstRow = dataRows.value[0];
 
   useEffect(() => {
-    if (!selected) setEditing(false);
+    if (!selected) {
+      setEditing(false);
+      frameEdit?.endEdit();
+    }
   }, [selected]);
+
+  useEffect(() => {
+    if (frameEdit?.editing) setEditing(true);
+  }, [frameEdit?.editing]);
 
   const previewValue = normalizeDataFieldPath(path)
     ? firstRow
@@ -522,9 +556,12 @@ export function DataBlock(props: BlockViewProps) {
           previewValue ??
           (normalizeDataFieldPath(path) && !firstRow ? "No data rows loaded" : null)
         }
-        editing={selected && editing}
+        editing={selected && (editing || Boolean(frameEdit?.editing))}
         ariaLabel={`${block.name} field path`}
-        onActivate={() => setEditing(true)}
+        onActivate={() => {
+          setEditing(true);
+          frameEdit?.requestEdit();
+        }}
         editSlot={
           <input
             class="block-data__input"
@@ -533,10 +570,14 @@ export function DataBlock(props: BlockViewProps) {
             onInput={(e) =>
               onChangeContent?.(block.id, { path: e.currentTarget.value })
             }
-            onBlur={() => setEditing(false)}
+            onBlur={() => {
+              setEditing(false);
+              frameEdit?.endEdit();
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === "Escape") {
                 setEditing(false);
+                frameEdit?.endEdit();
                 (e.target as HTMLInputElement).blur();
               }
             }}
@@ -552,12 +593,20 @@ export function LinkBlock(props: BlockViewProps) {
   const hook = parseLinkHook(block.content.hook);
   const target = String(block.content.target ?? "");
   const customLabel = String(block.content.label ?? "");
+  const frameEdit = useContext(BlockEditContext);
   const [editing, setEditing] = useState(false);
   const firstRow = dataRows.value[0];
 
   useEffect(() => {
-    if (!selected) setEditing(false);
+    if (!selected) {
+      setEditing(false);
+      frameEdit?.endEdit();
+    }
   }, [selected]);
+
+  useEffect(() => {
+    if (frameEdit?.editing) setEditing(true);
+  }, [frameEdit?.editing]);
 
   const editLabel = linkEditLabel(hook, target, customLabel);
   const resolvedHref = resolveLinkTarget(hook, target, preview ? row : firstRow, runtime);
@@ -591,9 +640,12 @@ export function LinkBlock(props: BlockViewProps) {
         chipClass="block-link"
         label={`${LINK_HOOK_LABEL[hook]} · ${editLabel}`}
         previewValue={previewText}
-        editing={selected && editing}
+        editing={selected && (editing || Boolean(frameEdit?.editing))}
         ariaLabel={`${block.name} link target`}
-        onActivate={() => setEditing(true)}
+        onActivate={() => {
+          setEditing(true);
+          frameEdit?.requestEdit();
+        }}
         editSlot={
           <input
             class="block-link__input"
@@ -602,10 +654,14 @@ export function LinkBlock(props: BlockViewProps) {
             onInput={(e) =>
               onChangeContent?.(block.id, { target: e.currentTarget.value })
             }
-            onBlur={() => setEditing(false)}
+            onBlur={() => {
+              setEditing(false);
+              frameEdit?.endEdit();
+            }}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === "Escape") {
                 setEditing(false);
+                frameEdit?.endEdit();
                 (e.target as HTMLInputElement).blur();
               }
             }}
@@ -668,10 +724,12 @@ export function PictureBlock(props: BlockViewProps) {
   const src = resolveTemplate(rawSrc, row, {
     missingAsEmpty: preview,
     ctx: runtime,
+    diagnose: preview,
   });
   const alt = resolveTemplate(String(block.content.alt ?? "Picture"), row, {
     missingAsEmpty: preview,
     ctx: runtime,
+    diagnose: preview,
   });
   const fit = (["cover", "contain", "fill"] as const).includes(
     block.content.fit as never,
@@ -810,8 +868,20 @@ export function TableBlock(props: BlockViewProps) {
 
   const zebra = Boolean(block.content.zebra);
   const cellPad = Number(block.content.cellPadding ?? 6);
+  const rowGap = Math.max(0, Number(block.content.rowGap ?? 0));
+  const colGap = Math.max(0, Number(block.content.colGap ?? 0));
   const headerBg = String(block.content.headerBackground ?? "");
+  const headerColor = String(block.content.headerColor ?? "");
+  const headerWeight = Number(block.content.headerFontWeight ?? 0);
+  const headerSize = Number(block.content.headerFontSize ?? 0);
+  const headerAlign = String(block.content.headerTextAlign ?? "left") as
+    | "left"
+    | "center"
+    | "right";
+  const headerRule = Boolean(block.content.headerRule);
   const showBorders = block.content.showBorders !== false;
+  const borderH = block.content.borderHorizontal !== false;
+  const borderV = block.content.borderVertical !== false;
   const borderColor = String(block.content.borderColor ?? "#cfc8bc");
 
   const dataRows = bound
@@ -828,14 +898,46 @@ export function TableBlock(props: BlockViewProps) {
     : [];
   const templates = bound ? tableColumnTemplates(cells, header) : [];
   const bodyRows = bound
-    ? dataRows.map((r) => mapTableItemToCells(r, templates, preview, runtime))
+    ? dataRows.map((r) =>
+        mapTableItemToCells(r, templates, preview, runtime, {
+          diagnose: preview,
+        }),
+      )
     : cells.slice(header ? 1 : 0);
 
-  const renderEditCell = (cell: string, ri: number, ci: number, isHeader: boolean) => {
+  if (bound && preview) {
+    if (datasetName && dataRows.length === 0) {
+      noteIssue({
+        category: "dataset",
+        severity: "warning",
+        message: `Dataset «${datasetName}» produced no rows for this preview`,
+        detail: datasetName,
+        blockId: block.id,
+        source: "preview",
+      });
+    } else if (sourcePath && dataRows.length === 0) {
+      noteIssue({
+        category: "missing-data",
+        severity: "warning",
+        message: `Table path «${sourcePath}» is missing or empty`,
+        detail: sourcePath,
+        blockId: block.id,
+        source: "preview",
+      });
+    }
+  }
+
+  const renderEditCell = (
+    cell: string,
+    ri: number,
+    ci: number,
+    isHeader: boolean,
+  ) => {
     if (preview || bound) {
       return resolveTemplate(String(cell), row, {
         missingAsEmpty: preview,
         ctx: runtime,
+        diagnose: preview,
       });
     }
     return (
@@ -857,6 +959,8 @@ export function TableBlock(props: BlockViewProps) {
     );
   };
 
+  const spaced = rowGap > 0 || colGap > 0;
+
   return (
     <BlockFrame {...props}>
       <table
@@ -864,23 +968,39 @@ export function TableBlock(props: BlockViewProps) {
           "block-table",
           zebra ? "block-table--zebra" : "",
           showBorders ? "" : "block-table--borderless",
+          showBorders && !borderH ? "block-table--no-h-borders" : "",
+          showBorders && !borderV ? "block-table--no-v-borders" : "",
+          headerRule ? "block-table--header-rule" : "",
+          spaced ? "block-table--spaced" : "",
         ]
           .filter(Boolean)
           .join(" ")}
         style={{
           "--cell-pad": `${cellPad}px`,
           "--table-border": borderColor,
+          "--row-gap": `${rowGap}px`,
+          "--col-gap": `${colGap}px`,
         }}
       >
         {header && (
           <thead>
             <tr>
               {(cells[0] ?? []).map((cell, ci) => (
-                <th key={ci} style={headerBg ? { background: headerBg } : undefined}>
+                <th
+                  key={ci}
+                  style={{
+                    background: headerBg || undefined,
+                    color: headerColor || undefined,
+                    fontWeight: headerWeight > 0 ? headerWeight : undefined,
+                    fontSize: headerSize > 0 ? `${headerSize}px` : undefined,
+                    textAlign: headerAlign,
+                  }}
+                >
                   {bound
                     ? resolveTemplate(cell, row, {
                         missingAsEmpty: preview,
                         ctx: runtime,
+                        diagnose: preview,
                       })
                     : renderEditCell(cell, 0, ci, true)}
                 </th>
@@ -914,6 +1034,7 @@ export function FilesBlock(props: BlockViewProps) {
   const label = resolveTemplate(String(block.content.label ?? "Attachment"), row, {
     missingAsEmpty: preview,
     ctx: runtime,
+    diagnose: preview,
   });
   return (
     <BlockFrame {...props}>
@@ -949,7 +1070,7 @@ export function PrebuildBlock(props: BlockViewProps) {
         {resolveTemplate(
           String(block.content.text ?? "Use Prebuild tool to expand recipes"),
           row,
-          { missingAsEmpty: preview, ctx: runtime },
+          { missingAsEmpty: preview, ctx: runtime, diagnose: preview },
         )}
       </div>
     </BlockFrame>

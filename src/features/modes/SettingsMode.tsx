@@ -256,6 +256,23 @@ export function SettingsMode() {
             checked={p.showRulers !== false}
             onChange={(v) => updatePrefs({ showRulers: v })}
           />
+          <SelectField
+            id="settings-ruler-unit"
+            label={t("rulerUnit")}
+            hint={t("rulerUnitHint")}
+            value={p.rulerUnit ?? "px"}
+            options={[
+              { value: "px", label: t("rulerUnitPx") },
+              { value: "mm", label: t("rulerUnitMm") },
+              { value: "cm", label: t("rulerUnitCm") },
+              { value: "in", label: t("rulerUnitIn") },
+            ]}
+            onChange={(v) =>
+              updatePrefs({
+                rulerUnit: v as "px" | "mm" | "cm" | "in",
+              })
+            }
+          />
           <ToggleRow
             label="Formats in Layers tree"
             checked={p.showFormatsInTree === true}

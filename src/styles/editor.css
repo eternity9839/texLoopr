@@ -137,16 +137,43 @@
 }
 
 .status-bar__btn {
-  display: grid;
+  position: relative;
+  display: inline-grid;
+  grid-auto-flow: column;
   place-items: center;
-  width: 1.35rem;
+  gap: 0.15rem;
+  width: auto;
+  min-width: 1.35rem;
   height: 1.35rem;
-  padding: 0;
+  padding: 0 0.25rem;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--ink-faint);
   cursor: pointer;
+}
+
+.status-bar__badge {
+  min-width: 0.9rem;
+  padding: 0 0.2rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 85%, transparent);
+  color: #fff;
+  font-size: 0.55rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.status-bar__btn--issues {
+  color: var(--accent);
+}
+
+.status-bar__btn--issues-error {
+  color: var(--danger, #b42318);
+}
+
+.status-bar__btn--issues-error .status-bar__badge {
+  background: var(--danger, #b42318);
 }
 
 .status-bar__btn:hover {
@@ -168,6 +195,93 @@
 
 .status-bar__pop-anchor {
   position: relative;
+}
+
+.status-bar__pop--issues {
+  right: auto;
+  left: 0;
+  bottom: calc(100% + 0.35rem);
+  width: min(22rem, 70vw);
+  max-height: min(18rem, 50vh);
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.issues-panel__head {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.7rem;
+}
+
+.issues-panel__counts {
+  flex: 1;
+  font-size: 0.65rem;
+}
+
+.issues-panel__list {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem;
+  overflow: auto;
+  flex: 1;
+}
+
+.issues-panel__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-sm);
+}
+
+.issues-panel__row:hover {
+  background: var(--accent-muted);
+}
+
+.issues-panel__row--error {
+  border-left: 2px solid var(--danger, #b42318);
+}
+
+.issues-panel__row--warning {
+  border-left: 2px solid color-mix(in srgb, #c47d1a 80%, transparent);
+}
+
+.issues-panel__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  padding: 0.15rem 0.25rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+}
+
+.issues-panel__cat {
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.issues-panel__msg {
+  font-size: 0.7rem;
+  line-height: 1.3;
+}
+
+.issues-panel__detail {
+  font-size: 0.62rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
 }
 
 .status-bar__pop {
@@ -339,11 +453,48 @@
 
 .editor-board {
   position: relative;
+  display: flex;
+  flex-direction: column;
   flex: 1;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--board);
+}
+
+.editor-board__scroll {
+  flex: 1;
+  min-width: 0;
   min-height: 0;
   overflow: auto;
   padding: var(--space-8) var(--space-8) var(--space-10);
   background: var(--board);
+}
+
+/* Viewport rulers frame the pasteboard; pages float inside. */
+.editor-board--rulers {
+  display: grid;
+  grid-template-columns: 1.1rem minmax(0, 1fr);
+  grid-template-rows: 1.1rem minmax(0, 1fr);
+}
+
+.editor-board--rulers > .editor-ruler--corner {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.editor-board--rulers > .editor-ruler--x {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.editor-board--rulers > .editor-ruler--y {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.editor-board--rulers > .editor-board__scroll {
+  grid-column: 2;
+  grid-row: 2;
 }
 
 .editor-board--placing,
@@ -387,7 +538,7 @@
 
 .editor-sheet {
   position: relative;
-  overflow: visible;
+  overflow: hidden;
 }
 
 .editor-page--idle {
@@ -680,6 +831,12 @@
   display: inline;
 }
 
+.merge-aware-text__chip--warn,
+.merge-aware-text .binding-preview__chip.merge-aware-text__chip--warn {
+  outline: 1px solid var(--danger, #b42318);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--danger, #b42318) 35%, transparent);
+}
+
 .merge-aware-text .binding-preview__chip {
   display: inline;
   vertical-align: baseline;
@@ -932,6 +1089,11 @@
   font-size: var(--text-xs);
 }
 
+.block-table--spaced {
+  border-collapse: separate;
+  border-spacing: var(--col-gap, 0) var(--row-gap, 0);
+}
+
 .block-table td,
 .block-table th {
   border: 1px solid var(--table-border, var(--border));
@@ -943,6 +1105,22 @@
   border-color: transparent;
 }
 
+.block-table--no-h-borders td,
+.block-table--no-h-borders th {
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.block-table--no-v-borders td,
+.block-table--no-v-borders th {
+  border-left-color: transparent;
+  border-right-color: transparent;
+}
+
+.block-table--header-rule thead th {
+  border-bottom-width: 2px;
+  border-bottom-color: var(--table-border, var(--border));
+}
 .tree {
   list-style: none;
   margin: 0;
@@ -1716,45 +1894,40 @@
   outline: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
 }
 
-/* Per-page rulers hug each artboard, not the pasteboard. */
 .editor-sheet {
-  display: grid;
-  grid-template-columns: 0 auto;
-  grid-template-rows: 0 auto;
-  width: max-content;
-  height: max-content;
-}
-
-.editor-sheet--rulers {
-  grid-template-columns: 1.1rem auto;
-  grid-template-rows: 1.1rem auto;
-}
-
-.editor-sheet > .editor-sheet__viewport {
-  grid-column: 2;
-  grid-row: 2;
-  overflow: hidden;
   position: relative;
+  overflow: hidden;
 }
 
 .editor-ruler {
+  position: relative;
   z-index: 5;
   background: var(--chrome-elevated);
   border-color: var(--border);
-  pointer-events: none;
+  pointer-events: auto;
+  overflow: visible;
 }
 
 .editor-ruler--corner {
-  grid-column: 1;
-  grid-row: 1;
+  display: grid;
+  place-items: center;
   border-right: 1px solid var(--border);
   border-bottom: 1px solid var(--border);
   background: var(--chrome-elevated);
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.editor-ruler__unit {
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: lowercase;
+  color: var(--ink-muted);
+  line-height: 1;
 }
 
 .editor-ruler--x {
-  grid-column: 2;
-  grid-row: 1;
   height: 1.1rem;
   border-bottom: 1px solid var(--border);
   background-image: repeating-linear-gradient(
@@ -1764,11 +1937,10 @@
     var(--ruler-tick) 7px,
     var(--ruler-tick) 8px
   );
+  cursor: default;
 }
 
 .editor-ruler--y {
-  grid-column: 1;
-  grid-row: 2;
   width: 1.1rem;
   border-right: 1px solid var(--border);
   background-image: repeating-linear-gradient(
@@ -1778,6 +1950,93 @@
     var(--ruler-tick) 7px,
     var(--ruler-tick) 8px
   );
+  cursor: default;
+}
+
+.editor-ruler__flag {
+  position: absolute;
+  z-index: 2;
+  pointer-events: auto;
+  touch-action: none;
+}
+
+.editor-ruler__flag--x {
+  top: 0;
+  width: 12px;
+  height: 100%;
+  transform: translateX(-6px);
+  cursor: ew-resize;
+}
+
+.editor-ruler__flag--x::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+}
+
+.editor-ruler__flag--x::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 1px;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid var(--accent);
+}
+
+.editor-ruler__flag--y {
+  left: 0;
+  height: 12px;
+  width: 100%;
+  transform: translateY(-6px);
+  cursor: ns-resize;
+}
+
+.editor-ruler__flag--y::before {
+  content: "";
+  position: absolute;
+  top: 5px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--accent);
+}
+
+.editor-ruler__flag--y::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 1px;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  border-left: 6px solid var(--accent);
+}
+
+.editor-ruler__readout {
+  position: absolute;
+  top: calc(100% + 0.15rem);
+  z-index: 6;
+  transform: translateX(-50%);
+  padding: 0.1rem 0.35rem;
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--ink) 90%, transparent);
+  color: var(--accent-text, #fff);
+  font-size: 0.6rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+  line-height: 1.3;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 20%, transparent);
+}
+
+.editor-ruler__readout--y {
+  top: auto;
+  left: calc(100% + 0.15rem);
+  transform: translateY(-50%);
 }
 
 .tour-root {

@@ -36,6 +36,14 @@ describe("resolveTemplate", () => {
     expect(resolveTemplate("{{s|pad:4:0}}", { s: "7" })).toBe("0007");
   });
 
+  it("accepts paren filter syntax and basic maths", () => {
+    expect(resolveTemplate("{{s|trim()}}", { s: "  hi  " })).toBe("hi");
+    expect(resolveTemplate("{{n|add(2)|mul(3)}}", { n: "4" })).toBe("18");
+    expect(
+      resolveTemplate("{{tags|split(,)|join( · )}}", { tags: "a,b,c" }),
+    ).toBe("a · b · c");
+  });
+
   it("expands #if / else", () => {
     expect(
       resolveTemplate("{{#if role}}yes{{else}}no{{/if}}", { role: "dev" }),

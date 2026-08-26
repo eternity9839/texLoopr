@@ -725,6 +725,24 @@ body.is-resizing-panes {
   padding: 0.2rem 0.35rem;
 }
 
+.table-cells-editor__row--flags {
+  align-items: center;
+}
+
+.table-col-literal {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.table-col-literal input {
+  width: auto;
+  min-width: 0;
+}
+
 .empty-hint {
   padding: var(--space-4);
   color: var(--ink-faint);

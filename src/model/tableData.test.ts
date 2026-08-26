@@ -155,4 +155,27 @@ describe("tableData", () => {
     expect(cells[0]).toBe("Fee");
     expect(cells[1]).toBe("2");
   });
+
+  it("forces literal columns with = prefix (skips field lookup)", () => {
+    const cells = mapTableItemToCells(
+      { Notes: "from data" },
+      ["=Fixed note", "{{Notes}}"],
+      true,
+      runtime,
+    );
+    expect(cells[0]).toBe("Fixed note");
+    expect(cells[1]).toBe("from data");
+  });
+
+  it("keeps = templates when deriving column templates", () => {
+    expect(
+      tableColumnTemplates(
+        [
+          ["A", "B"],
+          ["{{a}}", "=N/A"],
+        ],
+        true,
+      ),
+    ).toEqual(["{{a}}", "=N/A"]);
+  });
 });

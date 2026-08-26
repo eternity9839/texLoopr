@@ -68,6 +68,7 @@ export type IconName =
   | "workflow"
   | "book"
   | "info"
+  | "alert"
   | "sparkles"
   | "folder"
   | "check"
@@ -249,6 +250,11 @@ const PATHS: Record<IconName, string[]> = {
   ],
   book: ["M4 19.5A2.5 2.5 0 0 1 6.5 17H20", "M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"],
   info: ["M12 12v5", "M12 8h.01", "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"],
+  alert: [
+    "M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L12.7 3.9a2 2 0 0 0-2.4 0z",
+    "M12 9v4",
+    "M12 17h.01",
+  ],
   sparkles: [
     "M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3z",
     "M19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14z",

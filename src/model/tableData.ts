@@ -1,6 +1,7 @@
 import type { DataRow } from "./bindings";
 import { resolveItemsPath, resolveTemplate } from "./bindings";
 import type { RuntimeContext } from "./expr";
+import { noteIssue } from "../state/issueLog";
 
 export type TableDataSource = {
   datasetName?: string;
@@ -40,16 +41,44 @@ export function resolveTableSourceRows(
   const datasetName = String(content.datasetName ?? "").trim();
   if (datasetName && runtime?.datasets) {
     const pack = runtime.datasets[datasetName];
+    if (!pack) {
+      noteIssue({
+        category: "dataset",
+        severity: "error",
+        message: `Unknown dataset «${datasetName}»`,
+        detail: datasetName,
+        source: "preview",
+      });
+      return [];
+    }
     if (pack && typeof pack === "object" && !Array.isArray(pack)) {
       const rec = pack as Record<string, unknown>;
       const rows = Array.isArray(rec.rows) ? asObjectRows(rec.rows) : [];
       const keyField = String(rec.keyField ?? "").trim();
       if (keyField && row && row[keyField] != null && String(row[keyField]) !== "") {
         const want = String(row[keyField]);
-        return rows.filter((r) => String(r[keyField] ?? "") === want);
+        const filtered = rows.filter((r) => String(r[keyField] ?? "") === want);
+        if (filtered.length === 0) {
+          noteIssue({
+            category: "dataset",
+            severity: "warning",
+            message: `No rows in «${datasetName}» match ${keyField}=${want}`,
+            detail: `${datasetName}.${keyField}`,
+            source: "preview",
+          });
+        }
+        return filtered;
       }
       return rows;
     }
+  } else if (datasetName && !runtime?.datasets) {
+    noteIssue({
+      category: "dataset",
+      severity: "error",
+      message: `Dataset «${datasetName}» is not available in this context`,
+      detail: datasetName,
+      source: "preview",
+    });
   }
 
   const sourcePath = String(content.sourcePath ?? "").trim();
@@ -74,11 +103,21 @@ export function tableColumnTemplates(
   if (header) {
     const headers = cells[0] ?? [];
     const tpl = cells[1];
-    if (tpl?.some((c) => String(c).includes("{{"))) return tpl.map(String);
+    if (
+      tpl?.some(
+        (c) => String(c).includes("{{") || String(c).startsWith("="),
+      )
+    ) {
+      return tpl.map(String);
+    }
     return headers.map((h) => `{{${fieldKeyFromHeader(String(h))}}}`);
   }
   const first = cells[0] ?? [];
-  if (first.some((c) => String(c).includes("{{"))) return first.map(String);
+  if (
+    first.some((c) => String(c).includes("{{") || String(c).startsWith("="))
+  ) {
+    return first.map(String);
+  }
   return first.map((h) => `{{${fieldKeyFromHeader(String(h))}}}`);
 }
 
@@ -88,19 +127,47 @@ export function mapTableItemToCells(
   templates: string[],
   preview: boolean,
   runtime?: RuntimeContext,
+  options: { diagnose?: boolean } = {},
 ): string[] {
   return templates.map((tpl) => {
     const raw = String(tpl ?? "");
+    // Prefix "=" forces a literal column (no field lookup / merge).
+    if (raw.startsWith("=")) return raw.slice(1);
     if (!raw.includes("{{")) {
-      // Literal header-as-key fallback
       const key = fieldKeyFromHeader(raw);
       const direct = item[raw] ?? item[key];
       if (direct !== undefined && direct !== null) return String(direct);
+      if (options.diagnose) {
+        noteIssue({
+          category: "missing-data",
+          severity: "warning",
+          message: `Table column missing «${raw}»`,
+          detail: raw,
+          source: "preview",
+        });
+      }
       return raw;
     }
     return resolveTemplate(raw, item as DataRow, {
       missingAsEmpty: preview,
       ctx: runtime,
+      diagnose: options.diagnose,
     });
   });
+}
+
+/** True when a column template uses the `=` literal prefix. */
+export function isLiteralColumnTemplate(tpl: string): boolean {
+  return String(tpl ?? "").startsWith("=");
+}
+
+export function toLiteralColumnTemplate(text: string): string {
+  const t = String(text ?? "");
+  if (t.startsWith("=")) return t;
+  return `=${t}`;
+}
+
+export function fromLiteralColumnTemplate(tpl: string): string {
+  const t = String(tpl ?? "");
+  return t.startsWith("=") ? t.slice(1) : t;
 }

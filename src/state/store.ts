@@ -51,6 +51,7 @@ import type {
 } from "../model/workflow";
 import { EditHistory, isEditHistorySnapshot, type EditHistorySnapshot } from "../model/history";
 import type { InspectorTabId } from "../features/studio/inspectorTabs";
+import { clearAllIssues } from "./issueLog";
 import {
   clampZoom,
   stepZoom,
@@ -139,6 +140,7 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
     gridLock: false,
     gridStyle: "lines",
     showMarginGuides: true,
+    rulerUnit: "px",
     locale: "en",
     canvasZoomMode: "fit",
     canvasZoom: 1,
@@ -516,6 +518,7 @@ export function cancelPlaceDraft(): void {
 export function createProject(): void {
   editHistory.clear();
   historyEpoch.value += 1;
+  clearAllIssues();
   project.value = createEmptyProject();
   catalogProjectId.value = null;
   selection.value = { kind: "page", id: project.value.activePageId };
@@ -536,6 +539,7 @@ export function loadDemoSample(id: string): void {
   if (!entry) return;
   editHistory.clear();
   historyEpoch.value += 1;
+  clearAllIssues();
   const built = ensureProjectAutomation(entry.build());
   const artboard = (entry.artboard ?? built.artboard ?? "document") as CanvasPresetId;
   built.artboard = artboard;

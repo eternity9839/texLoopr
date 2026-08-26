@@ -2,18 +2,36 @@ import { describe, expect, it } from "vitest";
 import { parseMergeSegments } from "./mergeSegments";
 
 describe("parseMergeSegments", () => {
-  it("splits plain text and merge tokens", () => {
-    expect(parseMergeSegments("Hi {{name|upper}} — {{role}}")).toEqual([
+  it("splits plain text and merge tokens with filter labels", () => {
+    const segs = parseMergeSegments("Hi {{name|upper}} — {{role}}");
+    expect(segs).toEqual([
       { kind: "text", text: "Hi " },
       {
         kind: "merge",
         raw: "{{name|upper}}",
         path: "name",
-        label: "name",
+        filters: ["upper"],
+        label: "name · upper",
       },
       { kind: "text", text: " — " },
-      { kind: "merge", raw: "{{role}}", path: "role", label: "role" },
+      {
+        kind: "merge",
+        raw: "{{role}}",
+        path: "role",
+        filters: [],
+        label: "role",
+      },
     ]);
+  });
+
+  it("normalizes paren filters in chip labels", () => {
+    const segs = parseMergeSegments("{{price|mul(1.21)|currency(EUR)}}");
+    expect(segs[0]).toMatchObject({
+      kind: "merge",
+      path: "price",
+      filters: ["mul:1.21", "currency:EUR"],
+    });
+    expect((segs[0] as { label: string }).label).toContain("EUR");
   });
 
   it("leaves #if blocks as plain text", () => {

@@ -1,11 +1,17 @@
 import { resolveTemplate, type DataRow } from "./bindings";
 import type { RuntimeContext } from "./expr";
-import { dataFieldLabel } from "./dataField";
 import { resolveBindingPreview } from "./bindingPreview";
+import { mergeChipLabel, parseFilterPipe } from "./templateFilters";
 
 export type MergeSegment =
   | { kind: "text"; text: string }
-  | { kind: "merge"; raw: string; path: string; label: string };
+  | {
+      kind: "merge";
+      raw: string;
+      path: string;
+      filters: string[];
+      label: string;
+    };
 
 const MERGE_RE = /\{\{(?!#|\/)([^{}]+)\}\}/g;
 
@@ -20,12 +26,13 @@ export function parseMergeSegments(text: string): MergeSegment[] {
       out.push({ kind: "text", text: text.slice(last, m.index) });
     }
     const inner = m[1]!.trim();
-    const path = inner.split("|")[0]!.trim();
+    const { path, filters } = parseFilterPipe(inner);
     out.push({
       kind: "merge",
       raw: m[0]!,
       path,
-      label: dataFieldLabel(path),
+      filters,
+      label: mergeChipLabel(path, filters),
     });
     last = m.index + m[0]!.length;
   }

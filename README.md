@@ -51,7 +51,7 @@ Pro studio layout: **left insert palette**, **canvas**, **right inspector** (Lay
 
 ### Templating & automation
 
-Projects include **outputs** (preview / PDF / print device / API), an ordered **workflow**, and named **scripts** (sandboxed expressions or templates). Block conditions and step `when` clauses can use `data.*`, `output.*`, `device.*`, `vars.*`, and `env.*`. Templates support filters like `{{name|upper}}` and `{{x|default:n/a}}`. Open **··· → Automation** to edit and dry-run; Preview’s toolbar selects the active output profile.
+Projects include **outputs** (preview / PDF / print device / API), an ordered **workflow**, and named **scripts** (sandboxed expressions or templates). Block conditions and step `when` clauses can use `data.*`, `output.*`, `device.*`, `vars.*`, and `env.*`. Templates support pipe filters such as `{{name|upper}}`, `{{x|default:n/a}}`, `{{price|mul:1.21|currency:EUR}}`, `{{tags|split:,|join: · }}`, and paren forms like `{{name|trim()}}`. After editing merge text, assertions check the first data row (Issues panel + chip warnings). Open **··· → Automation** to edit and dry-run; Preview’s toolbar selects the active output profile.
 
 ### Mobile
 

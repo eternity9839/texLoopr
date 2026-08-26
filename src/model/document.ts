@@ -409,6 +409,8 @@ export interface EditorPrefs {
   gridStyle?: "lines" | "dots";
   /** Show dashed margin guides from surface margins */
   showMarginGuides?: boolean;
+  /** Ruler hover / margin flags display unit (geometry stays CSS px) */
+  rulerUnit?: "px" | "mm" | "cm" | "in";
   /** UI language */
   locale?: "en" | "fr";
   /** Logical canvas size preset (not responsive — target artboard) */
@@ -502,8 +504,18 @@ export const BLOCK_DEFAULTS: Record<
       cols: 3,
       zebra: false,
       cellPadding: 6,
+      rowGap: 0,
+      colGap: 0,
       headerBackground: "#f0ebe3",
+      headerColor: "",
+      headerFontWeight: 600,
+      headerFontSize: 0,
+      headerTextAlign: "left",
+      headerStyle: "default",
+      headerRule: false,
       borderColor: "#cfc8bc",
+      borderHorizontal: true,
+      borderVertical: true,
       showBorders: true,
       cells: [
         ["A1", "B1", "C1"],
