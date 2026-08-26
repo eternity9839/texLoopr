@@ -5,10 +5,10 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 HOST="${DEPLOY_HOST:-orangepi5}"
 USER="${DEPLOY_USER:-orangepi}"
 REMOTE="${REMOTE:-/home/orangepi/src/texLoopr}"
-# rsync -e expects an ssh-like binary; do not append "--" here.
-RSYNC_RSH="tailscale ssh"
+RSYNC_RSH="${ROOT}/deploy/orangepi/rsync-ts-ssh.sh"
 
 cd "$ROOT"
+chmod +x "$RSYNC_RSH"
 
 ts_ssh() {
   # Retry: ephemeral CI peers can take a moment to appear in the Pi's netmap.
@@ -39,6 +39,7 @@ tailscale status | head -40 || true
 
 ts_ssh "mkdir -p ${REMOTE}/deploy/orangepi/app/html"
 
+# rsync destination as host:path (user passed via -l through the wrapper)
 rsync -az --delete -e "$RSYNC_RSH" \
   --exclude '.env' \
   --exclude '.deploy-stamps' \
