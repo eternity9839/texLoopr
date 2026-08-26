@@ -1,0 +1,71 @@
+# Android APK (Nix) — dormant stage
+#
+# Not triggerable from the Actions UI yet (workflow_call only).
+# When ready, replace `on:` with e.g.:
+#   workflow_dispatch:
+#     inputs:
+#       variant: { type: choice, options: [debug, release], default: debug }
+#   push:
+#     tags: ["v*"]
+name: Android APK
+
+on:
+  workflow_call:
+    inputs:
+      variant:
+        description: APK variant
+        type: string
+        default: debug
+
+concurrency:
+  group: android-apk
+  cancel-in-progress: true
+
+env:
+  ANDROID_VARIANT: ${{ inputs.variant || 'debug' }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            substituters = https://cache.nixos.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+
+      - name: Typecheck and test
+        run: bash deploy/android/ci-test.sh
+
+  build-apk:
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            substituters = https://cache.nixos.org
+            trusted-public-keys = cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
+
+      - name: Build arm64 APK (Nix android shell)
+        env:
+          ANDROID_VARIANT: ${{ env.ANDROID_VARIANT }}
+        run: bash deploy/android/ci-build-apk.sh
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: texlooper-android-arm64-${{ env.ANDROID_VARIANT }}
+          path: dist-android/*.apk
+          if-no-files-found: error
+          retention-days: 14
