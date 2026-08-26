@@ -8,7 +8,7 @@
 - [ ] Left palette **arms** place tools (crosshair + options strip); click page places; Esc cancels
 - [ ] Options bar: view mode, **artboard** (writes `project.artboard`), **zoom** (Fit / % / ±), grid
 - [ ] Landscape sample (`landscape-slide`) opens 960×540; Screen/PDF/Email hide different blocks
-- [ ] Preview kinds include Image; hint explains condition filtering
+- [ ] Preview kinds include Image; hint explains condition filtering; Edit hides pure output.kind layouts (SMS/mobile) unless that output is active
 - [ ] Data studio: empty editable table by default; + Dataset tabs; key field; nested tabs for JSON arrays (line_items, product_files); optional Paste CSV
 - [ ] `lookup('dataset', key, 'field')` resolves in Preview when datasets are linked
 - [ ] Studio switch: Edit ↔ Data; Preview toggle / `Ctrl+.`; preview row `[` `]` / Alt+←→; output Shift+`[` `]`

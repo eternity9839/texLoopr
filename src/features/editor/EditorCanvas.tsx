@@ -48,7 +48,7 @@ import { enrichPreviewContext } from "../../model/runtime";
 import { effectiveZ } from "../../model/layerStack";
 import { findBlockDeep, flattenBlocksForPreview } from "../../model/groups";
 import { dataColumnNames } from "../../model/bindings";
-import { evaluateCondition } from "../../model/bindings";
+import { evaluateCondition, isOutputFormatCondition } from "../../model/bindings";
 import { renderBlock } from "./blocks";
 import type { RuntimeContext } from "../../model/expr";
 import type { BlockType } from "../../model/document";
@@ -211,22 +211,31 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   }, [snapStep, scale]);
 
   const runtime: RuntimeContext | undefined = useMemo(() => {
-    if (!preview || !output) return undefined;
+    if (!output) return undefined;
     return enrichPreviewContext(project.value, row, output);
-  }, [preview, output, row, project.value]);
+  }, [output, row, project.value]);
 
   const { renderBlocks, itemContexts } = useMemo(() => {
     const source = page?.blocks ?? [];
-    if (!preview || !runtime) {
+    if (!runtime) {
       return {
         renderBlocks: source,
         itemContexts: new Map<string, RuntimeContext>(),
       };
     }
-    const visible = source.filter((b) =>
-      evaluateCondition(b.condition, row, runtime),
-    );
-    const flat = flattenBlocksForPreview(visible, row, runtime);
+    const formatFiltered = source.filter((b) => {
+      if (!b.condition) return true;
+      // Edit: only apply pure output.kind gates so SMS/mobile cards stay off-canvas.
+      if (!preview && !isOutputFormatCondition(b.condition)) return true;
+      return evaluateCondition(b.condition, row, runtime);
+    });
+    if (!preview) {
+      return {
+        renderBlocks: formatFiltered,
+        itemContexts: new Map<string, RuntimeContext>(),
+      };
+    }
+    const flat = flattenBlocksForPreview(formatFiltered, row, runtime);
     return { renderBlocks: flat.blocks, itemContexts: flat.itemContexts };
   }, [page?.blocks, preview, runtime, row]);
 

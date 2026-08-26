@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   evaluateCondition,
+  isOutputFormatCondition,
   parseDataInput,
   resolveItemsPath,
   resolveTemplate,
@@ -86,6 +87,26 @@ describe("resolveItemsPath", () => {
     expect(
       resolveItemsPath("lines", { lines: [{ a: 1 }, { a: 2 }] }),
     ).toHaveLength(2);
+  });
+});
+
+describe("isOutputFormatCondition", () => {
+  it("detects pure output.kind gates", () => {
+    expect(isOutputFormatCondition("output.kind == 'mobile'")).toBe(true);
+    expect(isOutputFormatCondition("output.kind == 'sms'")).toBe(true);
+    expect(
+      isOutputFormatCondition(
+        "output.kind != 'sms' && output.kind != 'mobile'",
+      ),
+    ).toBe(true);
+  });
+
+  it("ignores data-driven or mixed conditions", () => {
+    expect(isOutputFormatCondition("data.role")).toBe(false);
+    expect(
+      isOutputFormatCondition("data.role && output.kind != 'sms'"),
+    ).toBe(false);
+    expect(isOutputFormatCondition("")).toBe(false);
   });
 });
 

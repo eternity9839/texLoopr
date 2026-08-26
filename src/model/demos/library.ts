@@ -2531,11 +2531,11 @@ function welcome(): Project {
             condition: "output.kind == 'sms'",
           }),
 
-          /* ── Mobile output ── */
+          /* ── Mobile output (below fold — does not cover letterhead in Edit) ── */
           b("shape", {
             name: "Mobile card bg",
             x: 40,
-            y: 40,
+            y: 720,
             w: 640,
             h: 100,
             content: { shape: "rect" },
@@ -2545,7 +2545,7 @@ function welcome(): Project {
           b("picture", {
             name: "Mobile icon",
             x: 56,
-            y: 56,
+            y: 736,
             w: 32,
             h: 32,
             content: { src: DEMO_IMG.logoMark, alt: "texLooper" },
@@ -2554,7 +2554,7 @@ function welcome(): Project {
           b("text", {
             name: "Mobile title",
             x: 100,
-            y: 56,
+            y: 736,
             w: 560,
             h: 20,
             content: { text: "texLooper" },
@@ -2564,7 +2564,7 @@ function welcome(): Project {
           b("text", {
             name: "Mobile body",
             x: 100,
-            y: 82,
+            y: 762,
             w: 560,
             h: 40,
             content: { text: "Hi {{name|default:there}} — your document is ready. Tap to open the full preview." },
@@ -2574,7 +2574,7 @@ function welcome(): Project {
           b("text", {
             name: "Mobile now",
             x: 56,
-            y: 112,
+            y: 792,
             w: 32,
             h: 14,
             content: { text: "now" },

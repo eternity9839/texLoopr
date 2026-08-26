@@ -129,6 +129,23 @@ function lookupCtx(path: string, ctx: RuntimeContext): unknown {
 }
 
 /**
+ * True when the condition is only about output.kind (format alternate layouts).
+ * Used in Edit to hide SMS/mobile chrome without hiding data-driven conditions.
+ */
+export function isOutputFormatCondition(condition: string | undefined): boolean {
+  if (!condition?.trim()) return false;
+  const stripped = condition
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/&&/g, "&&")
+    .replace(/\|\|/g, "||");
+  // Allow only output.kind comparisons chained with &&
+  return /^(output\.kind\s*(==|!=)\s*['"][\w-]+['"](\s*&&\s*)?)+$/.test(
+    stripped,
+  );
+}
+
+/**
  * Evaluate block/workflow conditions.
  * Supports legacy `field` / `!field` and full expression language (ADR 0005).
  */
