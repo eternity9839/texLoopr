@@ -4233,7 +4233,7 @@ dependencies = [
 
 [[package]]
 name = "texlooper"
-version = "0.3.3-alpha"
+version = "0.3.4-alpha"
 dependencies = [
  "axum",
  "base64 0.22.1",
