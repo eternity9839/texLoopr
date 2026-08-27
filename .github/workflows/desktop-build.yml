@@ -47,39 +47,59 @@ jobs:
       - name: Unit tests
         run: npm test
 
+  # Emit matrix JSON so slice filtering does not need `matrix` in a job-level `if`
+  # (workflow_dispatch validation rejects that expression).
+  select:
+    runs-on: ubuntu-22.04
+    outputs:
+      include: ${{ steps.pick.outputs.include }}
+    steps:
+      - id: pick
+        shell: bash
+        run: |
+          set -euo pipefail
+          slice="${{ github.event.inputs.platforms || 'all' }}"
+          if [[ "${{ github.event_name }}" == "push" ]]; then
+            slice="all"
+          fi
+          case "$slice" in
+            all)
+              include='[
+                {"id":"macos-arm","platform":"macos-latest","args":"--target aarch64-apple-darwin","rust_targets":"aarch64-apple-darwin,x86_64-apple-darwin","slice":"macos"},
+                {"id":"macos-x64","platform":"macos-latest","args":"--target x86_64-apple-darwin","rust_targets":"aarch64-apple-darwin,x86_64-apple-darwin","slice":"macos"},
+                {"id":"linux","platform":"ubuntu-22.04","args":"","rust_targets":"","slice":"linux"},
+                {"id":"windows","platform":"windows-latest","args":"","rust_targets":"","slice":"windows"}
+              ]'
+              ;;
+            macos)
+              include='[
+                {"id":"macos-arm","platform":"macos-latest","args":"--target aarch64-apple-darwin","rust_targets":"aarch64-apple-darwin,x86_64-apple-darwin","slice":"macos"},
+                {"id":"macos-x64","platform":"macos-latest","args":"--target x86_64-apple-darwin","rust_targets":"aarch64-apple-darwin,x86_64-apple-darwin","slice":"macos"}
+              ]'
+              ;;
+            linux)
+              include='[{"id":"linux","platform":"ubuntu-22.04","args":"","rust_targets":"","slice":"linux"}]'
+              ;;
+            windows)
+              include='[{"id":"windows","platform":"windows-latest","args":"","rust_targets":"","slice":"windows"}]'
+              ;;
+            *)
+              echo "Unknown platforms slice: $slice" >&2
+              exit 1
+              ;;
+          esac
+          # Compact to a single line for the output
+          echo "include=$(jq -c . <<<"$include")" >> "$GITHUB_OUTPUT"
+
   build:
-    needs: test
+    needs: [test, select]
     timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - id: macos-arm
-            platform: macos-latest
-            args: --target aarch64-apple-darwin
-            rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
-            slice: macos
-          - id: macos-x64
-            platform: macos-latest
-            args: --target x86_64-apple-darwin
-            rust_targets: aarch64-apple-darwin,x86_64-apple-darwin
-            slice: macos
-          - id: linux
-            platform: ubuntu-22.04
-            args: ""
-            rust_targets: ""
-            slice: linux
-          - id: windows
-            platform: windows-latest
-            args: ""
-            rust_targets: ""
-            slice: windows
+        include: ${{ fromJSON(needs.select.outputs.include) }}
 
     runs-on: ${{ matrix.platform }}
-    if: >-
-      github.event_name == 'push'
-      || github.event.inputs.platforms == 'all'
-      || github.event.inputs.platforms == matrix.slice
     steps:
       - uses: actions/checkout@v4
 
