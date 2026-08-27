@@ -2,23 +2,23 @@
   "name": "Yassin Bousâadi — Resume",
   "author": "Yassin Bousâadi",
   "subject": "DevOps & Cloud Engineer CV",
-  "description": "Personal resume composed in texLooper from markdown-resume. Classic engineering layout.",
+  "description": "Personal résumé composed in texLooper — engineering layout with live contact links.",
   "published": false,
   "lastSaved": null,
-  "activePageId": "c5754d3b-e6d7-4d79-ab4d-6c45c8aa2ef5",
+  "activePageId": "ba8e9cf0-8b3a-45fb-9e96-f45b7303e76e",
   "pages": [
     {
-      "id": "c5754d3b-e6d7-4d79-ab4d-6c45c8aa2ef5",
+      "id": "ba8e9cf0-8b3a-45fb-9e96-f45b7303e76e",
       "name": "Resume",
       "blocks": [
         {
-          "id": "a92f87e7-064e-422f-9f9b-2126e4956006",
+          "id": "b3a9e37d-a870-4966-965d-e098615960ab",
           "type": "shape",
           "name": "Accent bar",
           "x": 0,
           "y": 0,
-          "w": 8,
-          "h": 960,
+          "w": 12,
+          "h": 1010,
           "content": {
             "shape": "rect",
             "filled": true
@@ -34,20 +34,42 @@
           }
         },
         {
-          "id": "5d26a3ef-5c31-4ba8-a697-67ffe9b96d80",
+          "id": "ba5f1922-0ed8-4309-9aa0-3b653551820e",
           "type": "shape",
-          "name": "Header wash",
-          "x": 8,
+          "name": "Accent soft",
+          "x": 12,
           "y": 0,
-          "w": 712,
-          "h": 196,
+          "w": 4,
+          "h": 1010,
           "content": {
             "shape": "rect",
             "filled": true
           },
           "style": {
-            "background": "#e8f3ed",
-            "opacity": 0.85
+            "background": "#b7d4c4",
+            "opacity": 0.55
+          },
+          "zIndex": 0,
+          "pin": {
+            "left": true,
+            "top": true,
+            "bottom": true
+          }
+        },
+        {
+          "id": "44c867c4-ee28-4ecf-8f7a-98626abe9341",
+          "type": "shape",
+          "name": "Header wash",
+          "x": 16,
+          "y": 0,
+          "w": 698,
+          "h": 212,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#e8f3ed"
           },
           "zIndex": 0,
           "pin": {
@@ -57,71 +79,74 @@
           }
         },
         {
-          "id": "7e363547-fe07-47ba-bba1-3e03722bcf14",
-          "type": "shape",
-          "name": "Header orb",
-          "x": 560,
-          "y": -40,
-          "w": 220,
-          "h": 220,
-          "content": {
-            "shape": "ellipse",
-            "filled": true
-          },
-          "style": {
-            "background": "#b7d4c4",
-            "opacity": 0.35
-          },
-          "zIndex": 0
-        },
-        {
-          "id": "076b2492-6542-4638-9f4f-648e7de68e07",
+          "id": "868cf6ec-40f8-4774-bcef-fcfc5a27026f",
           "type": "text",
           "name": "Name",
-          "x": 52,
-          "y": 36,
-          "w": 616,
-          "h": 40,
+          "x": 48,
+          "y": 28,
+          "w": 618,
+          "h": 42,
           "content": {
             "text": "Yassin Bousâadi"
           },
           "style": {
             "fontFamily": "display",
-            "fontSize": 34,
+            "fontSize": 36,
             "fontWeight": 700,
             "color": "#004d32"
           },
           "zIndex": 1
         },
         {
-          "id": "fd502a89-9a41-4f60-8f97-5514f7f57152",
+          "id": "11803c45-d2bc-4232-b08d-dc736093380e",
+          "type": "shape",
+          "name": "Role badge",
+          "x": 48,
+          "y": 74,
+          "w": 214,
+          "h": 24,
+          "content": {
+            "shape": "rect",
+            "variant": "rounded",
+            "filled": true
+          },
+          "style": {
+            "background": "#006e46",
+            "borderRadius": 12
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "314e8c2f-9c4e-4a21-8eee-086688d18def",
           "type": "text",
           "name": "Role",
-          "x": 52,
-          "y": 78,
-          "w": 616,
-          "h": 18,
+          "x": 48,
+          "y": 74,
+          "w": 214,
+          "h": 24,
           "content": {
             "text": "DevOps & Cloud Engineer"
           },
           "style": {
             "fontFamily": "ui",
-            "fontSize": 12,
-            "fontWeight": 600,
-            "letterSpacing": 0.8,
+            "fontSize": 11,
+            "fontWeight": 700,
+            "letterSpacing": 0.6,
             "textTransform": "uppercase",
-            "color": "#006e46"
+            "color": "#ffffff",
+            "textAlign": "center",
+            "verticalAlign": "middle"
           },
-          "zIndex": 1
+          "zIndex": 2
         },
         {
-          "id": "27d14678-20f5-49c4-a839-5aafaf00b91c",
+          "id": "475b043f-70b2-4d69-9444-f20878fc2a1b",
           "type": "paragraph",
           "name": "Headline",
-          "x": 52,
-          "y": 102,
-          "w": 616,
-          "h": 52,
+          "x": 48,
+          "y": 108,
+          "w": 618,
+          "h": 48,
           "content": {
             "text": "Experience in banking and insurance (Luxembourg / Belgium). Infrastructure automation, cloud migration, containerization, and security-hardened architectures. Collaborates across multidisciplinary teams to advance projects. Passionate about open source, Linux, and reliable systems."
           },
@@ -134,32 +159,33 @@
           "zIndex": 1
         },
         {
-          "id": "83c44b54-49ab-4eab-a728-4d18e35d0d35",
+          "id": "0b4e74c0-677b-4ecb-9432-2c2ca5390f61",
           "type": "text",
           "name": "Location",
-          "x": 52,
-          "y": 158,
-          "w": 118,
-          "h": 20,
+          "x": 48,
+          "y": 160,
+          "w": 618,
+          "h": 16,
           "content": {
             "text": "Brussels, Belgium"
           },
           "style": {
             "fontFamily": "ui",
             "fontSize": 10,
+            "fontWeight": 600,
             "color": "#5c7468",
             "verticalAlign": "middle"
           },
           "zIndex": 1
         },
         {
-          "id": "1020b0a8-fb12-4290-890f-962c6c5b478c",
+          "id": "091bc2ec-3356-423e-b04a-326c972497bb",
           "type": "link",
           "name": "Email",
-          "x": 174,
-          "y": 158,
-          "w": 188,
-          "h": 20,
+          "x": 48,
+          "y": 180,
+          "w": 168,
+          "h": 16,
           "content": {
             "hook": "mailto",
             "target": "yassin.bousaadi@gmail.com",
@@ -170,21 +196,42 @@
             "fontSize": 9.5,
             "fontWeight": 600,
             "color": "#004d32",
-            "background": "#e8f3ed",
-            "borderRadius": 10,
-            "padding": 4,
-            "textAlign": "center",
-            "verticalAlign": "middle"
-          }
+            "background": "transparent",
+            "textDecoration": "none",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
         },
         {
-          "id": "b787c5e5-f853-4626-8a87-da317efadf56",
+          "id": "351adced-94a4-4b93-969f-8449b2193e40",
+          "type": "text",
+          "name": "Sep 1",
+          "x": 216,
+          "y": 180,
+          "w": 10,
+          "h": 16,
+          "content": {
+            "text": "·"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 9.5,
+            "fontWeight": 600,
+            "color": "#b7d4c4",
+            "textAlign": "center",
+            "verticalAlign": "middle"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "f13beb2e-1a78-4b61-84d7-94a088aeeac9",
           "type": "link",
           "name": "Phone",
-          "x": 370,
-          "y": 158,
-          "w": 112,
-          "h": 20,
+          "x": 226,
+          "y": 180,
+          "w": 102,
+          "h": 16,
           "content": {
             "hook": "tel",
             "target": "+32483037677",
@@ -195,46 +242,42 @@
             "fontSize": 9.5,
             "fontWeight": 600,
             "color": "#004d32",
-            "background": "#e8f3ed",
-            "borderRadius": 10,
-            "padding": 4,
-            "textAlign": "center",
-            "verticalAlign": "middle"
-          }
+            "background": "transparent",
+            "textDecoration": "none",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
         },
         {
-          "id": "4080d075-be8f-4843-9501-96cc55dba18d",
-          "type": "link",
-          "name": "GitHub",
-          "x": 490,
-          "y": 158,
-          "w": 72,
-          "h": 20,
+          "id": "e4a09f81-d5a6-4bd1-830b-0744f18e5754",
+          "type": "text",
+          "name": "Sep 2",
+          "x": 328,
+          "y": 180,
+          "w": 10,
+          "h": 16,
           "content": {
-            "hook": "url",
-            "target": "https://github.com/BSD-Yassin",
-            "label": "GitHub"
+            "text": "·"
           },
           "style": {
             "fontFamily": "ui",
             "fontSize": 9.5,
             "fontWeight": 600,
-            "color": "#004d32",
-            "background": "#e8f3ed",
-            "borderRadius": 10,
-            "padding": 4,
+            "color": "#b7d4c4",
             "textAlign": "center",
             "verticalAlign": "middle"
-          }
+          },
+          "zIndex": 1
         },
         {
-          "id": "bab6b600-4493-4c72-afa0-d6f7871b1b27",
+          "id": "f0ffc6d5-3ca2-44a9-aa88-4ec87e20b268",
           "type": "link",
           "name": "LinkedIn",
-          "x": 570,
-          "y": 158,
-          "w": 98,
-          "h": 20,
+          "x": 338,
+          "y": 180,
+          "w": 58,
+          "h": 16,
           "content": {
             "hook": "url",
             "target": "https://www.linkedin.com/in/yassin-bsd/?skipRedirect=true",
@@ -245,21 +288,113 @@
             "fontSize": 9.5,
             "fontWeight": 600,
             "color": "#004d32",
-            "background": "#e8f3ed",
-            "borderRadius": 10,
-            "padding": 4,
-            "textAlign": "center",
-            "verticalAlign": "middle"
-          }
+            "background": "transparent",
+            "textDecoration": "none",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
         },
         {
-          "id": "c79b96c0-7b21-4f0c-8f63-b7ad5c37d056",
+          "id": "db8c8c17-2f6a-4cd5-90c7-c36393121e67",
+          "type": "text",
+          "name": "Sep 3",
+          "x": 396,
+          "y": 180,
+          "w": 10,
+          "h": 16,
+          "content": {
+            "text": "·"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 9.5,
+            "fontWeight": 600,
+            "color": "#b7d4c4",
+            "textAlign": "center",
+            "verticalAlign": "middle"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "ae6c13d9-a55f-4fa7-8b53-258a525fe5a3",
+          "type": "link",
+          "name": "GitHub",
+          "x": 406,
+          "y": 180,
+          "w": 118,
+          "h": 16,
+          "content": {
+            "hook": "url",
+            "target": "https://github.com/BSD-Yassin",
+            "label": "github.com/BSD-Yassin"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 9.5,
+            "fontWeight": 600,
+            "color": "#004d32",
+            "background": "transparent",
+            "textDecoration": "none",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "7f926692-98db-43ab-bf8e-04f7b300bdc8",
+          "type": "text",
+          "name": "Sep 4",
+          "x": 524,
+          "y": 180,
+          "w": 10,
+          "h": 16,
+          "content": {
+            "text": "·"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 9.5,
+            "fontWeight": 600,
+            "color": "#b7d4c4",
+            "textAlign": "center",
+            "verticalAlign": "middle"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "2c77c3b4-889f-42a0-a9a2-1ee84e1ca1a4",
+          "type": "link",
+          "name": "Blog",
+          "x": 534,
+          "y": 180,
+          "w": 132,
+          "h": 16,
+          "content": {
+            "hook": "url",
+            "target": "https://blog.devmess.tech",
+            "label": "blog.devmess.tech"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 9.5,
+            "fontWeight": 600,
+            "color": "#004d32",
+            "background": "transparent",
+            "textDecoration": "none",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "84da3979-144c-4ea2-a3c6-4bb534b6c49d",
           "type": "shape",
           "name": "Header rule",
-          "x": 52,
-          "y": 186,
-          "w": 616,
-          "h": 2,
+          "x": 48,
+          "y": 208,
+          "w": 618,
+          "h": 2.5,
           "content": {
             "shape": "rect",
             "filled": true
@@ -270,28 +405,29 @@
           "zIndex": 1
         },
         {
-          "id": "231c2a5d-51b0-4857-a57e-8980aee0135a",
+          "id": "802d58b6-517d-41b1-802d-1d14b4ff2e08",
           "type": "shape",
           "name": "Accent Experience",
-          "x": 52,
-          "y": 207,
-          "w": 8,
-          "h": 8,
+          "x": 48,
+          "y": 227,
+          "w": 9,
+          "h": 9,
           "content": {
             "shape": "rect",
+            "variant": "rounded",
             "filled": true
           },
           "style": {
             "background": "#006e46",
-            "borderRadius": 1
+            "borderRadius": 2
           }
         },
         {
-          "id": "29212497-20ef-4c37-bfe6-07a57b2d434e",
+          "id": "34365c30-81bf-471b-a760-d2f82167c2f0",
           "type": "text",
           "name": "H Experience",
-          "x": 66,
-          "y": 204,
+          "x": 64,
+          "y": 224,
           "w": 602,
           "h": 16,
           "content": {
@@ -302,18 +438,18 @@
             "fontSize": 11,
             "fontWeight": 700,
             "textTransform": "uppercase",
-            "letterSpacing": 1.6,
+            "letterSpacing": 1.8,
             "color": "#006e46"
           }
         },
         {
-          "id": "a8f6dfc4-0675-4266-8877-9ecdb8d2e4a9",
+          "id": "e3c00402-0885-4181-8e44-3a1b4aae5960",
           "type": "shape",
           "name": "Rule Experience",
-          "x": 52,
-          "y": 221,
-          "w": 616,
-          "h": 1.5,
+          "x": 48,
+          "y": 242,
+          "w": 618,
+          "h": 2,
           "content": {
             "shape": "rect",
             "filled": true
@@ -323,9 +459,9 @@
           }
         },
         {
-          "id": "e2f5eb8c-e006-4966-80e9-0219d38b1ac3",
+          "id": "b30aa775-9750-4a05-8403-befb3878dbd4",
           "type": "shape",
-          "name": "Paynovate rail",
+          "name": "Paynovate · Infrastructure Engineer rail",
           "x": 0,
           "y": 0,
           "w": 3,
@@ -336,8 +472,9 @@
           },
           "style": {
             "background": "#b7d4c4",
-            "borderRadius": 1
+            "borderRadius": 2
           },
+          "zIndex": 0,
           "pin": {
             "left": true,
             "top": true,
@@ -345,29 +482,31 @@
           }
         },
         {
-          "id": "f3530cc8-a8c6-4464-a481-d69fd49fa76a",
+          "id": "3575f5fd-cf5c-4ff1-ac3c-0f1161849dd1",
           "type": "shape",
-          "name": "Paynovate date pill",
-          "x": 536,
-          "y": 233,
-          "w": 132,
+          "name": "Paynovate · Infrastructure Engineer date pill",
+          "x": 518,
+          "y": 251,
+          "w": 148,
           "h": 20,
           "content": {
-            "shape": "rounded",
+            "shape": "rect",
+            "variant": "rounded",
             "filled": true
           },
           "style": {
             "background": "#d7ebe0",
             "borderRadius": 10
-          }
+          },
+          "zIndex": 1
         },
         {
-          "id": "2c4c7d1f-5213-4162-8a9d-91dff916b719",
+          "id": "e7fc7d5b-12d8-4717-aa9d-9dbd82ad865c",
           "type": "text",
-          "name": "Paynovate title",
-          "x": 66,
-          "y": 234,
-          "w": 462,
+          "name": "Paynovate · Infrastructure Engineer title",
+          "x": 64,
+          "y": 252,
+          "w": 442,
           "h": 18,
           "content": {
             "text": "Infrastructure Engineer"
@@ -377,15 +516,16 @@
             "fontSize": 12,
             "fontWeight": 700,
             "color": "#14231c"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "3ed0d798-2241-42b0-9577-3f2822fa2a5c",
+          "id": "395ecb5a-f7d6-48d4-beac-f9386d1d2c3e",
           "type": "text",
-          "name": "Paynovate dates",
-          "x": 536,
-          "y": 234,
-          "w": 132,
+          "name": "Paynovate · Infrastructure Engineer dates",
+          "x": 518,
+          "y": 252,
+          "w": 148,
           "h": 18,
           "content": {
             "text": "Dec 2024 – Present"
@@ -397,14 +537,15 @@
             "color": "#004d32",
             "textAlign": "center",
             "verticalAlign": "middle"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "3ecbfe8a-034c-436b-a358-61a3d83d7f7b",
+          "id": "c7ebafcd-f3af-457d-9e4a-2e8796b24677",
           "type": "text",
-          "name": "Paynovate place",
-          "x": 66,
-          "y": 252,
+          "name": "Paynovate · Infrastructure Engineer place",
+          "x": 64,
+          "y": 270,
           "w": 602,
           "h": 16,
           "content": {
@@ -415,16 +556,17 @@
             "fontSize": 10.5,
             "fontStyle": "italic",
             "color": "#5c7468"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "73eaa0de-daf9-427f-b448-4fb33da884c8",
+          "id": "79ddb401-9e5b-4942-9499-a48beeb327a4",
           "type": "list",
-          "name": "Paynovate bullets",
-          "x": 66,
-          "y": 272,
+          "name": "Paynovate · Infrastructure Engineer bullets",
+          "x": 64,
+          "y": 290,
           "w": 602,
-          "h": 140,
+          "h": 132,
           "content": {
             "items": [
               "Collaborated with security teams to audit, harden, and enforce compliance (PCI-DSS, ISO-27001, DORA, GDPR); supported external payment audits.",
@@ -441,12 +583,13 @@
             "lineHeight": 1.38,
             "color": "#14231c",
             "listStyle": "disc"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "986df585-8228-49fb-83d9-b56c162f6529",
+          "id": "23d6d0dc-2df6-4d6a-949a-1ce44139e77e",
           "type": "shape",
-          "name": "Sword Group rail",
+          "name": "Sword Group · Production Engineer – CACEIS Bank rail",
           "x": 0,
           "y": 0,
           "w": 3,
@@ -457,8 +600,9 @@
           },
           "style": {
             "background": "#b7d4c4",
-            "borderRadius": 1
+            "borderRadius": 2
           },
+          "zIndex": 0,
           "pin": {
             "left": true,
             "top": true,
@@ -466,29 +610,31 @@
           }
         },
         {
-          "id": "2b61915c-37d0-4b4b-ba37-030eb4fa98b2",
+          "id": "19c0bb15-f23e-428a-9ab6-8d5dcd4195dc",
           "type": "shape",
-          "name": "Sword Group date pill",
-          "x": 536,
-          "y": 425,
-          "w": 132,
+          "name": "Sword Group · Production Engineer – CACEIS Bank date pill",
+          "x": 518,
+          "y": 435,
+          "w": 148,
           "h": 20,
           "content": {
-            "shape": "rounded",
+            "shape": "rect",
+            "variant": "rounded",
             "filled": true
           },
           "style": {
             "background": "#d7ebe0",
             "borderRadius": 10
-          }
+          },
+          "zIndex": 1
         },
         {
-          "id": "63f6b4d4-d9b8-4c34-b747-03d26a71f04c",
+          "id": "1a2c2602-b346-4a03-be81-d6da8fd8a93d",
           "type": "text",
-          "name": "Sword Group title",
-          "x": 66,
-          "y": 426,
-          "w": 462,
+          "name": "Sword Group · Production Engineer – CACEIS Bank title",
+          "x": 64,
+          "y": 436,
+          "w": 442,
           "h": 18,
           "content": {
             "text": "Production Engineer – CACEIS Bank"
@@ -498,15 +644,16 @@
             "fontSize": 12,
             "fontWeight": 700,
             "color": "#14231c"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "14b6ea16-960e-47ce-b6a0-1d07ceb16233",
+          "id": "7d91f16b-fd6a-464e-b32b-a525c95f07ae",
           "type": "text",
-          "name": "Sword Group dates",
-          "x": 536,
-          "y": 426,
-          "w": 132,
+          "name": "Sword Group · Production Engineer – CACEIS Bank dates",
+          "x": 518,
+          "y": 436,
+          "w": 148,
           "h": 18,
           "content": {
             "text": "Aug 2024 – Dec 2024"
@@ -518,14 +665,15 @@
             "color": "#004d32",
             "textAlign": "center",
             "verticalAlign": "middle"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "86faeb52-7819-4fcd-ba42-128eaf3b5157",
+          "id": "de2825de-aadf-459f-baf4-6314fb70e47f",
           "type": "text",
-          "name": "Sword Group place",
-          "x": 66,
-          "y": 444,
+          "name": "Sword Group · Production Engineer – CACEIS Bank place",
+          "x": 64,
+          "y": 454,
           "w": 602,
           "h": 16,
           "content": {
@@ -536,16 +684,17 @@
             "fontSize": 10.5,
             "fontStyle": "italic",
             "color": "#5c7468"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "afb00907-1cbf-410a-b335-cbef8bfdf2cb",
+          "id": "4d1fd321-4602-4bbd-a3bc-e89145eeac8f",
           "type": "list",
-          "name": "Sword Group bullets",
-          "x": 66,
-          "y": 464,
+          "name": "Sword Group · Production Engineer – CACEIS Bank bullets",
+          "x": 64,
+          "y": 474,
           "w": 602,
-          "h": 64,
+          "h": 58,
           "content": {
             "items": [
               "Automated build, versioning, and deployment pipelines with Jenkins.",
@@ -560,12 +709,13 @@
             "lineHeight": 1.38,
             "color": "#14231c",
             "listStyle": "disc"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "2cca93e5-d3cd-4156-8e47-ab2c2ecb2d33",
+          "id": "b3638a7e-566f-40fb-a335-f98814079feb",
           "type": "shape",
-          "name": "Sword Group rail",
+          "name": "Sword Group · Junior Production Engineer – Lalux Assurances rail",
           "x": 0,
           "y": 0,
           "w": 3,
@@ -576,8 +726,9 @@
           },
           "style": {
             "background": "#b7d4c4",
-            "borderRadius": 1
+            "borderRadius": 2
           },
+          "zIndex": 0,
           "pin": {
             "left": true,
             "top": true,
@@ -585,29 +736,31 @@
           }
         },
         {
-          "id": "c673ee1d-b1af-4e42-9a67-bd3ab97ed62a",
+          "id": "7cd5a21e-4955-4bee-90cb-e6ffa3b2ec85",
           "type": "shape",
-          "name": "Sword Group date pill",
-          "x": 536,
-          "y": 543,
-          "w": 132,
+          "name": "Sword Group · Junior Production Engineer – Lalux Assurances date pill",
+          "x": 518,
+          "y": 545,
+          "w": 148,
           "h": 20,
           "content": {
-            "shape": "rounded",
+            "shape": "rect",
+            "variant": "rounded",
             "filled": true
           },
           "style": {
             "background": "#d7ebe0",
             "borderRadius": 10
-          }
+          },
+          "zIndex": 1
         },
         {
-          "id": "0f4c9af5-8f3b-4a69-95e3-68ad89c03fad",
+          "id": "dde88cea-2c12-4bbb-aed0-8aac878c653a",
           "type": "text",
-          "name": "Sword Group title",
-          "x": 66,
-          "y": 544,
-          "w": 462,
+          "name": "Sword Group · Junior Production Engineer – Lalux Assurances title",
+          "x": 64,
+          "y": 546,
+          "w": 442,
           "h": 18,
           "content": {
             "text": "Junior Production Engineer – Lalux Assurances"
@@ -617,15 +770,16 @@
             "fontSize": 12,
             "fontWeight": 700,
             "color": "#14231c"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "6ac612db-18b2-4014-a91f-4a9c71418df5",
+          "id": "25dec86e-7f38-4b9e-8508-1b2a3cf3582a",
           "type": "text",
-          "name": "Sword Group dates",
-          "x": 536,
-          "y": 544,
-          "w": 132,
+          "name": "Sword Group · Junior Production Engineer – Lalux Assurances dates",
+          "x": 518,
+          "y": 546,
+          "w": 148,
           "h": 18,
           "content": {
             "text": "Mar 2023 – Jun 2024"
@@ -637,14 +791,15 @@
             "color": "#004d32",
             "textAlign": "center",
             "verticalAlign": "middle"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "17d72d85-f1ae-4d22-a3bb-ff14f3ae1d1d",
+          "id": "9e6d4956-61d7-40bb-a793-519bed2adf94",
           "type": "text",
-          "name": "Sword Group place",
-          "x": 66,
-          "y": 562,
+          "name": "Sword Group · Junior Production Engineer – Lalux Assurances place",
+          "x": 64,
+          "y": 564,
           "w": 602,
           "h": 16,
           "content": {
@@ -655,21 +810,22 @@
             "fontSize": 10.5,
             "fontStyle": "italic",
             "color": "#5c7468"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "c745a350-58ea-40d0-9e24-48ac0f6df66e",
+          "id": "0de5ce72-238b-4dd2-bc3b-dc625460a46e",
           "type": "list",
-          "name": "Sword Group bullets",
-          "x": 66,
-          "y": 582,
+          "name": "Sword Group · Junior Production Engineer – Lalux Assurances bullets",
+          "x": 64,
+          "y": 584,
           "w": 602,
-          "h": 64,
+          "h": 58,
           "content": {
             "items": [
               "Automated business workflows with Groovy and JavaScript (Quadient).",
-              "Deployed Windows Server estates with Ansible, Terraform, and Azure DevOps.",
-              "Docker / Podman services; Linux & Windows production monitoring; API testing (Jira, Postman, SoapUI)."
+              "Deployed server estates with Ansible, Terraform, and Azure DevOps.",
+              "Docker / Podman services; Linux production monitoring; API testing (Jira, Postman, SoapUI)."
             ],
             "markerColor": "#006e46"
           },
@@ -679,12 +835,13 @@
             "lineHeight": 1.38,
             "color": "#14231c",
             "listStyle": "disc"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "6bfada5c-debc-404a-a70d-061405007e0b",
+          "id": "7cbe3a7e-6e27-4c25-b535-a6b670ad5df5",
           "type": "shape",
-          "name": "Devoteam rail",
+          "name": "Devoteam · DevOps & Cloud Consultant (Internship) rail",
           "x": 0,
           "y": 0,
           "w": 3,
@@ -695,8 +852,9 @@
           },
           "style": {
             "background": "#b7d4c4",
-            "borderRadius": 1
+            "borderRadius": 2
           },
+          "zIndex": 0,
           "pin": {
             "left": true,
             "top": true,
@@ -704,29 +862,31 @@
           }
         },
         {
-          "id": "e6f7aec5-e604-4827-8f3b-b4a3ee5183a3",
+          "id": "f7e4915f-e3f1-4a31-bbc4-f102d1cc849e",
           "type": "shape",
-          "name": "Devoteam date pill",
-          "x": 536,
-          "y": 661,
-          "w": 132,
+          "name": "Devoteam · DevOps & Cloud Consultant (Internship) date pill",
+          "x": 518,
+          "y": 655,
+          "w": 148,
           "h": 20,
           "content": {
-            "shape": "rounded",
+            "shape": "rect",
+            "variant": "rounded",
             "filled": true
           },
           "style": {
             "background": "#d7ebe0",
             "borderRadius": 10
-          }
+          },
+          "zIndex": 1
         },
         {
-          "id": "8ba9772c-65c0-464b-87ab-042e2966b9f7",
+          "id": "47ca503b-583f-4f0e-9734-fdc116859d97",
           "type": "text",
-          "name": "Devoteam title",
-          "x": 66,
-          "y": 662,
-          "w": 462,
+          "name": "Devoteam · DevOps & Cloud Consultant (Internship) title",
+          "x": 64,
+          "y": 656,
+          "w": 442,
           "h": 18,
           "content": {
             "text": "DevOps & Cloud Consultant (Internship)"
@@ -736,15 +896,16 @@
             "fontSize": 12,
             "fontWeight": 700,
             "color": "#14231c"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "0fd5f30e-498f-4939-89a3-785544664f92",
+          "id": "4bab80ab-0872-41b2-a186-f1336c719e76",
           "type": "text",
-          "name": "Devoteam dates",
-          "x": 536,
-          "y": 662,
-          "w": 132,
+          "name": "Devoteam · DevOps & Cloud Consultant (Internship) dates",
+          "x": 518,
+          "y": 656,
+          "w": 148,
           "h": 18,
           "content": {
             "text": "Nov 2023 – Jan 2024"
@@ -756,14 +917,15 @@
             "color": "#004d32",
             "textAlign": "center",
             "verticalAlign": "middle"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "d6c163fc-37b4-4743-9d60-38ec346d3b9a",
+          "id": "b78ddebf-4cd4-4f77-aa0c-4f3711fac9fd",
           "type": "text",
-          "name": "Devoteam place",
-          "x": 66,
-          "y": 680,
+          "name": "Devoteam · DevOps & Cloud Consultant (Internship) place",
+          "x": 64,
+          "y": 674,
           "w": 602,
           "h": 16,
           "content": {
@@ -774,16 +936,17 @@
             "fontSize": 10.5,
             "fontStyle": "italic",
             "color": "#5c7468"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "38ce3dcb-87b1-4476-a30b-741f39431422",
+          "id": "b663c2c3-4fe9-4402-b6e7-48a93b8288c6",
           "type": "list",
-          "name": "Devoteam bullets",
-          "x": 66,
-          "y": 700,
+          "name": "Devoteam · DevOps & Cloud Consultant (Internship) bullets",
+          "x": 64,
+          "y": 694,
           "w": 602,
-          "h": 48,
+          "h": 44,
           "content": {
             "items": [
               "Built automated Azure tenant provisioning and Microsoft 365 automation via Graph API.",
@@ -797,31 +960,33 @@
             "lineHeight": 1.38,
             "color": "#14231c",
             "listStyle": "disc"
-          }
+          },
+          "zIndex": 2
         },
         {
-          "id": "178b12c4-27d5-4b08-adfe-27a8a865aa4f",
+          "id": "b517052c-5f0f-46ae-83bd-6e3068d7b467",
           "type": "shape",
           "name": "Accent Education",
-          "x": 52,
-          "y": 749,
-          "w": 8,
-          "h": 8,
+          "x": 48,
+          "y": 751,
+          "w": 9,
+          "h": 9,
           "content": {
             "shape": "rect",
+            "variant": "rounded",
             "filled": true
           },
           "style": {
             "background": "#006e46",
-            "borderRadius": 1
+            "borderRadius": 2
           }
         },
         {
-          "id": "e9f3fc9c-ec6e-4fac-a063-9a88d7b02657",
+          "id": "845b5543-e810-4ddf-8867-c0b3d9118bfe",
           "type": "text",
           "name": "H Education",
-          "x": 66,
-          "y": 746,
+          "x": 64,
+          "y": 748,
           "w": 602,
           "h": 16,
           "content": {
@@ -832,18 +997,18 @@
             "fontSize": 11,
             "fontWeight": 700,
             "textTransform": "uppercase",
-            "letterSpacing": 1.6,
+            "letterSpacing": 1.8,
             "color": "#006e46"
           }
         },
         {
-          "id": "7d7ee6bb-e28b-48f6-ae7b-2d828caa3ac6",
+          "id": "29c3c213-7676-45bb-8940-9c6e927be8b3",
           "type": "shape",
           "name": "Rule Education",
-          "x": 52,
-          "y": 763,
-          "w": 616,
-          "h": 1.5,
+          "x": 48,
+          "y": 766,
+          "w": 618,
+          "h": 2,
           "content": {
             "shape": "rect",
             "filled": true
@@ -853,49 +1018,51 @@
           }
         },
         {
-          "id": "548083a2-e64f-4328-a8c9-fddf39d633c5",
+          "id": "a8134a63-368a-4520-8209-4eb1f5c8709a",
           "type": "shape",
           "name": "Edu wash",
-          "x": 52,
-          "y": 768,
-          "w": 616,
-          "h": 84,
+          "x": 48,
+          "y": 776,
+          "w": 618,
+          "h": 100,
           "content": {
-            "shape": "rounded",
+            "shape": "rect",
             "filled": true
           },
           "style": {
-            "background": "#e8f3ed",
-            "borderRadius": 8,
-            "opacity": 0.9
-          }
+            "background": "#ffffff",
+            "borderWidth": 1.5,
+            "borderColor": "#b7d4c4"
+          },
+          "zIndex": 0
         },
         {
-          "id": "5676c761-9b14-44a7-bcf7-ee29417f750d",
+          "id": "2e43d44a-4251-4a7a-9129-ad15ec61593e",
           "type": "text",
           "name": "Edu compact",
           "x": 64,
-          "y": 776,
-          "w": 592,
-          "h": 72,
+          "y": 788,
+          "w": 586,
+          "h": 80,
           "content": {
             "text": "Bootcamp — BeCode  ·  SysAdmin & DevOps  ·  Nov 2023 – Jan 2024\nMaster — Université Libre de Bruxelles  ·  Clinical Psychology  ·  Dec 2022\nBachelor — Université Libre de Bruxelles  ·  Psychological and Educational Sciences  ·  Jun 2020"
           },
           "style": {
             "fontFamily": "doc",
             "fontSize": 10.5,
-            "lineHeight": 1.55,
+            "lineHeight": 1.7,
             "color": "#14231c",
             "whiteSpace": "pre-wrap"
-          }
+          },
+          "zIndex": 1
         },
         {
-          "id": "a3857182-d57e-4db0-a609-ab9fbf3cdc46",
+          "id": "c85c39d5-c3a1-4072-97ed-1e04dec004fb",
           "type": "shape",
           "name": "Yassin Bousâadi  ·  1 / 2 footer rule",
-          "x": 52,
-          "y": 938,
-          "w": 616,
+          "x": 48,
+          "y": 968,
+          "w": 618,
           "h": 1,
           "content": {
             "shape": "rect",
@@ -911,35 +1078,12 @@
           }
         },
         {
-          "id": "976b3c6b-8372-4452-b833-3b43c0c44f25",
-          "type": "text",
-          "name": "Yassin Bousâadi  ·  1 / 2 credit",
-          "x": 52,
-          "y": 948,
-          "w": 360,
-          "h": 16,
-          "content": {
-            "text": "Composed with texLooper"
-          },
-          "style": {
-            "fontFamily": "ui",
-            "fontSize": 8.5,
-            "fontWeight": 600,
-            "letterSpacing": 0.3,
-            "color": "#006e46"
-          },
-          "pin": {
-            "bottom": true,
-            "left": true
-          }
-        },
-        {
-          "id": "151ca968-95a6-40e6-946c-212225eef110",
+          "id": "aebd13ef-11e1-43e1-af9f-667a21b58754",
           "type": "text",
           "name": "Yassin Bousâadi  ·  1 / 2 folio",
-          "x": 412,
-          "y": 948,
-          "w": 256,
+          "x": 48,
+          "y": 978,
+          "w": 618,
           "h": 16,
           "content": {
             "text": "Yassin Bousâadi  ·  1 / 2"
@@ -958,17 +1102,17 @@
       ]
     },
     {
-      "id": "cd4a9cb1-d929-4e0c-bacf-9c06b1561963",
+      "id": "0747eb3a-5cfe-42aa-8a47-27ef22799245",
       "name": "Skills & certifications",
       "blocks": [
         {
-          "id": "2268d74d-f05f-43e4-a290-86df4f1d220a",
+          "id": "0a0c5f34-8bf3-4379-99f5-5f989c5cf6f2",
           "type": "shape",
           "name": "Accent bar",
           "x": 0,
           "y": 0,
-          "w": 8,
-          "h": 960,
+          "w": 12,
+          "h": 1010,
           "content": {
             "shape": "rect",
             "filled": true
@@ -984,46 +1128,52 @@
           }
         },
         {
-          "id": "098c5987-79fc-402b-9c58-76d6f9e9fbe2",
+          "id": "0ecbd2c7-856f-4946-94f8-9c72e875d762",
           "type": "shape",
-          "name": "Page 2 orb",
-          "x": -60,
-          "y": 720,
-          "w": 260,
-          "h": 260,
-          "content": {
-            "shape": "ellipse",
-            "filled": true
-          },
-          "style": {
-            "background": "#e8f3ed",
-            "opacity": 0.7
-          },
-          "zIndex": 0
-        },
-        {
-          "id": "61c4beb9-566a-484b-9461-40995ff11cf5",
-          "type": "shape",
-          "name": "Accent Certifications",
-          "x": 52,
-          "y": 43,
-          "w": 8,
-          "h": 8,
+          "name": "Accent soft",
+          "x": 12,
+          "y": 0,
+          "w": 4,
+          "h": 1010,
           "content": {
             "shape": "rect",
             "filled": true
           },
           "style": {
-            "background": "#006e46",
-            "borderRadius": 1
+            "background": "#b7d4c4",
+            "opacity": 0.55
+          },
+          "zIndex": 0,
+          "pin": {
+            "left": true,
+            "top": true,
+            "bottom": true
           }
         },
         {
-          "id": "f4b2e895-6a67-482b-a2aa-5cd156cc849e",
+          "id": "d30e15e8-430b-4a75-b8a9-2c3ac80b39b3",
+          "type": "shape",
+          "name": "Accent Certifications",
+          "x": 48,
+          "y": 39,
+          "w": 9,
+          "h": 9,
+          "content": {
+            "shape": "rect",
+            "variant": "rounded",
+            "filled": true
+          },
+          "style": {
+            "background": "#006e46",
+            "borderRadius": 2
+          }
+        },
+        {
+          "id": "e580f288-c307-4aa7-84a5-84dea9ecfdc9",
           "type": "text",
           "name": "H Certifications",
-          "x": 66,
-          "y": 40,
+          "x": 64,
+          "y": 36,
           "w": 602,
           "h": 16,
           "content": {
@@ -1034,18 +1184,18 @@
             "fontSize": 11,
             "fontWeight": 700,
             "textTransform": "uppercase",
-            "letterSpacing": 1.6,
+            "letterSpacing": 1.8,
             "color": "#006e46"
           }
         },
         {
-          "id": "9449e293-7688-4a37-bc6c-01381b6b500a",
+          "id": "915fe6b1-3442-45e9-8ee8-04509c8b0b6d",
           "type": "shape",
           "name": "Rule Certifications",
-          "x": 52,
-          "y": 57,
-          "w": 616,
-          "h": 1.5,
+          "x": 48,
+          "y": 54,
+          "w": 618,
+          "h": 2,
           "content": {
             "shape": "rect",
             "filled": true
@@ -1055,30 +1205,31 @@
           }
         },
         {
-          "id": "23717d87-c3c5-46d3-93b1-3ce446b92192",
+          "id": "e0831ce7-5ff2-4d8d-a433-ef715f4a655e",
           "type": "shape",
           "name": "Certs wash",
-          "x": 52,
-          "y": 62,
-          "w": 616,
-          "h": 112,
+          "x": 48,
+          "y": 64,
+          "w": 618,
+          "h": 120,
           "content": {
-            "shape": "rounded",
+            "shape": "rect",
             "filled": true
           },
           "style": {
-            "background": "#e8f3ed",
-            "borderRadius": 8,
-            "opacity": 0.9
-          }
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
         },
         {
-          "id": "a40ee659-e37f-408f-96cf-bb61718df35b",
+          "id": "29e9814f-7997-4f3f-9e86-fb1ba54331b6",
           "type": "list",
           "name": "Certs",
           "x": 64,
-          "y": 72,
-          "w": 592,
+          "y": 76,
+          "w": 586,
           "h": 100,
           "content": {
             "items": [
@@ -1093,34 +1244,36 @@
           "style": {
             "fontFamily": "doc",
             "fontSize": 10.5,
-            "lineHeight": 1.45,
+            "lineHeight": 1.5,
             "color": "#14231c",
             "listStyle": "disc"
-          }
+          },
+          "zIndex": 1
         },
         {
-          "id": "5e26d9db-24dd-451f-9318-4a93594b0e8e",
+          "id": "863b90ba-8abd-4ac1-b621-e27e5a335f19",
           "type": "shape",
           "name": "Accent Skills",
-          "x": 52,
-          "y": 191,
-          "w": 8,
-          "h": 8,
+          "x": 48,
+          "y": 207,
+          "w": 9,
+          "h": 9,
           "content": {
             "shape": "rect",
+            "variant": "rounded",
             "filled": true
           },
           "style": {
             "background": "#006e46",
-            "borderRadius": 1
+            "borderRadius": 2
           }
         },
         {
-          "id": "c9b66400-29c6-440f-98ac-47ee24707295",
+          "id": "f076f747-9f17-4e4e-8354-2e9f544b06ea",
           "type": "text",
           "name": "H Skills",
-          "x": 66,
-          "y": 188,
+          "x": 64,
+          "y": 204,
           "w": 602,
           "h": 16,
           "content": {
@@ -1131,18 +1284,18 @@
             "fontSize": 11,
             "fontWeight": 700,
             "textTransform": "uppercase",
-            "letterSpacing": 1.6,
+            "letterSpacing": 1.8,
             "color": "#006e46"
           }
         },
         {
-          "id": "dd884c3c-6faf-43b8-9625-f9a94c755d5c",
+          "id": "196359be-44ed-4a8e-9c3d-e8274779ccaf",
           "type": "shape",
           "name": "Rule Skills",
-          "x": 52,
-          "y": 205,
-          "w": 616,
-          "h": 1.5,
+          "x": 48,
+          "y": 222,
+          "w": 618,
+          "h": 2,
           "content": {
             "shape": "rect",
             "filled": true
@@ -1152,47 +1305,761 @@
           }
         },
         {
-          "id": "2f2b2c76-e62c-4fd3-8044-2ec8dad23e54",
-          "type": "paragraph",
-          "name": "Skills",
-          "x": 52,
-          "y": 216,
-          "w": 616,
-          "h": 340,
-          "content": {
-            "text": "Programming — Python, JavaScript, Node.js, Java, Groovy, Rust, Golang\n\nDatabases — MariaDB, PostgreSQL, MySQL, SQLite, Aurora\n\nShell & scripting — Bash, PowerShell, KornShell, Zsh, Fish\n\nSSO / IAM / Auth — Okta, IAM, Auth0, Keycloak, SSSD\n\nCloud — AWS, Azure, Oracle Cloud, UpCloud, Linode, DigitalOcean\n\nVirtualization — Proxmox, Xen, ESXi\n\nDevOps & automation — Terraform, OpenTofu, Ansible, Packer, Vagrant, Rundeck\n\nCI/CD — GitHub Actions, GitLab CI, Azure DevOps, Jenkins\n\nContainers — Docker, Podman, Kubernetes\n\nMonitoring & security — Datadog, Prometheus, Grafana, ELK, Zabbix, Wazuh\n\nOperating systems — Linux (Debian, RHEL, Fedora, NixOS), Windows Server, Solaris, FreeBSD\n\nAI tooling — OpenCode, Cursor, Anthropic, Mistral"
-          },
-          "style": {
-            "fontFamily": "doc",
-            "fontSize": 10.5,
-            "lineHeight": 1.35,
-            "color": "#14231c",
-            "whiteSpace": "pre-wrap"
-          }
-        },
-        {
-          "id": "9610a2c7-9acf-42fc-ac71-4b4012d8c6ac",
+          "id": "e84fe6a8-98d1-4af3-bfe9-bf363b3b0b09",
           "type": "shape",
-          "name": "Accent Open source",
-          "x": 52,
-          "y": 583,
-          "w": 8,
-          "h": 8,
+          "name": "Programming skill wash",
+          "x": 48,
+          "y": 232,
+          "w": 618,
+          "h": 34,
           "content": {
             "shape": "rect",
             "filled": true
           },
           "style": {
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
+        },
+        {
+          "id": "f0ad996f-3185-4b7e-87dd-5688a5ed5439",
+          "type": "text",
+          "name": "Programming label",
+          "x": 58,
+          "y": 236,
+          "w": 158,
+          "h": 26,
+          "content": {
+            "text": "Programming"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 10,
+            "fontWeight": 700,
+            "color": "#004d32",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "4b5b026a-35b5-4a0c-a297-f75836c0d5f7",
+          "type": "text",
+          "name": "Programming details",
+          "x": 218,
+          "y": 236,
+          "w": 434,
+          "h": 26,
+          "content": {
+            "text": "Python (advanced); JavaScript, Node.js, Java, Groovy (proficient); Rust, Go (working)"
+          },
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10,
+            "color": "#14231c",
+            "verticalAlign": "middle",
+            "whiteSpace": "normal",
+            "lineHeight": 1.35
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "05a360ba-a35e-43fd-a5e5-b49ddb52dd27",
+          "type": "shape",
+          "name": "Shell & scripting skill wash",
+          "x": 48,
+          "y": 272,
+          "w": 618,
+          "h": 30,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
+        },
+        {
+          "id": "bff92b7e-5fa7-4083-a047-758e4824f84d",
+          "type": "text",
+          "name": "Shell & scripting label",
+          "x": 58,
+          "y": 276,
+          "w": 158,
+          "h": 22,
+          "content": {
+            "text": "Shell & scripting"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 10,
+            "fontWeight": 700,
+            "color": "#004d32",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "dd9a241c-ff75-4b22-a38f-3c0494d9b755",
+          "type": "text",
+          "name": "Shell & scripting details",
+          "x": 218,
+          "y": 276,
+          "w": 434,
+          "h": 22,
+          "content": {
+            "text": "Bash, Fish, Zsh, PowerShell, KornShell"
+          },
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10,
+            "color": "#14231c",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap",
+            "lineHeight": 1.2
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "719fcc7e-e5c7-4663-a3c4-e78e2faa0040",
+          "type": "shape",
+          "name": "DevOps skill wash",
+          "x": 48,
+          "y": 308,
+          "w": 618,
+          "h": 30,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
+        },
+        {
+          "id": "6d137b91-8be9-4b37-b995-bdefefcfdc57",
+          "type": "text",
+          "name": "DevOps label",
+          "x": 58,
+          "y": 312,
+          "w": 158,
+          "h": 22,
+          "content": {
+            "text": "DevOps"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 10,
+            "fontWeight": 700,
+            "color": "#004d32",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "b2cdf199-b794-4feb-854c-0aa60de685de",
+          "type": "text",
+          "name": "DevOps details",
+          "x": 218,
+          "y": 312,
+          "w": 434,
+          "h": 22,
+          "content": {
+            "text": "Terraform, OpenTofu, Ansible · Packer, Vagrant, Rundeck"
+          },
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10,
+            "color": "#14231c",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap",
+            "lineHeight": 1.2
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "d6ad661c-edb8-4502-90c3-b138cec13ce0",
+          "type": "shape",
+          "name": "CI/CD skill wash",
+          "x": 48,
+          "y": 344,
+          "w": 618,
+          "h": 30,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
+        },
+        {
+          "id": "2e6ee099-395b-43cb-afa6-77b5c8d18596",
+          "type": "text",
+          "name": "CI/CD label",
+          "x": 58,
+          "y": 348,
+          "w": 158,
+          "h": 22,
+          "content": {
+            "text": "CI/CD"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 10,
+            "fontWeight": 700,
+            "color": "#004d32",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "bbe54304-26dd-4aa8-8eca-4412f8560d19",
+          "type": "text",
+          "name": "CI/CD details",
+          "x": 218,
+          "y": 348,
+          "w": 434,
+          "h": 22,
+          "content": {
+            "text": "GitHub Actions, GitLab CI, Azure DevOps, Jenkins"
+          },
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10,
+            "color": "#14231c",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap",
+            "lineHeight": 1.2
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "344104a2-7423-4ea2-8d0d-12d9607eb8b2",
+          "type": "shape",
+          "name": "Cloud skill wash",
+          "x": 48,
+          "y": 380,
+          "w": 618,
+          "h": 34,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
+        },
+        {
+          "id": "3d422715-e7af-40f7-a284-7f115cf5b765",
+          "type": "text",
+          "name": "Cloud label",
+          "x": 58,
+          "y": 384,
+          "w": 158,
+          "h": 26,
+          "content": {
+            "text": "Cloud"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 10,
+            "fontWeight": 700,
+            "color": "#004d32",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "5f5a3848-2fa0-4aa9-b44a-265db8b2788e",
+          "type": "text",
+          "name": "Cloud details",
+          "x": 218,
+          "y": 384,
+          "w": 434,
+          "h": 26,
+          "content": {
+            "text": "AWS (EC2, IAM, VPC, S3, EKS); Azure (Entra ID, ARM, Graph); Oracle Cloud, Linode, DigitalOcean"
+          },
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10,
+            "color": "#14231c",
+            "verticalAlign": "middle",
+            "whiteSpace": "normal",
+            "lineHeight": 1.35
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "768fbb42-8519-4cb1-a225-f67984158175",
+          "type": "shape",
+          "name": "Containers skill wash",
+          "x": 48,
+          "y": 420,
+          "w": 618,
+          "h": 30,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
+        },
+        {
+          "id": "5b813799-afbb-4e84-976c-e7ec6acc5610",
+          "type": "text",
+          "name": "Containers label",
+          "x": 58,
+          "y": 424,
+          "w": 158,
+          "h": 22,
+          "content": {
+            "text": "Containers"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 10,
+            "fontWeight": 700,
+            "color": "#004d32",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "90b653b8-b6ed-4aa8-a722-2242745b47c8",
+          "type": "text",
+          "name": "Containers details",
+          "x": 218,
+          "y": 424,
+          "w": 434,
+          "h": 22,
+          "content": {
+            "text": "Docker, Podman, Kubernetes"
+          },
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10,
+            "color": "#14231c",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap",
+            "lineHeight": 1.2
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "a714c4bc-dfab-4356-ba02-7148aa7d4b82",
+          "type": "shape",
+          "name": "Databases skill wash",
+          "x": 48,
+          "y": 456,
+          "w": 618,
+          "h": 30,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
+        },
+        {
+          "id": "530a82bf-3131-4134-a771-81a4b61ec03a",
+          "type": "text",
+          "name": "Databases label",
+          "x": 58,
+          "y": 460,
+          "w": 158,
+          "h": 22,
+          "content": {
+            "text": "Databases"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 10,
+            "fontWeight": 700,
+            "color": "#004d32",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "e01e1dd0-1b91-4d5c-85ee-575243cb328e",
+          "type": "text",
+          "name": "Databases details",
+          "x": 218,
+          "y": 460,
+          "w": 434,
+          "h": 22,
+          "content": {
+            "text": "MariaDB, MySQL, PostgreSQL, SQLite, Aurora"
+          },
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10,
+            "color": "#14231c",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap",
+            "lineHeight": 1.2
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "886d9758-5be3-4c96-94a0-f8f69cacfb09",
+          "type": "shape",
+          "name": "Virtualization skill wash",
+          "x": 48,
+          "y": 492,
+          "w": 618,
+          "h": 30,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
+        },
+        {
+          "id": "1a9dac6d-58ef-450c-8666-8ffbe1590f2c",
+          "type": "text",
+          "name": "Virtualization label",
+          "x": 58,
+          "y": 496,
+          "w": 158,
+          "h": 22,
+          "content": {
+            "text": "Virtualization"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 10,
+            "fontWeight": 700,
+            "color": "#004d32",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "316b6984-87ca-46a5-a324-b3995b41260a",
+          "type": "text",
+          "name": "Virtualization details",
+          "x": 218,
+          "y": 496,
+          "w": 434,
+          "h": 22,
+          "content": {
+            "text": "Proxmox, Xen, ESXi"
+          },
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10,
+            "color": "#14231c",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap",
+            "lineHeight": 1.2
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "61d8623d-fd3b-424f-a1a8-c9f99f71e1ac",
+          "type": "shape",
+          "name": "SSO / IAM / Auth skill wash",
+          "x": 48,
+          "y": 528,
+          "w": 618,
+          "h": 30,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
+        },
+        {
+          "id": "c3d61cbc-fd49-4da0-8a6d-d23b4a1ec2c3",
+          "type": "text",
+          "name": "SSO / IAM / Auth label",
+          "x": 58,
+          "y": 532,
+          "w": 158,
+          "h": 22,
+          "content": {
+            "text": "SSO / IAM / Auth"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 10,
+            "fontWeight": 700,
+            "color": "#004d32",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "eb4dd533-8b41-4d18-be64-b920a232fe75",
+          "type": "text",
+          "name": "SSO / IAM / Auth details",
+          "x": 218,
+          "y": 532,
+          "w": 434,
+          "h": 22,
+          "content": {
+            "text": "Okta, IAM, Auth0, Keycloak, SSSD"
+          },
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10,
+            "color": "#14231c",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap",
+            "lineHeight": 1.2
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "0847a4de-3c03-4de6-8595-692f3f721244",
+          "type": "shape",
+          "name": "Observability skill wash",
+          "x": 48,
+          "y": 564,
+          "w": 618,
+          "h": 30,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
+        },
+        {
+          "id": "8490b2f0-a1c0-446d-89c2-04dd112f72f5",
+          "type": "text",
+          "name": "Observability label",
+          "x": 58,
+          "y": 568,
+          "w": 158,
+          "h": 22,
+          "content": {
+            "text": "Observability"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 10,
+            "fontWeight": 700,
+            "color": "#004d32",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "8292544d-281d-429d-8b35-bfda2986b76c",
+          "type": "text",
+          "name": "Observability details",
+          "x": 218,
+          "y": 568,
+          "w": 434,
+          "h": 22,
+          "content": {
+            "text": "Datadog, Prometheus, Grafana, ELK, Zabbix, Wazuh"
+          },
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10,
+            "color": "#14231c",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap",
+            "lineHeight": 1.2
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "dd2f9746-2623-4219-ad31-50e93f1a632b",
+          "type": "shape",
+          "name": "Operating systems skill wash",
+          "x": 48,
+          "y": 600,
+          "w": 618,
+          "h": 30,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
+        },
+        {
+          "id": "27225daa-0600-4264-a5e4-18330b8445e4",
+          "type": "text",
+          "name": "Operating systems label",
+          "x": 58,
+          "y": 604,
+          "w": 158,
+          "h": 22,
+          "content": {
+            "text": "Operating systems"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 10,
+            "fontWeight": 700,
+            "color": "#004d32",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "47fb4115-14b0-43b9-9acd-0ceecfae068a",
+          "type": "text",
+          "name": "Operating systems details",
+          "x": 218,
+          "y": 604,
+          "w": 434,
+          "h": 22,
+          "content": {
+            "text": "Linux (Debian, RHEL, Fedora, NixOS), Solaris, FreeBSD"
+          },
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10,
+            "color": "#14231c",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap",
+            "lineHeight": 1.2
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "fa8349bc-afbe-46d7-b163-570f51f81848",
+          "type": "shape",
+          "name": "AI tooling skill wash",
+          "x": 48,
+          "y": 636,
+          "w": 618,
+          "h": 30,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#f3f8f5",
+            "borderWidth": 1,
+            "borderColor": "#d7ebe0"
+          },
+          "zIndex": 0
+        },
+        {
+          "id": "f8893d36-07b6-4b69-b06d-8ba3ea2456ae",
+          "type": "text",
+          "name": "AI tooling label",
+          "x": 58,
+          "y": 640,
+          "w": 158,
+          "h": 22,
+          "content": {
+            "text": "AI tooling"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 10,
+            "fontWeight": 700,
+            "color": "#004d32",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap"
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "fb5ac84a-25f9-4e85-974e-cbb77ea152c1",
+          "type": "text",
+          "name": "AI tooling details",
+          "x": 218,
+          "y": 640,
+          "w": 434,
+          "h": 22,
+          "content": {
+            "text": "OpenCode, Cursor, Anthropic, Mistral"
+          },
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10,
+            "color": "#14231c",
+            "verticalAlign": "middle",
+            "whiteSpace": "nowrap",
+            "lineHeight": 1.2
+          },
+          "zIndex": 1
+        },
+        {
+          "id": "cd4969aa-160d-431b-8fe1-dec56f132981",
+          "type": "shape",
+          "name": "Accent Open source",
+          "x": 48,
+          "y": 683,
+          "w": 9,
+          "h": 9,
+          "content": {
+            "shape": "rect",
+            "variant": "rounded",
+            "filled": true
+          },
+          "style": {
             "background": "#006e46",
-            "borderRadius": 1
+            "borderRadius": 2
           }
         },
         {
-          "id": "ff918c53-005d-487a-9579-eb27a4606d23",
+          "id": "dfe81ff2-0b19-4e07-8c48-717beb3fcebd",
           "type": "text",
           "name": "H Open source",
-          "x": 66,
-          "y": 580,
+          "x": 64,
+          "y": 680,
           "w": 602,
           "h": 16,
           "content": {
@@ -1203,18 +2070,18 @@
             "fontSize": 11,
             "fontWeight": 700,
             "textTransform": "uppercase",
-            "letterSpacing": 1.6,
+            "letterSpacing": 1.8,
             "color": "#006e46"
           }
         },
         {
-          "id": "3bf1d281-5b0b-41b4-bed4-5f40838c06e2",
+          "id": "4e5ca645-9da9-4ef0-afc9-353fb320a41e",
           "type": "shape",
           "name": "Rule Open source",
-          "x": 52,
-          "y": 597,
-          "w": 616,
-          "h": 1.5,
+          "x": 48,
+          "y": 698,
+          "w": 618,
+          "h": 2,
           "content": {
             "shape": "rect",
             "filled": true
@@ -1224,94 +2091,31 @@
           }
         },
         {
-          "id": "bbfe4067-083d-4c3a-8141-c102963d9ccd",
+          "id": "57830b71-cafe-4a70-967e-5cdb0a37aa46",
           "type": "paragraph",
           "name": "OSS",
-          "x": 52,
-          "y": 608,
-          "w": 430,
-          "h": 48,
+          "x": 48,
+          "y": 708,
+          "w": 618,
+          "h": 40,
           "content": {
-            "text": "Avid NixOS, Tailscale, Fish, and OpenTofu user. Also Rust and Golang."
+            "text": "Avid NixOS, Tailscale, Fish, and OpenTofu user. Also Rust and Go — side projects on GitHub; occasional notes on the blog."
           },
           "style": {
             "fontFamily": "doc",
             "fontSize": 10.5,
             "lineHeight": 1.45,
             "color": "#14231c"
-          }
-        },
-        {
-          "id": "3e2db611-de40-4e7a-bbb9-c8781d551e37",
-          "type": "link",
-          "name": "OSS GitHub",
-          "x": 492,
-          "y": 612,
-          "w": 176,
-          "h": 20,
-          "content": {
-            "hook": "url",
-            "target": "https://github.com/BSD-Yassin",
-            "label": "github.com/BSD-Yassin"
           },
-          "style": {
-            "fontFamily": "ui",
-            "fontSize": 9.5,
-            "fontWeight": 600,
-            "color": "#004d32",
-            "background": "#e8f3ed",
-            "borderRadius": 10,
-            "padding": 4,
-            "textAlign": "center",
-            "verticalAlign": "middle"
-          }
+          "zIndex": 1
         },
         {
-          "id": "7e82f81a-5ab1-4936-bd5b-b0c30df5fda9",
-          "type": "shape",
-          "name": "Credit band",
-          "x": 52,
-          "y": 680,
-          "w": 616,
-          "h": 52,
-          "content": {
-            "shape": "rect",
-            "filled": true
-          },
-          "style": {
-            "background": "#e8f3ed",
-            "borderRadius": 6,
-            "borderWidth": 1,
-            "borderColor": "#b7d4c4"
-          }
-        },
-        {
-          "id": "d7f01652-6b95-440e-be8b-f1ad811f90d6",
-          "type": "text",
-          "name": "Credit band text",
-          "x": 68,
-          "y": 692,
-          "w": 584,
-          "h": 28,
-          "content": {
-            "text": "This résumé was designed and composed in texLooper"
-          },
-          "style": {
-            "fontFamily": "ui",
-            "fontSize": 11,
-            "fontWeight": 600,
-            "color": "#004d32",
-            "textAlign": "center",
-            "verticalAlign": "middle"
-          }
-        },
-        {
-          "id": "54dcde74-16f8-4bee-9ea6-20d0ae9349ee",
+          "id": "05a93a9c-54a6-4fcc-9fa5-09c6a6e856a9",
           "type": "shape",
           "name": "Yassin Bousâadi  ·  2 / 2 footer rule",
-          "x": 52,
-          "y": 938,
-          "w": 616,
+          "x": 48,
+          "y": 968,
+          "w": 618,
           "h": 1,
           "content": {
             "shape": "rect",
@@ -1327,35 +2131,12 @@
           }
         },
         {
-          "id": "3e85ab43-e672-4197-9c06-8312b28d2b0d",
-          "type": "text",
-          "name": "Yassin Bousâadi  ·  2 / 2 credit",
-          "x": 52,
-          "y": 948,
-          "w": 360,
-          "h": 16,
-          "content": {
-            "text": "Composed with texLooper"
-          },
-          "style": {
-            "fontFamily": "ui",
-            "fontSize": 8.5,
-            "fontWeight": 600,
-            "letterSpacing": 0.3,
-            "color": "#006e46"
-          },
-          "pin": {
-            "bottom": true,
-            "left": true
-          }
-        },
-        {
-          "id": "254a3969-73c0-4718-be3f-c88aeee72ca2",
+          "id": "c2455213-48a1-48d2-9395-86df4c3f66b6",
           "type": "text",
           "name": "Yassin Bousâadi  ·  2 / 2 folio",
-          "x": 412,
-          "y": 948,
-          "w": 256,
+          "x": 48,
+          "y": 978,
+          "w": 618,
           "h": 16,
           "content": {
             "text": "Yassin Bousâadi  ·  2 / 2"
