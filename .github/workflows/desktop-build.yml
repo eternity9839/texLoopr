@@ -152,6 +152,32 @@ jobs:
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
           fi
 
+      # WiX/MSI only accepts numeric prerelease (0.3.3-1), not 0.3.3-alpha.
+      # Override bundle.windows.wix.version so MSI still builds for alpha tags.
+      - name: Set numeric WiX version for prereleases
+        if: matrix.slice == 'windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          VER="$(node -p "require('./package.json').version")"
+          if [[ "$VER" != *-* ]]; then
+            echo "stable version ${VER}; WiX override not needed"
+            exit 0
+          fi
+          BASE="${VER%%-*}"
+          export WIX_VER="${BASE}.1"
+          node <<'NODE'
+          const fs = require("fs");
+          const path = "src-tauri/tauri.conf.json";
+          const j = JSON.parse(fs.readFileSync(path, "utf8"));
+          const wixVer = process.env.WIX_VER;
+          j.bundle = j.bundle || {};
+          j.bundle.windows = j.bundle.windows || {};
+          j.bundle.windows.wix = { ...(j.bundle.windows.wix || {}), version: wixVer };
+          fs.writeFileSync(path, `${JSON.stringify(j, null, 2)}\n`);
+          console.log(`WiX version override: ${wixVer}`);
+          NODE
+
       - name: Build and publish Tauri bundles (release)
         if: startsWith(github.ref, 'refs/tags/v')
         uses: tauri-apps/tauri-action@v1
