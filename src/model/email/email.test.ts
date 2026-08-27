@@ -71,4 +71,31 @@ describe("email pipeline", () => {
     expect(art.text).toContain("Ship notes");
     expect(art.subject).toContain("Ada");
   });
+
+  it("preview HTML keeps unresolved merge tokens visible", () => {
+    const project = email();
+    const row = {
+      title: "Hello {{missing_field}}",
+      intro: "Body with {{also_missing}}",
+      first_name: "Ada",
+      email: "ada@example.com",
+      language: "en",
+      subject: "Hi {{first_name}}",
+    };
+    const output = {
+      id: "out-email",
+      name: "Email",
+      kind: "email" as const,
+    };
+    const art = buildEmailArtifacts({
+      project,
+      row,
+      output,
+      installId: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+    });
+    expect(art.html).toContain("{{missing_field}}");
+    expect(art.html).toContain("fff4ce");
+    expect(art.from).toBeTruthy();
+    expect(art.to).toContain("ada@");
+  });
 });

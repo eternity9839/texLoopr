@@ -305,8 +305,15 @@ export type MessageKey =
   | "docsBack"
   | "emailPreviewTitle"
   | "emailPreviewSubject"
+  | "emailPreviewFrom"
+  | "emailPreviewTo"
+  | "emailPreviewPreheader"
   | "emailPreviewHint"
   | "emailPreviewEmpty"
-  | "emailDownloadEml";
+  | "emailDownloadEml"
+  | "smsPreviewTitle"
+  | "smsPreviewTo"
+  | "smsPreviewHint"
+  | "smsPreviewEmpty";
 
 export type Messages = Record<MessageKey, string>;

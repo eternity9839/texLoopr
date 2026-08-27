@@ -1,6 +1,15 @@
 import type { ExprValue } from "./expr";
 
-export type OutputKind = "preview" | "pdf" | "print" | "api" | "image" | "email" | "sms" | "mobile";
+export type OutputKind =
+  | "preview"
+  | "pdf"
+  | "print"
+  | "api"
+  | "image"
+  | "email"
+  | "sms"
+  /** @deprecated Kept for older project JSON; not offered in Preview/Automation. */
+  | "mobile";
 
 /** Canonical order for chrome + Automation selectors */
 export const OUTPUT_KINDS: OutputKind[] = [
@@ -9,13 +18,13 @@ export const OUTPUT_KINDS: OutputKind[] = [
   "print",
   "email",
   "sms",
-  "mobile",
   "api",
   "image",
 ];
 
 /**
  * Channel modalities shown in Preview. API is data ingress, not a Preview output.
+ * Push (`mobile`) is intentionally omitted until a real push channel exists.
  */
 export const PREVIEW_OUTPUT_KINDS: OutputKind[] = [
   "preview",
@@ -23,7 +32,6 @@ export const PREVIEW_OUTPUT_KINDS: OutputKind[] = [
   "print",
   "email",
   "sms",
-  "mobile",
   "image",
 ];
 
@@ -137,12 +145,6 @@ export function optionalOutputTemplates(): OutputProfile[] {
       id: "out-sms",
       name: "SMS notification",
       kind: "sms",
-      enabled: true,
-    },
-    {
-      id: "out-mobile",
-      name: "Mobile push",
-      kind: "mobile",
       enabled: true,
     },
   ];

@@ -1,6 +1,5 @@
 import type { Block, BlockStyle } from "../document";
 import type { DataRow } from "../bindings";
-import { resolveTemplate } from "../bindings";
 import type { RuntimeContext } from "../expr";
 import { resolveDateBlockText } from "../dateBlock";
 import {
@@ -8,6 +7,7 @@ import {
   layoutEmailBlocks,
   type EmailLayoutItem,
 } from "./layout";
+import { resolveChannelText } from "./channelPreview";
 
 export interface EmailHtmlOptions {
   row: DataRow;
@@ -18,6 +18,11 @@ export interface EmailHtmlOptions {
   inlineDataUri?: boolean;
   contentWidth?: number;
   title?: string;
+  /**
+   * preview — keep unresolved {{fields}} and mark them in HTML.
+   * emit — blank missing fields for deliverable .eml HTML.
+   */
+  mode?: "preview" | "emit";
 }
 
 function esc(s: string): string {
@@ -26,6 +31,30 @@ function esc(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+/** Escape text but highlight leftover {{merge}} tokens for preview fidelity. */
+function formatHtmlText(text: string, mode: "preview" | "emit"): string {
+  if (mode !== "preview") {
+    return esc(text).replace(/\n/g, "<br/>");
+  }
+  const parts: string[] = [];
+  const re = /\{\{\s*[^}]+\s*\}\}/g;
+  let last = 0;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text))) {
+    if (m.index > last) {
+      parts.push(esc(text.slice(last, m.index)).replace(/\n/g, "<br/>"));
+    }
+    parts.push(
+      `<span style="background:#fff4ce;border:1px dashed #b08900;border-radius:3px;padding:0 3px;font-family:ui-monospace,monospace;font-size:0.92em;color:#6b4f00;">${esc(m[0])}</span>`,
+    );
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) {
+    parts.push(esc(text.slice(last)).replace(/\n/g, "<br/>"));
+  }
+  return parts.join("") || "&nbsp;";
 }
 
 function styleAttr(style: BlockStyle, extra?: string): string {
@@ -48,8 +77,9 @@ function resolveText(
   raw: string,
   row: DataRow,
   ctx: RuntimeContext,
+  mode: "preview" | "emit",
 ): string {
-  return resolveTemplate(raw, row, { missingAsEmpty: true, ctx });
+  return resolveChannelText(raw, row, ctx, mode);
 }
 
 function blockInnerHtml(
@@ -57,53 +87,57 @@ function blockInnerHtml(
   opts: EmailHtmlOptions,
 ): string | null {
   const { row, ctx, cidByBlockId, inlineDataUri } = opts;
+  const mode = opts.mode ?? "emit";
   switch (block.type) {
     case "text":
     case "paragraph": {
       const raw = String(block.content.text ?? "");
-      const text = resolveText(raw, row, ctx);
+      const text = resolveText(raw, row, ctx, mode);
       const tag = block.type === "paragraph" ? "p" : "div";
-      return `<${tag} style="${styleAttr(block.style, "margin:0;white-space:pre-wrap")}">${esc(text).replace(/\n/g, "<br/>")}</${tag}>`;
+      return `<${tag} style="${styleAttr(block.style, "margin:0;white-space:pre-wrap")}">${formatHtmlText(text, mode)}</${tag}>`;
     }
     case "data": {
       const path = String(block.content.path ?? "");
       const text = path
-        ? resolveText(`{{${path}}}`, row, ctx)
-        : resolveText(String(block.content.text ?? ""), row, ctx);
-      return `<div style="${styleAttr(block.style, "margin:0")}">${esc(text)}</div>`;
+        ? resolveText(`{{${path}}}`, row, ctx, mode)
+        : resolveText(String(block.content.text ?? ""), row, ctx, mode);
+      return `<div style="${styleAttr(block.style, "margin:0")}">${formatHtmlText(text, mode)}</div>`;
     }
     case "date": {
       const text = resolveDateBlockText(block.content, row, ctx) ?? "";
-      return `<div style="${styleAttr(block.style, "margin:0")}">${esc(text)}</div>`;
+      return `<div style="${styleAttr(block.style, "margin:0")}">${formatHtmlText(text, mode)}</div>`;
     }
     case "link": {
       const label = resolveText(
         String(block.content.label ?? block.content.target ?? "Link"),
         row,
         ctx,
+        mode,
       );
       const href = resolveText(
         String(block.content.target ?? "#"),
         row,
         ctx,
+        mode,
       );
-      return `<a href="${esc(href)}" style="${styleAttr(block.style, "color:#0b57d0")}">${esc(label)}</a>`;
+      return `<a href="${esc(href)}" style="${styleAttr(block.style, "color:#0b57d0")}">${formatHtmlText(label, mode)}</a>`;
     }
     case "picture": {
       const src = String(block.content.src ?? "");
       const alt = esc(
-        resolveText(String(block.content.alt ?? ""), row, ctx) || "image",
+        resolveText(String(block.content.alt ?? ""), row, ctx, mode) || "image",
       );
       const cid = cidByBlockId?.get(block.id);
       let imgSrc = src;
       if (cid && !inlineDataUri) imgSrc = `cid:${cid}`;
       if (!imgSrc) return null;
-      const w = Math.round(block.w);
+      const w = Math.min(Math.round(block.w), EMAIL_CONTENT_WIDTH - 48);
       return `<img src="${esc(imgSrc)}" alt="${alt}" width="${w}" style="display:block;max-width:100%;height:auto;border:0;${styleAttr(block.style)}" />`;
     }
     case "shape": {
       const bg = block.style.background ?? "#eef2f6";
-      const h = Math.max(4, Math.round(block.h));
+      // Canvas spacers/hero bars must not create tall empty email regions.
+      const h = Math.min(Math.max(3, Math.round(block.h)), 36);
       return `<div style="height:${h}px;background:${bg};${styleAttr(block.style)}"></div>`;
     }
     case "table": {
@@ -115,8 +149,8 @@ function blockInnerHtml(
         .map((r) => {
           const tds = (Array.isArray(r) ? r : [])
             .map((c) => {
-              const text = resolveText(String(c ?? ""), row, ctx);
-              return `<td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;${styleAttr(block.style)}">${esc(text)}</td>`;
+              const text = resolveText(String(c ?? ""), row, ctx, mode);
+              return `<td style="padding:6px 8px;border-bottom:1px solid #e5e7eb;${styleAttr(block.style)}">${formatHtmlText(text, mode)}</td>`;
             })
             .join("");
           return `<tr>${tds}</tr>`;
@@ -135,7 +169,7 @@ function blockInnerHtml(
             typeof it === "string"
               ? it
               : String((it as { text?: string })?.text ?? it);
-          return `<li>${esc(resolveText(text, row, ctx))}</li>`;
+          return `<li>${formatHtmlText(resolveText(text, row, ctx, mode), mode)}</li>`;
         })
         .join("");
       return `<ul style="${styleAttr(block.style, "margin:0;padding-left:1.2em")}">${lis}</ul>`;
@@ -148,9 +182,10 @@ function blockInnerHtml(
 function rowHtml(item: EmailLayoutItem, opts: EmailHtmlOptions): string {
   const inner = blockInnerHtml(item.block, opts);
   if (!inner) return "";
-  const w = Math.round(item.block.w);
+  const w = item.contentWidth;
+  const padTop = item.gapTop;
   return `<tr>
-  <td style="padding:4px ${Math.max(0, item.padRight)}px 4px ${Math.max(0, item.padLeft)}px;">
+  <td style="padding:${padTop}px ${Math.max(0, item.padRight)}px 0 ${Math.max(0, item.padLeft)}px;">
     <table role="presentation" width="${w}" cellpadding="0" cellspacing="0" style="border-collapse:collapse;width:${w}px;max-width:100%;">
       <tr><td style="padding:0;">${inner}</td></tr>
     </table>
@@ -174,12 +209,13 @@ export function buildEmailHtml(
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>${title}</title>
 </head>
-<body style="margin:0;padding:0;background:#f4f6f8;">
-<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f6f8;">
+<body style="margin:0;padding:0;background:#e8eaed;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#e8eaed;">
   <tr>
-    <td align="center" style="padding:24px 12px;">
-      <table role="presentation" width="${width}" cellpadding="0" cellspacing="0" style="width:${width}px;max-width:100%;background:#ffffff;border-collapse:collapse;">
-        ${body || `<tr><td style="padding:24px;color:#666;font:14px sans-serif;">No email content for this row.</td></tr>`}
+    <td align="center" style="padding:16px 8px;">
+      <table role="presentation" width="${width}" cellpadding="0" cellspacing="0" style="width:${width}px;max-width:100%;background:#ffffff;border-collapse:collapse;border-radius:4px;">
+        ${body || `<tr><td style="padding:28px 24px;color:#666;font:14px sans-serif;">No email content for this row.</td></tr>`}
+        <tr><td style="padding:16px 24px 24px;"></td></tr>
       </table>
     </td>
   </tr>

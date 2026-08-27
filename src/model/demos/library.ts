@@ -38,7 +38,7 @@ export const DEMO_LIBRARY: DemoEntry[] = [
     category: "Starter",
     bucket: "personal",
     blurb:
-      "EN/FR/NL × Screen/PDF/Email/SMS/Push/Print — switch Preview row + output kind.",
+      "EN/FR/NL × Screen/PDF/Email/SMS/Print — switch Preview row + output kind.",
     sampleCsv: `name,company,role,language,event_date,qty,price
 Ada Lovelace,Analytical Engines,Mathematician,en,2026-09-15,12,49.5
 Alan Turing,Bletchley Park,Cryptanalyst,en,2026-10-01,3,120

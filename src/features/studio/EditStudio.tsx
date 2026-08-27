@@ -12,6 +12,7 @@ import { MetadataPanel } from "../properties/PropertiesPanel";
 import { CommentsPanel } from "../editor/CommentsPanel";
 import { HistoryPanel } from "../properties/HistoryPanel";
 import { EmailPreviewFrame } from "../preview/EmailPreviewFrame";
+import { SmsPreviewFrame } from "../preview/SmsPreviewFrame";
 import { INSPECTOR_TABS } from "./inspectorTabs";
 import { t } from "../../i18n";
 import {
@@ -203,7 +204,9 @@ export function EditStudio() {
                       title={
                         kind === "email"
                           ? `${OUTPUT_KIND_LABEL[kind]} — HTML email preview`
-                          : `${OUTPUT_KIND_LABEL[kind]} preview`
+                          : kind === "sms"
+                            ? `${OUTPUT_KIND_LABEL[kind]} — message preview`
+                            : `${OUTPUT_KIND_LABEL[kind]} preview`
                       }
                       aria-label={OUTPUT_KIND_LABEL[kind]}
                       aria-pressed={active}
@@ -217,8 +220,12 @@ export function EditStudio() {
               {activeKind && (
                 <span class="muted preview-kind-hint">
                   {rowLang.toUpperCase()} · {OUTPUT_KIND_LABEL[activeKind]}
-                  {activeKind === "email" ? " · HTML" : ""} · [ ] row · Shift+[ ]
-                  output
+                  {activeKind === "email"
+                    ? " · HTML"
+                    : activeKind === "sms"
+                      ? " · text"
+                      : ""}{" "}
+                  · [ ] row · Shift+[ ] output
                 </span>
               )}
             </div>
@@ -226,6 +233,8 @@ export function EditStudio() {
           <div class="editor-stage">
             {preview && activeKind === "email" ? (
               <EmailPreviewFrame />
+            ) : preview && activeKind === "sms" ? (
+              <SmsPreviewFrame />
             ) : (
               <EditorCanvas preview={preview} />
             )}

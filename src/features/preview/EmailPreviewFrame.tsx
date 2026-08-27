@@ -13,7 +13,7 @@ import { buildEmailArtifacts } from "../../model/email";
 import { downloadBytes, mimeForOutputKind } from "../../model/download";
 import { t } from "../../i18n";
 
-/** HTML email client frame shown in Preview when output.kind === email. */
+/** Fair HTML email client preview (not the canvas, not raw EML). */
 export function EmailPreviewFrame() {
   const proj = ensureProjectAutomation(project.value);
   const rows = dataRows.value;
@@ -46,7 +46,7 @@ export function EmailPreviewFrame() {
 
   if (!artifacts || "error" in artifacts) {
     return (
-      <div class="email-preview" role="status">
+      <div class="channel-preview channel-preview--email" role="status">
         <p class="muted">
           {artifacts && "error" in artifacts
             ? artifacts.error
@@ -63,28 +63,51 @@ export function EmailPreviewFrame() {
   };
 
   return (
-    <div class="email-preview">
-      <div class="email-preview__chrome">
-        <div class="email-preview__meta">
-          <div>
-            <span class="email-preview__label">{t("emailPreviewSubject")}</span>{" "}
-            <strong>{artifacts.subject}</strong>
+    <div class="channel-preview channel-preview--email">
+      <div class="mail-client" aria-label={t("emailPreviewTitle")}>
+        <header class="mail-client__chrome">
+          <div class="mail-client__rows">
+            <div class="mail-client__row">
+              <span class="mail-client__key">{t("emailPreviewFrom")}</span>
+              <span class="mail-client__val">{artifacts.from}</span>
+            </div>
+            <div class="mail-client__row">
+              <span class="mail-client__key">{t("emailPreviewTo")}</span>
+              <span class="mail-client__val">{artifacts.to}</span>
+            </div>
+            <div class="mail-client__row">
+              <span class="mail-client__key">{t("emailPreviewSubject")}</span>
+              <strong class="mail-client__val">{artifacts.subject}</strong>
+            </div>
+            {artifacts.preheader ? (
+              <div class="mail-client__row mail-client__row--muted">
+                <span class="mail-client__key">{t("emailPreviewPreheader")}</span>
+                <span class="mail-client__val">{artifacts.preheader}</span>
+              </div>
+            ) : null}
           </div>
-          <div class="muted">
-            {t("emailPreviewHint")} · {artifacts.language.toUpperCase()}
+          <div class="mail-client__actions">
+            <span class="muted mail-client__hint">
+              {t("emailPreviewHint")} · {artifacts.language.toUpperCase()}
+            </span>
+            <button
+              type="button"
+              class="btn btn--ghost btn--small"
+              onClick={onDownload}
+              title={t("emailDownloadEml")}
+            >
+              {t("emailDownloadEml")}
+            </button>
           </div>
+        </header>
+        <div class="mail-client__body">
+          <iframe
+            class="mail-client__iframe"
+            title={t("emailPreviewTitle")}
+            sandbox=""
+            srcDoc={artifacts.html}
+          />
         </div>
-        <button type="button" class="btn btn--ghost btn--small" onClick={onDownload}>
-          {t("emailDownloadEml")}
-        </button>
-      </div>
-      <div class="email-preview__frame">
-        <iframe
-          class="email-preview__iframe"
-          title={t("emailPreviewTitle")}
-          sandbox=""
-          srcDoc={artifacts.html}
-        />
       </div>
     </div>
   );

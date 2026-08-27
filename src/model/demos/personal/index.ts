@@ -5,7 +5,7 @@ import {
   optionalOutputTemplates,
 } from "../../workflow";
 import { DEMO_IMG } from "../assets";
-import { b, page, shell, id } from "../helpers";
+import { b, page, shell } from "../helpers";
 import { northlineStyleExtras } from "../brand/northlineStyles";
 
 const ACCENT = "#0f6b63";
@@ -14,23 +14,23 @@ const MUTED = "#5c6570";
 
 export function welcome(): Project {
   const blockA = createId();
-  const FULL = "output.kind != 'sms' && output.kind != 'mobile'";
+  const FULL =
+    "output.kind != 'sms' && output.kind != 'email' && output.kind != 'mobile'";
   const EN = "vars.language == 'en'";
   const FR = "vars.language == 'fr'";
   const NL = "vars.language == 'nl'";
   const SMS = "output.kind == 'sms'";
-  const MOBILE = "output.kind == 'mobile'";
   const EMAIL = "output.kind == 'email'";
-  const channelOutputs = optionalOutputTemplates().filter((o) =>
-    o.kind === "sms" || o.kind === "mobile" || o.kind === "print",
+  const channelOutputs = optionalOutputTemplates().filter(
+    (o) => o.kind === "sms" || o.kind === "print",
   );
   return shell(
     {
       name: "Welcome to texLooper",
       author: "You",
-      subject: "Quickstart sample",
+      subject: "Quickstart sample — {{name|default:friend}}",
       description:
-        "Multi-language (EN/FR/NL) × multi-output (Screen/PDF/Email/SMS/Push/Print) condition showcase. Switch Preview row language and output kind to reveal alternate copy. Also demos merge fields, filters, typography, lists, tables, shapes, and groups.",
+        "Multi-language (EN/FR/NL) × multi-output (Screen/PDF/Email/SMS/Print) showcase. Switch Preview row language and output kind for channel-specific layouts. Also demos merge fields, filters, typography, lists, tables, shapes, and groups.",
     },
     [
       page(
@@ -73,7 +73,7 @@ export function welcome(): Project {
             y: 902,
             w: 640,
             h: 36,
-            content: { text: "This is the SMS version — short, plain text only. Switch to Preview or PDF for the full document." },
+            content: { text: "This is the SMS version — short, plain text only. Reply STOP to {{opt_out_code}}." },
             style: { fontFamily: "ui", fontSize: 12, color: "#1c2430" },
             condition: `${SMS} && ${EN}`,
           }),
@@ -128,98 +128,148 @@ export function welcome(): Project {
             condition: `${SMS} && ${NL}`,
           }),
 
-          /* ── Mobile × language (below fold) ── */
-          b("shape", {
-            name: "Mobile card bg",
+          /* ── Email-only message (fair HTML preview) ── */
+          b("text", {
+            name: "Email brand",
             x: 40,
-            y: 720,
-            w: 640,
-            h: 100,
-            content: { shape: "rect" },
-            style: { background: "#ffffff", borderRadius: 12, borderWidth: 1, borderColor: "#d4d9e0", shadow: true },
-            condition: MOBILE,
-          }),
-          b("picture", {
-            name: "Mobile icon",
-            x: 56,
-            y: 736,
-            w: 32,
-            h: 32,
-            content: { src: DEMO_IMG.logoMark, alt: "texLooper" },
-            condition: MOBILE,
-          }),
-          b("text", {
-            name: "Mobile title EN",
-            x: 100,
-            y: 736,
-            w: 560,
-            h: 20,
+            y: 40,
+            w: 520,
+            h: 24,
             content: { text: "texLooper" },
-            style: { fontFamily: "ui", fontSize: 13, fontWeight: 700, color: "#1c2430" },
-            condition: `${MOBILE} && ${EN}`,
+            style: {
+              fontFamily: "ui",
+              fontSize: 13,
+              fontWeight: 700,
+              color: ACCENT,
+              letterSpacing: 0.4,
+            },
+            condition: EMAIL,
           }),
           b("text", {
-            name: "Mobile title FR",
-            x: 100,
-            y: 736,
-            w: 560,
+            name: "Email title EN",
+            x: 40,
+            y: 80,
+            w: 520,
+            h: 40,
+            content: { text: "Hello {{name|upper|default:THERE}}" },
+            style: {
+              fontFamily: "display",
+              fontSize: 26,
+              fontWeight: 700,
+              color: INK,
+            },
+            condition: `${EMAIL} && ${EN}`,
+          }),
+          b("text", {
+            name: "Email title FR",
+            x: 40,
+            y: 80,
+            w: 520,
+            h: 40,
+            content: { text: "Bonjour {{name|upper|default:LÀ}}" },
+            style: {
+              fontFamily: "display",
+              fontSize: 26,
+              fontWeight: 700,
+              color: INK,
+            },
+            condition: `${EMAIL} && ${FR}`,
+          }),
+          b("text", {
+            name: "Email title NL",
+            x: 40,
+            y: 80,
+            w: 520,
+            h: 40,
+            content: { text: "Hoi {{name|upper|default:DAAR}}" },
+            style: {
+              fontFamily: "display",
+              fontSize: 26,
+              fontWeight: 700,
+              color: INK,
+            },
+            condition: `${EMAIL} && ${NL}`,
+          }),
+          b("text", {
+            name: "Email role",
+            x: 40,
+            y: 128,
+            w: 520,
+            h: 22,
+            content: { text: "Role: {{role}}" },
+            style: { fontFamily: "ui", fontSize: 13, color: MUTED },
+            condition: EMAIL,
+          }),
+          b("paragraph", {
+            name: "Email body EN",
+            x: 40,
+            y: 164,
+            w: 520,
+            h: 90,
+            content: {
+              text: "This is the email channel — a stacked HTML message, not the page canvas. Merged values resolve from the row; empty fields stay visible as {{tokens}} so you can spot gaps before send.\n\nCompany: {{company|default:texLooper}}\nNote: {{optional_note}}",
+            },
+            style: { fontSize: 13, lineHeight: 1.55, color: INK },
+            condition: `${EMAIL} && ${EN}`,
+          }),
+          b("paragraph", {
+            name: "Email body FR",
+            x: 40,
+            y: 164,
+            w: 520,
+            h: 90,
+            content: {
+              text: "Canal e-mail — message HTML empilé, pas le canevas page. Les champs fusionnés viennent de la ligne ; les vides restent visibles en {{jetons}}.\n\nSociété : {{company|default:texLooper}}\nNote : {{optional_note}}",
+            },
+            style: { fontSize: 13, lineHeight: 1.55, color: INK },
+            condition: `${EMAIL} && ${FR}`,
+          }),
+          b("paragraph", {
+            name: "Email body NL",
+            x: 40,
+            y: 164,
+            w: 520,
+            h: 90,
+            content: {
+              text: "E-mailkanaal — gestapelde HTML, niet het paginacanvas. Ontbrekende velden blijven zichtbaar als {{tokens}}.\n\nBedrijf: {{company|default:texLooper}}\nNotitie: {{optional_note}}",
+            },
+            style: { fontSize: 13, lineHeight: 1.55, color: INK },
+            condition: `${EMAIL} && ${NL}`,
+          }),
+          b("link", {
+            name: "Email CTA",
+            x: 40,
+            y: 270,
+            w: 200,
+            h: 36,
+            content: {
+              label: "Open in texLooper",
+              target: "https://texlooper.app",
+            },
+            style: {
+              fontFamily: "ui",
+              fontSize: 13,
+              fontWeight: 600,
+              color: "#ffffff",
+              background: ACCENT,
+              padding: 10,
+              borderRadius: 6,
+              textAlign: "center",
+            },
+            condition: EMAIL,
+          }),
+          b("text", {
+            name: "Email footer",
+            x: 40,
+            y: 330,
+            w: 520,
             h: 20,
-            content: { text: "texLooper" },
-            style: { fontFamily: "ui", fontSize: 13, fontWeight: 700, color: "#1c2430" },
-            condition: `${MOBILE} && ${FR}`,
-          }),
-          b("text", {
-            name: "Mobile title NL",
-            x: 100,
-            y: 736,
-            w: 560,
-            h: 20,
-            content: { text: "texLooper" },
-            style: { fontFamily: "ui", fontSize: 13, fontWeight: 700, color: "#1c2430" },
-            condition: `${MOBILE} && ${NL}`,
-          }),
-          b("text", {
-            name: "Mobile body EN",
-            x: 100,
-            y: 762,
-            w: 560,
-            h: 40,
-            content: { text: "Hi {{name|default:there}} — your document is ready. Tap to open the full preview." },
-            style: { fontFamily: "ui", fontSize: 12, color: "#5c6570" },
-            condition: `${MOBILE} && ${EN}`,
-          }),
-          b("text", {
-            name: "Mobile body FR",
-            x: 100,
-            y: 762,
-            w: 560,
-            h: 40,
-            content: { text: "Bonjour {{name|default:là}} — votre document est prêt. Touchez pour ouvrir l'aperçu." },
-            style: { fontFamily: "ui", fontSize: 12, color: "#5c6570" },
-            condition: `${MOBILE} && ${FR}`,
-          }),
-          b("text", {
-            name: "Mobile body NL",
-            x: 100,
-            y: 762,
-            w: 560,
-            h: 40,
-            content: { text: "Hoi {{name|default:daar}} — je document is klaar. Tik om de volledige preview te openen." },
-            style: { fontFamily: "ui", fontSize: 12, color: "#5c6570" },
-            condition: `${MOBILE} && ${NL}`,
-          }),
-          b("text", {
-            name: "Mobile now",
-            x: 56,
-            y: 792,
-            w: 32,
-            h: 14,
-            content: { text: "now" },
-            style: { fontFamily: "ui", fontSize: 9, color: "#5c6570" },
-            condition: MOBILE,
+            content: { text: "You are receiving this because {{email}} is on the sample list." },
+            style: { fontFamily: "ui", fontSize: 11, color: MUTED },
+            condition: EMAIL,
           }),
 
-          /* ── Full document (PDF / Preview / Print / API / Image) ── */
+          /* ── Full document (Screen / PDF / Print / Image) ── */
           /* ── Header ── */
           b("shape", {
             name: "Letterhead",
@@ -306,35 +356,6 @@ export function welcome(): Project {
             content: { shape: "rect" },
             style: { background: "#2383e2", borderRadius: 2 },
             condition: FULL,
-          }),
-
-          /* ── Email-only strip (language via variants) ── */
-          b("text", {
-            name: "Email strip",
-            x: 360,
-            y: 140,
-            w: 320,
-            h: 20,
-            content: { text: "Email channel only" },
-            style: { fontFamily: "ui", fontSize: 10, fontWeight: 600, color: "#0f6b63", textAlign: "right" },
-            condition: EMAIL,
-            variants: [
-              {
-                id: id(),
-                language: "fr",
-                content: { text: "Canal e-mail uniquement" },
-              },
-              {
-                id: id(),
-                language: "nl",
-                content: { text: "Alleen e-mailkanaal" },
-              },
-              {
-                id: id(),
-                output: "email",
-                w: 280,
-              },
-            ],
           }),
 
           /* ── Merge fields & filters ── */
