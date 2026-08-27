@@ -25,7 +25,10 @@ function paletteAccentBarBlocks(): Block[] {
 
 function paletteResumeSection(label: string, y: number): Block[] {
   return RESUME_PALETTE_IDS.flatMap((pid) =>
-    resumeSection(label, y, resumePalette(pid)),
+    resumeSection(label, y, resumePalette(pid)).map((block) => ({
+      ...block,
+      condition: `vars.palette == '${pid}'`,
+    })),
   );
 }
 

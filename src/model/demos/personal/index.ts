@@ -1197,7 +1197,7 @@ export function resume(): Project {
           p2: "{{j1_p2}}",
           p3: "{{j1_p3}}",
         }),
-        ...jobEntry(456, {
+        ...jobEntry(468, {
           period: "{{j2_period}}",
           title: "{{j2_title}} — {{j2_company}}",
           company: "j2",
@@ -1205,7 +1205,7 @@ export function resume(): Project {
           p2: "{{j2_p2}}",
           p3: "{{j2_p3}}",
         }),
-        ...jobEntry(584, {
+        ...jobEntry(608, {
           period: "{{j3_period}}",
           title: "{{j3_title}} — {{j3_company}}",
           company: "j3",
@@ -1213,7 +1213,7 @@ export function resume(): Project {
           p2: "{{j3_p2}}",
           p3: "{{j3_p3}}",
         }),
-        ...jobEntry(712, {
+        ...jobEntry(748, {
           period: "{{j4_period}}",
           title: "{{j4_title}} — {{j4_company}}",
           company: "j4",
