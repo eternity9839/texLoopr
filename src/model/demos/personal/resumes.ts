@@ -1,5 +1,10 @@
 import type { Project } from "../../document";
 import { b, page, shell } from "../helpers";
+import {
+  mergeSkillChipSlot,
+  resumePalette,
+  resumePaletteCondition,
+} from "./resumeShared";
 
 const SIDE_BG = "#1a2332";
 const SIDE_INK = "#e8eef6";
@@ -11,13 +16,14 @@ const PAPER = "#f7f4ef";
 
 /** Left-rail CV — dense sidebar + main column (mirrors classic right-photo layouts). */
 export function resumeSidebar(): Project {
+  const teal = resumePalette("teal");
   return shell(
     {
       name: "Resume — sidebar",
       author: "texLooper samples",
       subject: "Two-column CV with dark rail",
       description:
-        "Sidebar contact/skills rail with main experience column. Flip Data rows to switch candidates. Shows padding, opacity, borders, and flex gap.",
+        "Sidebar contact/skills rail with main experience column. Palette axis, four jobs, tiered skill chips. Flip Data rows to switch candidates.",
     },
     [
       page(
@@ -107,23 +113,27 @@ export function resumeSidebar(): Project {
             x: 16,
             y: 284,
             w: 188,
-            h: 160,
+            h: 88,
             content: {
-              text: "{{skill1}} · {{skill2}} · {{skill3}} · {{skill4}} · {{skill5}} · {{skill6}}",
+              text: "Expert: {{skills_expert}}\nProficient: {{skills_proficient}}\nExposure: {{skills_exposure}}",
             },
             style: {
               fontFamily: "ui",
-              fontSize: 10.5,
-              lineHeight: 1.55,
+              fontSize: 9.5,
+              lineHeight: 1.45,
               color: SIDE_INK,
               padding: 0,
             },
             zIndex: 1,
           }),
+          ...mergeSkillChipSlot(16, 378, 1, teal),
+          ...mergeSkillChipSlot(96, 378, 2, teal),
+          ...mergeSkillChipSlot(16, 406, 3, teal),
+          ...mergeSkillChipSlot(96, 406, 4, teal),
           b("text", {
             name: "Education heading",
             x: 16,
-            y: 470,
+            y: 440,
             w: 188,
             h: 18,
             content: { text: "Education" },
@@ -140,7 +150,7 @@ export function resumeSidebar(): Project {
           b("paragraph", {
             name: "Education",
             x: 16,
-            y: 494,
+            y: 464,
             w: 188,
             h: 100,
             content: {
@@ -157,7 +167,7 @@ export function resumeSidebar(): Project {
           b("text", {
             name: "Languages",
             x: 16,
-            y: 620,
+            y: 580,
             w: 188,
             h: 60,
             content: { text: "{{languages}}" },
@@ -303,10 +313,39 @@ export function resumeSidebar(): Project {
             },
             style: { fontSize: 11, lineHeight: 1.45, color: INK, listStyle: "disc" },
           }),
+          b("text", {
+            name: "J4 title",
+            x: 248,
+            y: 620,
+            w: 420,
+            h: 20,
+            content: { text: "{{j4_title}} — {{j4_company}}" },
+            style: { fontFamily: "ui", fontSize: 12, fontWeight: 700, color: INK },
+          }),
+          b("text", {
+            name: "J4 period",
+            x: 248,
+            y: 640,
+            w: 420,
+            h: 16,
+            content: { text: "{{j4_period}}" },
+            style: { fontSize: 10, color: MUTED },
+          }),
+          b("list", {
+            name: "J4 bullets",
+            x: 248,
+            y: 660,
+            w: 420,
+            h: 60,
+            content: {
+              items: ["{{j4_p1}}", "{{j4_p2}}"],
+            },
+            style: { fontSize: 11, lineHeight: 1.45, color: INK, listStyle: "disc" },
+          }),
           b("shape", {
             name: "Accent bar",
             x: 248,
-            y: 640,
+            y: 728,
             w: 420,
             h: 4,
             content: { shape: "rect" },
@@ -315,7 +354,7 @@ export function resumeSidebar(): Project {
           b("paragraph", {
             name: "Footer note",
             x: 248,
-            y: 660,
+            y: 748,
             w: 420,
             h: 40,
             content: {
@@ -553,6 +592,7 @@ export function resumeSidebar(): Project {
         },
       ),
     ],
+    { conditions: [resumePaletteCondition()] },
   );
 }
 
@@ -564,7 +604,7 @@ export function resumeCreative(): Project {
       author: "texLooper samples",
       subject: "Editorial CV with transforms",
       description:
-        "Warm paper surface, rotated availability seal, mirrored decorative strip, shadow cards. Showcases rotate / mirror / opacity / radius.",
+        "Warm paper surface with palette axis, four roles, tiered skill summary, rotated seal, and mirrored strip.",
     },
     [
       page(
@@ -837,13 +877,24 @@ export function resumeCreative(): Project {
           b("paragraph", {
             name: "Edu",
             x: 48,
-            y: 700,
+            y: 620,
             w: 560,
             h: 64,
             content: {
-              text: "{{edu1_degree}} — {{edu1_school}} ({{edu1_years}}) · {{edu2_degree}} — {{edu2_school}} ({{edu2_years}})\n{{languages}}",
+              text: "{{edu1_degree}} — {{edu1_school}} ({{edu1_years}}) · {{edu2_degree}} — {{edu2_school}} ({{edu2_years}})\n{{languages}}\n\nEarlier: {{j4_title}} @ {{j4_company}} ({{j4_period}})",
             },
             style: { fontSize: 11, color: MUTED, lineHeight: 1.45 },
+          }),
+          b("paragraph", {
+            name: "Skill tiers",
+            x: 48,
+            y: 692,
+            w: 560,
+            h: 48,
+            content: {
+              text: "Expert — {{skills_expert}}\nProficient — {{skills_proficient}}\nExposure — {{skills_exposure}}",
+            },
+            style: { fontSize: 10.5, lineHeight: 1.45, color: INK },
           }),
           b("text", {
             name: "Footer",
@@ -1016,6 +1067,7 @@ export function resumeCreative(): Project {
         },
       ),
     ],
+    { conditions: [resumePaletteCondition()] },
   );
 }
 

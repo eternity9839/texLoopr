@@ -1,10 +1,160 @@
-export const RESUME_PROFILES_CSV = `full_name,role,email,phone,location,website,summary,j1_period,j1_title,j1_company,j1_p1,j1_p2,j1_p3,j2_period,j2_title,j2_company,j2_p1,j2_p2,j2_p3,j3_period,j3_title,j3_company,j3_p1,j3_p2,j3_p3,skill1,skill2,skill3,skill4,skill5,skill6,edu1_degree,edu1_school,edu1_years,edu2_degree,edu2_school,edu2_years,languages
-Jonas Weber,DevOps Engineer,jonas.weber@example.com,+49 151 2345 678,"Berlin, Germany",jonasweber.dev,"Platform engineer focused on Kubernetes, observability and developer joy. Cut deploy times from hours to minutes for teams of 100+.",2022 — Now,Staff Platform Engineer,Wolke Systems,"Designed multi-region K8s platform at 99.95% SLA","Reduced mean deploy time from 45 to 6 minutes","Introduced OpenTelemetry tracing org-wide",2019 — 2022,DevOps Engineer,Funkhaus Media,"Terraformed full AWS estate as code","Built self-service preview environments per PR","Handled migration of 40 services to EKS",2016 — 2019,System Administrator,Bergwerk IT,"Automated patching for 300+ servers with Ansible","Consolidated monitoring onto Prometheus stack","Wrote runbooks adopted as company standard",Kubernetes,Terraform,AWS,Observability,Go,CI/CD design,BSc Information Systems, TU Munich,2016,Ausbildung IT Specialist,Berufsschule München,2013,"German — native · English — fluent"
-Marcus Chen,Data Scientist,marcus.chen@example.com,+31 6 2345 6789,"Amsterdam, Netherlands",marcuschen.io,"Data scientist specialising in forecasting and experimentation. Turns messy pipelines into decision-grade models and clear stakeholder narratives.",2022 — Now,Lead Data Scientist,Delta Logistics,"Owns demand-forecast platform steering €120M inventory","Cut forecast error 28% with gradient-boosted ensembles","Built churn early-warning saving €1.8M annually",2019 — 2022,Data Scientist,Kanaal Bank,"Deployed credit-risk models under ECB review","Automated feature store cutting release cycle 3x","Published internal uplift-modelling toolkit",2017 — 2019,Analytics Consultant,Bright Data Co,"Delivered 15 dashboard projects for retail clients","Migrated reporting estate from Excel to dbt","Trained client teams on SQL and experiment design",Python,dbt,Airflow,SQL,Forecasting,Experimentation,MSc Statistics,Delft University of Technology,2017,BSc Mathematics,Utrecht University,2015,"English — fluent · Dutch — fluent · Mandarin — native"
-Amara Okafor,Product Manager,amara.okafor@example.com,+44 7700 900 123,"London, UK",amaraokafor.com,"Product manager bridging research, design and engineering for B2B SaaS. Launched three zero-to-one products and scaled pricing to £8M ARR.",2023 — Now,Principal Product Manager,Fleetwise,"Owns telematics platform roadmap across 3 squads","Launched usage-based pricing growing ARR 22%","Ran discovery programme interviewing 60 fleet operators",2020 — 2023,Senior Product Manager,Dispatchly,"Shipped driver mobile app rated 4.8 on stores","Introduced OKR cadence adopted company-wide","Reduced onboarding drop-off 35% via redesign",2017 — 2020,Associate Product Manager,MarketMuse,"Grew activation 18% through lifecycle emails","Managed integrations partnership roadmap","Founded internal product-guild community",Product strategy,Discovery,Roadmapping,SQL,Analytics,Pricing,MSc Management,London Business School,2017,BSc Economics,University of Lagos,2014,"English — native · Igbo — native · French — A2"
-Sofia Reyes,UX Designer,sofia.reyes@example.com,+34 612 345 678,"Barcelona, Spain",sofiareyes.design,"Product designer crafting calm, research-led interfaces for fintech and health. Runs continuous discovery and designs in systems, not screens.",2021 — Now,Lead Product Designer,Clara Health,"Redesigned patient portal raising task success 41%","Built token-based design system across web and app","Coached squad designers on accessibility practice",2018 — 2021,Product Designer,Pago Fintech,"Simplified KYC flow cutting abandonment 26%","Ran quarterly benchmark usability programmes","Prototyped award-winning onboarding in Figma",2016 — 2018,Visual Designer,Estudio Norte,"Delivered brand systems for 12 startups","Introduced motion guidelines to the studio","Supported sales with interactive demos",Figma,Design systems,User research,Prototyping,Accessibility,Interaction design,BA Interaction Design,ELISAVA Barcelona,2016,Foundation Art & Design,Escola Eina,2013,"Spanish — native · Catalan — native · English — C1"
-Tomás Ferreira,Backend Engineer,tomas.ferreira@example.com,+351 912 345 678,"Porto, Portugal",tomasferreira.dev,"Backend engineer focused on payment rails and event-driven systems. Keeps ledgers correct under load and writes the runbooks nobody dreads.",2020 — Now,Senior Backend Engineer,Miro Pay,"Owns ledger service clearing €40M monthly with zero reconciliation drift","Cut p99 transfer latency from 900 to 120 ms via write batching","Led PCI-DSS scope reduction saving €180k in audit effort",2017 — 2020,Backend Engineer,Ticketline PT,"Rebuilt queueing for flash sales sustaining 60k checkouts/minute","Introduced outbox pattern eliminating duplicate emails","Migrated monolith billing module to Go services",2015 — 2017,Junior Developer,Sapo Labs,"Shipped notification pipeline for carrier partners","Automated contract testing across 12 integrations",PostgreSQL,Banking domain,Kafka,Go,Event sourcing,Observability,BSc Computer Engineering,University of Porto,2015,Postgraduate Distributed Systems,Instituto Superior Técnico,2017,"Portuguese — native · English — fluent · Spanish — B2"
-Hana Suzuki,Mobile Engineer,hana.suzuki@example.com,+31 6 8765 4321,"Amsterdam, Netherlands",hanasuzuki.app,"Mobile engineer shipping native-feeling apps on tight budgets. Cares about cold-start time, offline behaviour and review scores above 4.6.",2022 — Now,Senior iOS Engineer,Fietsfinder,"Rewrote navigation stack cutting cold start to 800 ms","Shipped offline maps used by 200k riders monthly","Reduced crash-free sessions gap between platforms to 0.3%",2019 — 2022,Mobile Engineer,Stadsapp BV,"Launched parking app adopted by three municipalities","Built OTA feature flags removing release bottlenecks","Introduced Swift Concurrency patterns team-wide",2017 — 2019,Junior Android Developer,Tulip Media,"Delivered news app widgets with 30% DAU lift","Owned Play Store release pipeline automation",Swift,Kotlin,Offline sync,CI/CD,Performance,Accessibility,BSc Interaction Technology,Utrecht University of Applied Sciences,2017,iOS Specialisation Stanford Online,2019,"Japanese — native · English — fluent · Dutch — B1"
-Liam O'Connor,Site Reliability Engineer,liam.oconnor.example@gmail.com,+353 87 123 4567,"Dublin, Ireland",liamoconnor.ie,"SRE who treats reliability as a product feature. Blames systems, not people; automates toil until the pager goes quiet.",2021 — Now,Staff SRE,Cloudharbor,"Error budgets now gate releases across 40 services","Cut MTTR 55% by rebuilding incident command process","Designed multi-region failover surviving annual game-day drills",2018 — 2021,SRE,Riverdock Hosting,"Terraformed bare-metal fleet of 600 hosts","Built SLO tooling adopted by five product teams","Eliminated 70% of manual capacity planning",2016 — 2018,Systems Administrator,Eircom Cloud,"Automated DNS and certificate rotation org-wide","Wrote first incident-response playbook",Kubernetes,SLO design,Terraform,Incident response,Go,Grafana,BSc Computer Science,Trinity College Dublin,2016,Certificate Enterprise Architecture,IMI Dublin,2019,"English — native · Irish — fluent"
-Fatima Zahra El Amrani,Growth Analyst,fatima.elamrani@example.com,+32 471 987 654,"Brussels, Belgium",fatimazehra.be,"Growth analyst pairing rigorous experimentation with honest storytelling. Turns funnel noise into a prioritised backlog leadership actually trusts.",2022 — Now,Senior Growth Analyst,Lumen Learning,"Grew activation 24% through onboarding experiment programme","Built self-serve metrics layer replacing weekly ad-hoc reports","Ran pricing research informing tier redesign at €6M scale",2020 — 2022,Growth Analyst,Velodrop,"Scaled referral loop contributing 18% of signups","Introduced Bayesian A/B evaluation replacing peak peeking","Automated LTV reporting across six markets",2018 — 2020,Marketing Data Intern,Shoply,"Dashboarded campaign ROI for 20+ channels","Cleaned tracking taxonomy cutting attribution disputes","SQL,dbt,Experimentation,Amplitude,Python,Data storytelling,BSc Business Analytics,Solvay Brussels School,2018,MSc Marketing Intelligence,VU Amsterdam,2020,"Arabic — native · French — fluent · Dutch — fluent · English — fluent"
-Viktor Lindgren,Security Engineer,viktor.lindgren@example.com,+46 70 123 45 67,"Stockholm, Sweden",viktorlindgren.se,"Security engineer embedding secure defaults into developer workflows. Ships paved roads, not gates; measures security work by tickets developers no longer file.",2021 — Now,Senior Security Engineer,Nordbank IT,"Led supply-chain hardening after industry-wide xz-style scare","Cut critical findings per audit from 14 to 2 across two years","Built internal threat-modelling guild training 80 engineers",2019 — 2021,Application Security Engineer,Fastighetspay,"Secured open-banking flows ahead of PSD2 deadline","Introduced dependency scanning blocking 100% of known CVEs","Wrote secure-coding curriculum for onboarding squads",2017 — 2019,Security Consultant,Härd Security,"Ran pentests for 25 fintech and retail clients","Disclosed three CVEs in widely-used Nordic banking SDKs",Threat modelling,AppSec,CI/CD hardening,Cryptography basics,Python,Public speaking,MSc Information Security,KTH Royal Institute of Technology,2017,OSCP,Offensive Security,2019,"Swedish — native · English — fluent"`;
+/** Shared CSV rows for classic merge-field résumé demos (9 profiles). */
+export const RESUME_PROFILES_CSV = `full_name,role,email,phone,location,website,summary,palette,j1_period,j1_title,j1_company,j1_p1,j1_p2,j1_p3,j2_period,j2_title,j2_company,j2_p1,j2_p2,j2_p3,j3_period,j3_title,j3_company,j3_p1,j3_p2,j3_p3,j4_period,j4_title,j4_company,j4_p1,j4_p2,skill1,skill1_tier,skill2,skill2_tier,skill3,skill3_tier,skill4,skill4_tier,skill5,skill5_tier,skill6,skill6_tier,skills_expert,skills_proficient,skills_exposure,edu1_degree,edu1_school,edu1_years,edu2_degree,edu2_school,edu2_years,languages,oss_note
+Jonas Weber,DevOps Engineer,jonas.weber@example.com,+49 151 2345 678,"Berlin, Germany",jonasweber.dev,"Platform engineer focused on Kubernetes, observability and developer joy. Cut deploy times from hours to minutes for teams of 100+.",teal,2022 — Now,Staff Platform Engineer,Wolke Systems,"Designed multi-region K8s platform at 99.95% SLA","Reduced mean deploy time from 45 to 6 minutes","Introduced OpenTelemetry tracing org-wide",2019 — 2022,DevOps Engineer,Funkhaus Media,"Terraformed full AWS estate as code","Built self-service preview environments per PR","Handled migration of 40 services to EKS",2016 — 2019,System Administrator,Bergwerk IT,"Automated patching for 300+ servers with Ansible","Consolidated monitoring onto Prometheus stack","Wrote runbooks adopted as company standard",2014 — 2016,Junior Sysadmin,Hostwerk GmbH,"On-call rotation for 80-node Linux estate","Documented backup and restore runbooks",,Kubernetes,expert,Terraform,expert,AWS,proficient,Observability,proficient,Go,proficient,CI/CD design,working,"Kubernetes, Terraform, GitHub Actions","AWS, Go, Prometheus, Grafana","Packer, Rundeck",BSc Information Systems,TU Munich,2016,Ausbildung IT Specialist,Berufsschule München,2013,"German — native · English — fluent","NixOS and OpenTofu contributor; homelab notes on jonasweber.dev."
+Marcus Chen,Data Scientist,marcus.chen@example.com,+31 6 2345 6789,"Amsterdam, Netherlands",marcuschen.io,"Data scientist specialising in forecasting and experimentation. Turns messy pipelines into decision-grade models and clear stakeholder narratives.",blue,2022 — Now,Lead Data Scientist,Delta Logistics,"Owns demand-forecast platform steering €120M inventory","Cut forecast error 28% with gradient-boosted ensembles","Built churn early-warning saving €1.8M annually",2019 — 2022,Data Scientist,Kanaal Bank,"Deployed credit-risk models under ECB review","Automated feature store cutting release cycle 3x","Published internal uplift-modelling toolkit",2017 — 2019,Analytics Consultant,Bright Data Co,"Delivered 15 dashboard projects for retail clients","Migrated reporting estate from Excel to dbt","Trained client teams on SQL and experiment design",2016 — 2017,Junior Analyst,Retail Insights,"Built first automated ETL for weekly sales feeds","Introduced versioned SQL style guide",,Python,expert,dbt,expert,Airflow,proficient,SQL,proficient,Forecasting,proficient,Experimentation,working,"Python, dbt, scikit-learn","Airflow, SQL, Spark","Looker, Excel",MSc Statistics,Delft University of Technology,2017,BSc Mathematics,Utrecht University,2015,"English — fluent · Dutch — fluent · Mandarin — native","Occasional PyData Amsterdam talks on forecast evaluation."
+Amara Okafor,Product Manager,amara.okafor@example.com,+44 7700 900 123,"London, UK",amaraokafor.com,"Product manager bridging research, design and engineering for B2B SaaS. Launched three zero-to-one products and scaled pricing to £8M ARR.",coral,2023 — Now,Principal Product Manager,Fleetwise,"Owns telematics platform roadmap across 3 squads","Launched usage-based pricing growing ARR 22%","Ran discovery programme interviewing 60 fleet operators",2020 — 2023,Senior Product Manager,Dispatchly,"Shipped driver mobile app rated 4.8 on stores","Introduced OKR cadence adopted company-wide","Reduced onboarding drop-off 35% via redesign",2017 — 2020,Associate Product Manager,MarketMuse,"Grew activation 18% through lifecycle emails","Managed integrations partnership roadmap","Founded internal product-guild community",2015 — 2017,Product Analyst,Shoply,"Owned checkout funnel experiments","Partnered with data on first self-serve dashboards",,Product strategy,expert,Discovery,expert,Roadmapping,proficient,SQL,proficient,Analytics,proficient,Pricing,working,"Discovery, Roadmapping, OKRs","SQL, Analytics, Jira","Figma, Amplitude",MSc Management,London Business School,2017,BSc Economics,University of Lagos,2014,"English — native · Igbo — native · French — A2","Writes product teardown threads on amaraokafor.com."
+Sofia Reyes,UX Designer,sofia.reyes@example.com,+34 612 345 678,"Barcelona, Spain",sofiareyes.design,"Product designer crafting calm, research-led interfaces for fintech and health. Runs continuous discovery and designs in systems, not screens.",forest,2021 — Now,Lead Product Designer,Clara Health,"Redesigned patient portal raising task success 41%","Built token-based design system across web and app","Coached squad designers on accessibility practice",2018 — 2021,Product Designer,Pago Fintech,"Simplified KYC flow cutting abandonment 26%","Ran quarterly benchmark usability programmes","Prototyped award-winning onboarding in Figma",2016 — 2018,Visual Designer,Estudio Norte,"Delivered brand systems for 12 startups","Introduced motion guidelines to the studio","Supported sales with interactive demos",2014 — 2016,Design Intern,Barcelona Design Week,"Assisted usability tests for civic apps","Prepared accessibility checklists for jury reviews",,Figma,expert,Design systems,expert,User research,proficient,Prototyping,proficient,Accessibility,proficient,Interaction design,working,"Figma, Design systems, Research","Prototyping, Accessibility, WCAG","After Effects, Principle",BA Interaction Design,ELISAVA Barcelona,2016,Foundation Art & Design,Escola Eina,2013,"Spanish — native · Catalan — native · English — C1","Publishes calm-UI case studies on sofiareyes.design."
+Tomás Ferreira,Backend Engineer,tomas.ferreira@example.com,+351 912 345 678,"Porto, Portugal",tomasferreira.dev,"Backend engineer focused on payment rails and event-driven systems. Keeps ledgers correct under load and writes the runbooks nobody dreads.",slate,2020 — Now,Senior Backend Engineer,Miro Pay,"Owns ledger service clearing €40M monthly with zero reconciliation drift","Cut p99 transfer latency from 900 to 120 ms via write batching","Led PCI-DSS scope reduction saving €180k in audit effort",2017 — 2020,Backend Engineer,Ticketline PT,"Rebuilt queueing for flash sales sustaining 60k checkouts/minute","Introduced outbox pattern eliminating duplicate emails","Migrated monolith billing module to Go services",2015 — 2017,Junior Developer,Sapo Labs,"Shipped notification pipeline for carrier partners","Automated contract testing across 12 integrations",2013 — 2015,Intern Developer,FEUP Labs,"Maintained student project APIs","Wrote first unit tests for legacy PHP modules",,PostgreSQL,expert,Go,expert,Kafka,proficient,Banking domain,proficient,Event sourcing,proficient,Observability,working,"PostgreSQL, Go, Kafka","Kubernetes, gRPC, PCI-DSS","Java, Ruby",BSc Computer Engineering,University of Porto,2015,Postgraduate Distributed Systems,Instituto Superior Técnico,2017,"Portuguese — native · English — fluent · Spanish — B2","Maintains a ledger-testing toolkit on GitHub."
+Hana Suzuki,Mobile Engineer,hana.suzuki@example.com,+31 6 8765 4321,"Amsterdam, Netherlands",hanasuzuki.app,"Mobile engineer shipping native-feeling apps on tight budgets. Cares about cold-start time, offline behaviour and review scores above 4.6.",blue,2022 — Now,Senior iOS Engineer,Fietsfinder,"Rewrote navigation stack cutting cold start to 800 ms","Shipped offline maps used by 200k riders monthly","Reduced crash-free sessions gap between platforms to 0.3%",2019 — 2022,Mobile Engineer,Stadsapp BV,"Launched parking app adopted by three municipalities","Built OTA feature flags removing release bottlenecks","Introduced Swift Concurrency patterns team-wide",2017 — 2019,Junior Android Developer,Tulip Media,"Delivered news app widgets with 30% DAU lift","Owned Play Store release pipeline automation",2016 — 2017,QA Engineer,Mobile First,"Automated screenshot tests for two apps","Filed first accessibility bugs in public tracker",,Swift,expert,Kotlin,proficient,Offline sync,proficient,CI/CD,proficient,Performance,proficient,Accessibility,working,"Swift, iOS, Instruments","Kotlin, Fastlane, Firebase","React Native, Flutter",BSc Interaction Technology,Utrecht University of Applied Sciences,2017,iOS Specialisation Stanford Online,2019,"Japanese — native · English — fluent · Dutch — B1","Blog posts on cold-start profiling at hanasuzuki.app."
+Liam O'Connor,Site Reliability Engineer,liam.oconnor.example@gmail.com,+353 87 123 4567,"Dublin, Ireland",liamoconnor.ie,"SRE who treats reliability as a product feature. Blames systems, not people; automates toil until the pager goes quiet.",forest,2021 — Now,Staff SRE,Cloudharbor,"Error budgets now gate releases across 40 services","Cut MTTR 55% by rebuilding incident command process","Designed multi-region failover surviving annual game-day drills",2018 — 2021,SRE,Riverdock Hosting,"Terraformed bare-metal fleet of 600 hosts","Built SLO tooling adopted by five product teams","Eliminated 70% of manual capacity planning",2016 — 2018,Systems Administrator,Eircom Cloud,"Automated DNS and certificate rotation org-wide","Wrote first incident-response playbook",2014 — 2016,NOC Engineer,ISP Ireland,"Triaged backbone alarms and customer escalations","Drafted shift handover templates",,Kubernetes,expert,Terraform,expert,SLO design,proficient,Incident response,proficient,Go,proficient,Grafana,working,"Kubernetes, Terraform, SLOs","Go, Prometheus, PagerDuty","Chef, Puppet",BSc Computer Science,Trinity College Dublin,2016,Certificate Enterprise Architecture,IMI Dublin,2019,"English — native · Irish — fluent","Game-day notes and SLO examples on liamoconnor.ie."
+Fatima Zahra El Amrani,Growth Analyst,fatima.elamrani@example.com,+32 471 987 654,"Brussels, Belgium",fatimazehra.be,"Growth analyst pairing rigorous experimentation with honest storytelling. Turns funnel noise into a prioritised backlog leadership actually trusts.",coral,2022 — Now,Senior Growth Analyst,Lumen Learning,"Grew activation 24% through onboarding experiment programme","Built self-serve metrics layer replacing weekly ad-hoc reports","Ran pricing research informing tier redesign at €6M scale",2020 — 2022,Growth Analyst,Velodrop,"Scaled referral loop contributing 18% of signups","Introduced Bayesian A/B evaluation replacing peeking","Automated LTV reporting across six markets",2018 — 2020,Marketing Data Intern,Shoply,"Dashboarded campaign ROI for 20+ channels","Cleaned tracking taxonomy cutting attribution disputes",2017 — 2018,Student Consultant,Solvay Consulting Club,"Supported pro-bono market sizing for NGOs","Built first Looker explores for club projects",,SQL,expert,dbt,expert,Experimentation,proficient,Amplitude,proficient,Python,proficient,Data storytelling,working,"SQL, dbt, Experimentation","Amplitude, Python, Looker","GA4, HubSpot",BSc Business Analytics,Solvay Brussels School,2018,MSc Marketing Intelligence,VU Amsterdam,2020,"Arabic — native · French — fluent · Dutch — fluent · English — fluent","Publishes experiment post-mortems on fatimazehra.be."
+Viktor Lindgren,Security Engineer,viktor.lindgren@example.com,+46 70 123 45 67,"Stockholm, Sweden",viktorlindgren.se,"Security engineer embedding secure defaults into developer workflows. Ships paved roads, not gates; measures security work by tickets developers no longer file.",slate,2021 — Now,Senior Security Engineer,Nordbank IT,"Led supply-chain hardening after industry-wide xz-style scare","Cut critical findings per audit from 14 to 2 across two years","Built internal threat-modelling guild training 80 engineers",2019 — 2021,Application Security Engineer,Fastighetspay,"Secured open-banking flows ahead of PSD2 deadline","Introduced dependency scanning blocking 100% of known CVEs","Wrote secure-coding curriculum for onboarding squads",2017 — 2019,Security Consultant,Härd Security,"Ran pentests for 25 fintech and retail clients","Disclosed three CVEs in widely-used Nordic banking SDKs",2015 — 2017,IT Auditor,Regional Bank,"Reviewed access controls and logging coverage","Drafted first phishing simulation programme",,Threat modelling,expert,AppSec,expert,CI/CD hardening,proficient,Python,proficient,Cryptography basics,proficient,Public speaking,working,"Threat modelling, AppSec, CI/CD","Python, Semgrep, Okta","Burp Suite, Cobalt",MSc Information Security,KTH Royal Institute of Technology,2017,OSCP,Offensive Security,2019,"Swedish — native · English — fluent","Security office hours write-ups on viktorlindgren.se."`;
+
+/** Rich JSON rows for the engineering résumé demo (palette, certs, tiered skills). */
+export const RESUME_ENGINEERING_SAMPLE = `[
+  {
+    "full_name": "Alex Morgan",
+    "role": "Platform Engineer",
+    "email": "alex.morgan@example.com",
+    "phone": "+44 7700 900 501",
+    "location": "Manchester, UK",
+    "website": "alexmorgan.dev",
+    "summary": "Platform engineer building reproducible infra for product teams. Owns landing zones, observability baselines, and paved-road CI/CD across AWS and Kubernetes.",
+    "palette": "teal",
+    "j1_period": "2022 — Now",
+    "j1_title": "Senior Platform Engineer",
+    "j1_company": "Canal Freight",
+    "j1_p1": "Designed multi-account AWS landing zones with guardrails and SSO federation.",
+    "j1_p2": "Cut deploy lead time from days to hours with GitHub Actions and Terraform modules.",
+    "j1_p3": "Centralised metrics and logs on Datadog with SLO dashboards for 35 services.",
+    "j2_period": "2019 — 2022",
+    "j2_title": "DevOps Engineer",
+    "j2_company": "Harbor Mutual",
+    "j2_p1": "Migrated 60 VMs to EKS with zero customer-facing downtime.",
+    "j2_p2": "Introduced Podman-based local dev parity for backend squads.",
+    "j2_p3": "Authored runbooks adopted as org standard for incident response.",
+    "j3_period": "2016 — 2019",
+    "j3_title": "Systems Engineer",
+    "j3_company": "Northline Hosting",
+    "j3_p1": "Automated patching for 400 Linux hosts with Ansible.",
+    "j3_p2": "Built Prometheus/Grafana stack replacing legacy Nagios.",
+    "j3_p3": "On-call rotation lead for production network and compute.",
+    "j4_period": "2014 — 2016",
+    "j4_title": "Junior Sysadmin",
+    "j4_company": "Campus IT",
+    "j4_p1": "Maintained student-facing web estate on Debian and FreeBSD.",
+    "j4_p2": "Documented backup/restore procedures for critical services.",
+    "skills_expert": "Terraform, Kubernetes, AWS, Datadog, Python",
+    "skills_proficient": "Ansible, GitHub Actions, PostgreSQL, Podman, Go",
+    "skills_exposure": "Azure, Jenkins, Puppet",
+    "edu1_degree": "BSc Computer Science",
+    "edu1_school": "University of Manchester",
+    "edu1_years": "2014",
+    "edu2_degree": "CKA — Certified Kubernetes Administrator",
+    "edu2_school": "CNCF",
+    "edu2_years": "2021",
+    "languages": "English — native · French — B1",
+    "oss_note": "Maintains Terraform modules and a homelab blog on alexmorgan.dev.",
+    "certifications": [
+      {"name": "HashiCorp Terraform Associate", "year": "2023"},
+      {"name": "AWS Solutions Architect Associate", "year": "2022"},
+      {"name": "CKA", "year": "2021"}
+    ]
+  },
+  {
+    "full_name": "Priya Nair",
+    "role": "Cloud Architect",
+    "email": "priya.nair@example.com",
+    "phone": "+31 6 1234 5678",
+    "location": "Rotterdam, Netherlands",
+    "website": "priyanair.cloud",
+    "summary": "Cloud architect for regulated workloads. Designs migration paths, cost guardrails, and security baselines for banking and logistics clients.",
+    "palette": "blue",
+    "j1_period": "2021 — Now",
+    "j1_title": "Lead Cloud Architect",
+    "j1_company": "Kanaal Bank",
+    "j1_p1": "Owns cloud adoption framework referenced by three business units.",
+    "j1_p2": "Led VMware → Azure migration for 120 workloads with phased cutovers.",
+    "j1_p3": "Reduced monthly cloud spend 18% via reserved capacity and tagging policy.",
+    "j2_period": "2018 — 2021",
+    "j2_title": "Cloud Consultant",
+    "j2_company": "Harbor Digital",
+    "j2_p1": "Delivered landing-zone designs for four mid-market clients.",
+    "j2_p2": "Built CI/CD templates in Azure DevOps with policy-as-code gates.",
+    "j2_p3": "Facilitated game-day exercises for regional failover.",
+    "j3_period": "2015 — 2018",
+    "j3_title": "Infrastructure Engineer",
+    "j3_company": "Delta Logistics",
+    "j3_p1": "Standardised IaC with Terraform across staging and production.",
+    "j3_p2": "Hardened PostgreSQL estates with backup verification automation.",
+    "j3_p3": "Partnered with security on ISO-27001 evidence collection.",
+    "j4_period": "2013 — 2015",
+    "j4_title": "Support Engineer",
+    "j4_company": "Rotterdam ISP",
+    "j4_p1": "Resolved escalations for managed hosting customers.",
+    "j4_p2": "Scripted health checks in Bash and Python.",
+    "skills_expert": "Azure, Terraform, Architecture reviews",
+    "skills_proficient": "AWS, Ansible, PostgreSQL, FinOps",
+    "skills_exposure": "GCP, Chef",
+    "edu1_degree": "MSc Cloud Computing",
+    "edu1_school": "TU Delft",
+    "edu1_years": "2015",
+    "edu2_degree": "BSc Information Technology",
+    "edu2_school": "University of Kerala",
+    "edu2_years": "2013",
+    "languages": "English — fluent · Dutch — fluent · Malayalam — native",
+    "oss_note": "Writes migration checklists and cost reports on priyanair.cloud.",
+    "certifications": [
+      {"name": "Azure Solutions Architect Expert", "year": "2024"},
+      {"name": "Terraform Associate", "year": "2022"}
+    ]
+  },
+  {
+    "full_name": "Omar Haddad",
+    "role": "Infrastructure Engineer",
+    "email": "omar.haddad@example.com",
+    "phone": "+32 471 555 019",
+    "location": "Brussels, Belgium",
+    "website": "omarhaddad.tech",
+    "summary": "Infrastructure engineer for fintech platforms. Focus on compliance-ready automation, legacy decoupling, and observability that teams actually use.",
+    "palette": "forest",
+    "j1_period": "2023 — Now",
+    "j1_title": "Infrastructure Engineer",
+    "j1_company": "Payflow NV",
+    "j1_p1": "Deployed scalable environments for new payment products under PCI-DSS.",
+    "j1_p2": "Migrated legacy apps with blue/green and strangler patterns.",
+    "j1_p3": "Implemented incident and change management with Datadog workflows.",
+    "j2_period": "2020 — 2023",
+    "j2_title": "Production Engineer",
+    "j2_company": "Sword Group",
+    "j2_p1": "Automated release pipelines with GitLab CI and Jenkins.",
+    "j2_p2": "Supported DORA and GDPR audit evidence for banking clients.",
+    "j2_p3": "Coached developers on trunk-based delivery.",
+    "j3_period": "2018 — 2020",
+    "j3_title": "Junior Ops Engineer",
+    "j3_company": "Lalux Assurances",
+    "j3_p1": "Managed Linux estates with Ansible and Terraform.",
+    "j3_p2": "Containerised internal tools with Docker and Podman.",
+    "j3_p3": "Improved monitoring coverage for business-critical APIs.",
+    "j4_period": "2017 — 2018",
+    "j4_title": "Intern — DevOps",
+    "j4_company": "Devoteam",
+    "j4_p1": "Built Azure tenant provisioning scripts in PowerShell.",
+    "j4_p2": "Assisted on Microsoft 365 automation via Graph API.",
+    "skills_expert": "Terraform, Ansible, Linux, Datadog",
+    "skills_proficient": "AWS, MariaDB, GitHub Actions, Python",
+    "skills_exposure": "Azure DevOps, Rundeck",
+    "edu1_degree": "Bootcamp SysAdmin & DevOps",
+    "edu1_school": "BeCode",
+    "edu1_years": "2018",
+    "edu2_degree": "Bachelor Psychological Sciences",
+    "edu2_school": "ULB",
+    "edu2_years": "2017",
+    "languages": "French — fluent · English — fluent · Arabic — native",
+    "oss_note": "NixOS and Fish shell advocate; notes on omarhaddad.tech.",
+    "certifications": [
+      {"name": "Terraform Associate", "year": "2024"},
+      {"name": "AWS re/Start Graduate", "year": "2022"}
+    ]
+  }
+]`;

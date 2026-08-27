@@ -16,15 +16,11 @@ import {
   a5Handout,
 } from "./mass-publication";
 import { welcome, resume } from "./personal";
-import { buildYassinResume } from "../../projects/yassinResume";
-import {
-  resumeCreative,
-  resumeSidebar,
-  transformsDemo,
-} from "./personal/resumes";
+import { resumeCreative, resumeSidebar, transformsDemo } from "./personal/resumes";
+import { resumeEngineering } from "./personal/resumeEngineering";
 import { advertisement } from "./ads";
 import { weddingInvite } from "./personal/wedding";
-import { RESUME_PROFILES_CSV } from "./personal/resumeData";
+import { RESUME_ENGINEERING_SAMPLE, RESUME_PROFILES_CSV } from "./personal/resumeData";
 import type { DemoEntry } from "./types";
 
 export type { DemoEntry, DemoBucket } from "./types";
@@ -75,19 +71,20 @@ Edsger Dijkstra,Texas Instruments,Computer Scientist,en,2026-05-01,4,60`,
     category: "Career",
     bucket: "personal",
     blurb:
-      "Two-page CV + cover letter; every field merges from Data. Flip the preview row to switch candidates.",
+      "Two-page CV + cover letter; palette axis, four jobs, skill tiers. Flip the preview row to switch candidates.",
     sampleCsv: RESUME_PROFILES_CSV,
     build: resume,
   },
   {
-    id: "yassin-bousaadi-resume",
-    title: "Yassin Bousâadi — Resume",
+    id: "resume-engineering",
+    title: "Resume — engineering",
     category: "Career",
     bucket: "personal",
-    blurb: "Two-page static CV — no data rows required. Export as PDF from Render.",
+    blurb:
+      "Two-page engineering CV — tiered skills, certifications repeater, palette axis, four experience slots. Flip Data rows to switch candidates.",
     artboard: "a4",
-    sampleCsv: "[{}]",
-    build: buildYassinResume,
+    sampleCsv: RESUME_ENGINEERING_SAMPLE,
+    build: resumeEngineering,
   },
   {
     id: "resume-sidebar",

@@ -7,6 +7,16 @@ import {
 import { DEMO_IMG } from "../assets";
 import { b, page, shell } from "../helpers";
 import { northlineStyleExtras } from "../brand/northlineStyles";
+import {
+  mergeSkillChipSlot,
+  paletteAccentRule,
+  paletteSectionHeading,
+  paletteVariants,
+  resumePalette,
+  resumePaletteCondition,
+} from "./resumeShared";
+
+export { RESUME_PROFILES_CSV, RESUME_ENGINEERING_SAMPLE } from "./resumeData";
 
 const ACCENT = "#0f6b63";
 const INK = "#1c2430";
@@ -1039,25 +1049,6 @@ export function welcome(): Project {
   );
 }
 
-function sectionHeading(text: string, x: number, y: number, w: number) {
-  return b("text", {
-    name: `Heading ${text}`,
-    x,
-    y,
-    w,
-    h: 20,
-    content: { text },
-    style: {
-      fontFamily: "ui",
-      fontSize: 11,
-      fontWeight: 700,
-      textTransform: "uppercase",
-      letterSpacing: 1.6,
-      color: ACCENT,
-    },
-  });
-}
-
 function jobEntry(
   y: number,
   f: { period: string; title: string; company: string; p1: string; p2: string; p3: string },
@@ -1114,13 +1105,14 @@ function jobEntry(
 }
 
 export function resume(): Project {
+  const teal = resumePalette("teal");
   return shell(
     {
       name: "Resume — merge-field template",
       author: "texLooper samples",
       subject: "CV + cover letter driven by Data rows",
       description:
-        "Two-page resume with every field bound to data, plus a matching cover letter page. Load the ten sample profiles in Data and flip the preview row to render each candidate.",
+        "Two-page resume with palette axis, four jobs, tiered skill chips, plus a matching cover letter. Flip Data rows to render each candidate.",
     },
     [
       page("Resume", [
@@ -1148,23 +1140,25 @@ export function resume(): Project {
             color: INK,
           },
         }),
-        b("text", {
-          name: "Role line",
-          x: 56,
-          y: 104,
-          w: 480,
-          h: 22,
-          content: { text: "{{role}}" },
-          style: {
-            fontFamily: "ui",
-            fontSize: 13,
-            fontWeight: 600,
-            textTransform: "uppercase",
-            letterSpacing: 2.4,
-            color: ACCENT,
-            verticalAlign: "middle",
-          },
-        }),
+        ...paletteVariants((palette) =>
+          b("text", {
+            name: "Role line",
+            x: 56,
+            y: 104,
+            w: 480,
+            h: 22,
+            content: { text: "{{role}}" },
+            style: {
+              fontFamily: "ui",
+              fontSize: 13,
+              fontWeight: 600,
+              textTransform: "uppercase",
+              letterSpacing: 2.4,
+              color: palette.accent,
+              verticalAlign: "middle",
+            },
+          }),
+        ),
         b("text", {
           name: "Contact block",
           x: 56,
@@ -1181,18 +1175,10 @@ export function resume(): Project {
             color: MUTED,
           },
         }),
-        b("shape", {
-          name: "Top rule",
-          x: 56,
-          y: 172,
-          w: 608,
-          h: 3,
-          content: { variant: "rect" },
-          style: { background: ACCENT, borderRadius: 2 },
-        }),
+        ...paletteAccentRule(56, 172, 608),
 
         // ---- Main column ----
-        sectionHeading("Profile", 56, 192, 200),
+        ...paletteSectionHeading("Profile", 56, 192, 200),
         b("paragraph", {
           name: "Summary",
           x: 56,
@@ -1202,8 +1188,8 @@ export function resume(): Project {
           content: { text: "{{summary}}" },
           style: { fontSize: 11.5, lineHeight: 1.55, color: INK },
         }),
-        sectionHeading("Experience", 56, 318, 200),
-        ...jobEntry(342, {
+        ...paletteSectionHeading("Experience", 56, 304, 200),
+        ...jobEntry(328, {
           period: "{{j1_period}}",
           title: "{{j1_title}} — {{j1_company}}",
           company: "j1",
@@ -1211,7 +1197,7 @@ export function resume(): Project {
           p2: "{{j1_p2}}",
           p3: "{{j1_p3}}",
         }),
-        ...jobEntry(478, {
+        ...jobEntry(456, {
           period: "{{j2_period}}",
           title: "{{j2_title}} — {{j2_company}}",
           company: "j2",
@@ -1219,13 +1205,21 @@ export function resume(): Project {
           p2: "{{j2_p2}}",
           p3: "{{j2_p3}}",
         }),
-        ...jobEntry(614, {
+        ...jobEntry(584, {
           period: "{{j3_period}}",
           title: "{{j3_title}} — {{j3_company}}",
           company: "j3",
           p1: "{{j3_p1}}",
           p2: "{{j3_p2}}",
           p3: "{{j3_p3}}",
+        }),
+        ...jobEntry(712, {
+          period: "{{j4_period}}",
+          title: "{{j4_title}} — {{j4_company}}",
+          company: "j4",
+          p1: "{{j4_p1}}",
+          p2: "{{j4_p2}}",
+          p3: "",
         }),
 
         // ---- Sidebar ----
@@ -1234,7 +1228,7 @@ export function resume(): Project {
           x: 488,
           y: 212,
           w: 176,
-          h: 556,
+          h: 580,
           content: { variant: "rect" },
           style: {
             background: "#f3f6fa",
@@ -1242,36 +1236,29 @@ export function resume(): Project {
             shadow: true,
           },
         }),
-        sectionHeading("Skills", 500, 228, 152),
-        b("list", {
-          name: "Skills list",
+        ...paletteSectionHeading("Skills", 500, 228, 152),
+        ...mergeSkillChipSlot(502, 254, 1, teal),
+        ...mergeSkillChipSlot(502, 282, 2, teal),
+        ...mergeSkillChipSlot(502, 310, 3, teal),
+        ...mergeSkillChipSlot(502, 338, 4, teal),
+        ...mergeSkillChipSlot(502, 366, 5, teal),
+        ...mergeSkillChipSlot(502, 394, 6, teal),
+        b("text", {
+          name: "Skills tier summary",
           x: 502,
-          y: 252,
+          y: 428,
           w: 150,
-          h: 150,
+          h: 72,
           content: {
-            items: [
-              "{{skill1}}",
-              "{{skill2}}",
-              "{{skill3}}",
-              "{{skill4}}",
-              "{{skill5}}",
-              "{{skill6}}",
-            ],
-            markerColor: ACCENT,
+            text: "Expert: {{skills_expert}}\n\nProficient: {{skills_proficient}}\n\nExposure: {{skills_exposure}}",
           },
-          style: {
-            fontSize: 11,
-            lineHeight: 1.45,
-            color: INK,
-            listStyle: "square",
-          },
+          style: { fontSize: 8.5, lineHeight: 1.35, color: MUTED },
         }),
-        sectionHeading("Education", 500, 430, 152),
+        ...paletteSectionHeading("Education", 500, 510, 152),
         b("text", {
           name: "Education entries",
           x: 500,
-          y: 454,
+          y: 534,
           w: 152,
           h: 120,
           content: {
@@ -1279,11 +1266,11 @@ export function resume(): Project {
           },
           style: { fontSize: 10.5, lineHeight: 1.45, color: INK },
         }),
-        sectionHeading("Languages", 500, 600, 152),
+        ...paletteSectionHeading("Languages", 500, 670, 152),
         b("text", {
           name: "Languages line",
           x: 500,
-          y: 624,
+          y: 694,
           w: 152,
           h: 70,
           content: { text: "{{languages}}" },
@@ -1463,17 +1450,7 @@ export function resume(): Project {
         }),
       ]),
     ],
+    { conditions: [resumePaletteCondition()] },
   );
 }
-
-export const RESUME_PROFILES_CSV = `full_name,role,email,phone,location,website,summary,j1_period,j1_title,j1_company,j1_p1,j1_p2,j1_p3,j2_period,j2_title,j2_company,j2_p1,j2_p2,j2_p3,j3_period,j3_title,j3_company,j3_p1,j3_p2,j3_p3,skill1,skill2,skill3,skill4,skill5,skill6,edu1_degree,edu1_school,edu1_years,edu2_degree,edu2_school,edu2_years,languages
-Jonas Weber,DevOps Engineer,jonas.weber@example.com,+49 151 2345 678,"Berlin, Germany",jonasweber.dev,"Platform engineer focused on Kubernetes, observability and developer joy. Cut deploy times from hours to minutes for teams of 100+.",2022 — Now,Staff Platform Engineer,Wolke Systems,"Designed multi-region K8s platform at 99.95% SLA","Reduced mean deploy time from 45 to 6 minutes","Introduced OpenTelemetry tracing org-wide",2019 — 2022,DevOps Engineer,Funkhaus Media,"Terraformed full AWS estate as code","Built self-service preview environments per PR","Handled migration of 40 services to EKS",2016 — 2019,System Administrator,Bergwerk IT,"Automated patching for 300+ servers with Ansible","Consolidated monitoring onto Prometheus stack","Wrote runbooks adopted as company standard",Kubernetes,Terraform,AWS,Observability,Go,CI/CD design,BSc Information Systems, TU Munich,2016,Ausbildung IT Specialist,Berufsschule München,2013,"German — native · English — fluent"
-Marcus Chen,Data Scientist,marcus.chen@example.com,+31 6 2345 6789,"Amsterdam, Netherlands",marcuschen.io,"Data scientist specialising in forecasting and experimentation. Turns messy pipelines into decision-grade models and clear stakeholder narratives.",2022 — Now,Lead Data Scientist,Delta Logistics,"Owns demand-forecast platform steering €120M inventory","Cut forecast error 28% with gradient-boosted ensembles","Built churn early-warning saving €1.8M annually",2019 — 2022,Data Scientist,Kanaal Bank,"Deployed credit-risk models under ECB review","Automated feature store cutting release cycle 3x","Published internal uplift-modelling toolkit",2017 — 2019,Analytics Consultant,Bright Data Co,"Delivered 15 dashboard projects for retail clients","Migrated reporting estate from Excel to dbt","Trained client teams on SQL and experiment design",Python,dbt,Airflow,SQL,Forecasting,Experimentation,MSc Statistics,Delft University of Technology,2017,BSc Mathematics,Utrecht University,2015,"English — fluent · Dutch — fluent · Mandarin — native"
-Amara Okafor,Product Manager,amara.okafor@example.com,+44 7700 900 123,"London, UK",amaraokafor.com,"Product manager bridging research, design and engineering for B2B SaaS. Launched three zero-to-one products and scaled pricing to £8M ARR.",2023 — Now,Principal Product Manager,Fleetwise,"Owns telematics platform roadmap across 3 squads","Launched usage-based pricing growing ARR 22%","Ran discovery programme interviewing 60 fleet operators",2020 — 2023,Senior Product Manager,Dispatchly,"Shipped driver mobile app rated 4.8 on stores","Introduced OKR cadence adopted company-wide","Reduced onboarding drop-off 35% via redesign",2017 — 2020,Associate Product Manager,MarketMuse,"Grew activation 18% through lifecycle emails","Managed integrations partnership roadmap","Founded internal product-guild community",Product strategy,Discovery,Roadmapping,SQL,Analytics,Pricing,MSc Management,London Business School,2017,BSc Economics,University of Lagos,2014,"English — native · Igbo — native · French — A2"
-Sofia Reyes,UX Designer,sofia.reyes@example.com,+34 612 345 678,"Barcelona, Spain",sofiareyes.design,"Product designer crafting calm, research-led interfaces for fintech and health. Runs continuous discovery and designs in systems, not screens.",2021 — Now,Lead Product Designer,Clara Health,"Redesigned patient portal raising task success 41%","Built token-based design system across web and app","Coached squad designers on accessibility practice",2018 — 2021,Product Designer,Pago Fintech,"Simplified KYC flow cutting abandonment 26%","Ran quarterly benchmark usability programmes","Prototyped award-winning onboarding in Figma",2016 — 2018,Visual Designer,Estudio Norte,"Delivered brand systems for 12 startups","Introduced motion guidelines to the studio","Supported sales with interactive demos",Figma,Design systems,User research,Prototyping,Accessibility,Interaction design,BA Interaction Design,ELISAVA Barcelona,2016,Foundation Art & Design,Escola Eina,2013,"Spanish — native · Catalan — native · English — C1"
-Tomás Ferreira,Backend Engineer,tomas.ferreira@example.com,+351 912 345 678,"Porto, Portugal",tomasferreira.dev,"Backend engineer focused on payment rails and event-driven systems. Keeps ledgers correct under load and writes the runbooks nobody dreads.",2020 — Now,Senior Backend Engineer,Miro Pay,"Owns ledger service clearing €40M monthly with zero reconciliation drift","Cut p99 transfer latency from 900 to 120 ms via write batching","Led PCI-DSS scope reduction saving €180k in audit effort",2017 — 2020,Backend Engineer,Ticketline PT,"Rebuilt queueing for flash sales sustaining 60k checkouts/minute","Introduced outbox pattern eliminating duplicate emails","Migrated monolith billing module to Go services",2015 — 2017,Junior Developer,Sapo Labs,"Shipped notification pipeline for carrier partners","Automated contract testing across 12 integrations",PostgreSQL,Banking domain,Kafka,Go,Event sourcing,Observability,BSc Computer Engineering,University of Porto,2015,Postgraduate Distributed Systems,Instituto Superior Técnico,2017,"Portuguese — native · English — fluent · Spanish — B2"
-Hana Suzuki,Mobile Engineer,hana.suzuki@example.com,+31 6 8765 4321,"Amsterdam, Netherlands",hanasuzuki.app,"Mobile engineer shipping native-feeling apps on tight budgets. Cares about cold-start time, offline behaviour and review scores above 4.6.",2022 — Now,Senior iOS Engineer,Fietsfinder,"Rewrote navigation stack cutting cold start to 800 ms","Shipped offline maps used by 200k riders monthly","Reduced crash-free sessions gap between platforms to 0.3%",2019 — 2022,Mobile Engineer,Stadsapp BV,"Launched parking app adopted by three municipalities","Built OTA feature flags removing release bottlenecks","Introduced Swift Concurrency patterns team-wide",2017 — 2019,Junior Android Developer,Tulip Media,"Delivered news app widgets with 30% DAU lift","Owned Play Store release pipeline automation",Swift,Kotlin,Offline sync,CI/CD,Performance,Accessibility,BSc Interaction Technology,Utrecht University of Applied Sciences,2017,iOS Specialisation Stanford Online,2019,"Japanese — native · English — fluent · Dutch — B1"
-Liam O'Connor,Site Reliability Engineer,liam.oconnor.example@gmail.com,+353 87 123 4567,"Dublin, Ireland",liamoconnor.ie,"SRE who treats reliability as a product feature. Blames systems, not people; automates toil until the pager goes quiet.",2021 — Now,Staff SRE,Cloudharbor,"Error budgets now gate releases across 40 services","Cut MTTR 55% by rebuilding incident command process","Designed multi-region failover surviving annual game-day drills",2018 — 2021,SRE,Riverdock Hosting,"Terraformed bare-metal fleet of 600 hosts","Built SLO tooling adopted by five product teams","Eliminated 70% of manual capacity planning",2016 — 2018,Systems Administrator,Eircom Cloud,"Automated DNS and certificate rotation org-wide","Wrote first incident-response playbook",Kubernetes,SLO design,Terraform,Incident response,Go,Grafana,BSc Computer Science,Trinity College Dublin,2016,Certificate Enterprise Architecture,IMI Dublin,2019,"English — native · Irish — fluent"
-Fatima Zahra El Amrani,Growth Analyst,fatima.elamrani@example.com,+32 471 987 654,"Brussels, Belgium",fatimazehra.be,"Growth analyst pairing rigorous experimentation with honest storytelling. Turns funnel noise into a prioritised backlog leadership actually trusts.",2022 — Now,Senior Growth Analyst,Lumen Learning,"Grew activation 24% through onboarding experiment programme","Built self-serve metrics layer replacing weekly ad-hoc reports","Ran pricing research informing tier redesign at €6M scale",2020 — 2022,Growth Analyst,Velodrop,"Scaled referral loop contributing 18% of signups","Introduced Bayesian A/B evaluation replacing peak peeking","Automated LTV reporting across six markets",2018 — 2020,Marketing Data Intern,Shoply,"Dashboarded campaign ROI for 20+ channels","Cleaned tracking taxonomy cutting attribution disputes","SQL,dbt,Experimentation,Amplitude,Python,Data storytelling,BSc Business Analytics,Solvay Brussels School,2018,MSc Marketing Intelligence,VU Amsterdam,2020,"Arabic — native · French — fluent · Dutch — fluent · English — fluent"
-Viktor Lindgren,Security Engineer,viktor.lindgren@example.com,+46 70 123 45 67,"Stockholm, Sweden",viktorlindgren.se,"Security engineer embedding secure defaults into developer workflows. Ships paved roads, not gates; measures security work by tickets developers no longer file.",2021 — Now,Senior Security Engineer,Nordbank IT,"Led supply-chain hardening after industry-wide xz-style scare","Cut critical findings per audit from 14 to 2 across two years","Built internal threat-modelling guild training 80 engineers",2019 — 2021,Application Security Engineer,Fastighetspay,"Secured open-banking flows ahead of PSD2 deadline","Introduced dependency scanning blocking 100% of known CVEs","Wrote secure-coding curriculum for onboarding squads",2017 — 2019,Security Consultant,Härd Security,"Ran pentests for 25 fintech and retail clients","Disclosed three CVEs in widely-used Nordic banking SDKs",Threat modelling,AppSec,CI/CD hardening,Cryptography basics,Python,Public speaking,MSc Information Security,KTH Royal Institute of Technology,2017,OSCP,Offensive Security,2019,"Swedish — native · English — fluent"`;
 

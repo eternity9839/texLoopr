@@ -5,14 +5,14 @@
   "description": "Personal résumé composed in texLooper — engineering layout with live contact links.",
   "published": false,
   "lastSaved": null,
-  "activePageId": "b09d327a-509f-4a57-8790-64ecfcc2775b",
+  "activePageId": "ce33d796-eb6e-43fa-9a3a-f18495ac814a",
   "pages": [
     {
-      "id": "b09d327a-509f-4a57-8790-64ecfcc2775b",
+      "id": "ce33d796-eb6e-43fa-9a3a-f18495ac814a",
       "name": "Resume",
       "blocks": [
         {
-          "id": "c36c6236-7a9d-4cad-a0f9-bc2f74200ad5",
+          "id": "5d4834a3-f152-4285-b404-d44a2ba0b0cf",
           "type": "shape",
           "name": "Accent bar",
           "x": 0,
@@ -34,7 +34,7 @@
           }
         },
         {
-          "id": "7a54f8ed-76dc-4e2a-bc63-5ffd00784a5b",
+          "id": "64dec455-e2d2-4cb7-b584-a7fa5fc0fc18",
           "type": "shape",
           "name": "Accent soft",
           "x": 12,
@@ -57,7 +57,7 @@
           }
         },
         {
-          "id": "c378d885-2bd0-4f85-9a2f-b011954eca01",
+          "id": "849c359c-86a7-492d-bf79-45951f8b2315",
           "type": "shape",
           "name": "Header wash",
           "x": 16,
@@ -79,7 +79,7 @@
           }
         },
         {
-          "id": "a15f5449-6888-431d-8bcf-e30cf0441bb6",
+          "id": "b9b837fc-92be-4d54-a35f-371744663b4b",
           "type": "text",
           "name": "Name",
           "x": 48,
@@ -98,7 +98,7 @@
           "zIndex": 1
         },
         {
-          "id": "116c4b36-2c5f-4ae7-995d-cfa8f49d284c",
+          "id": "db70c7a4-d8a2-4642-93e8-41291e9122e2",
           "type": "shape",
           "name": "Role badge",
           "x": 48,
@@ -117,7 +117,7 @@
           "zIndex": 1
         },
         {
-          "id": "b4e9d6b7-cfa6-4fc3-a909-decb7518f756",
+          "id": "ce6edb42-344a-4b90-b15b-9b6a8e67e5bf",
           "type": "text",
           "name": "Role",
           "x": 48,
@@ -140,7 +140,7 @@
           "zIndex": 2
         },
         {
-          "id": "78f68f6f-ce38-45e7-9da5-32a11b9aaeed",
+          "id": "ce7e599d-03e5-4b97-9cff-e3b9fa59ea29",
           "type": "paragraph",
           "name": "Headline",
           "x": 48,
@@ -159,7 +159,7 @@
           "zIndex": 1
         },
         {
-          "id": "b518126a-b9ff-4e46-b4bd-629df425498c",
+          "id": "cc446664-c0e0-41a9-9f8b-7e445524ec6a",
           "type": "text",
           "name": "Location",
           "x": 48,
@@ -179,7 +179,7 @@
           "zIndex": 1
         },
         {
-          "id": "93ec9ce5-2379-4510-be5c-7a17c48574f1",
+          "id": "0fd95040-c71d-494b-9adb-da618db29a96",
           "type": "link",
           "name": "Email",
           "x": 48,
@@ -204,7 +204,7 @@
           "zIndex": 1
         },
         {
-          "id": "4e73e5d0-d4f7-4a2b-83e7-215c6cd44565",
+          "id": "087946ee-ad22-4cae-ab1d-26568bffaef0",
           "type": "text",
           "name": "Sep 1",
           "x": 216,
@@ -225,7 +225,7 @@
           "zIndex": 1
         },
         {
-          "id": "79c60ee7-41b0-4f2a-b8ea-1ee7806188fa",
+          "id": "2589298b-7938-4f9b-8526-90d202a533b9",
           "type": "link",
           "name": "Phone",
           "x": 226,
@@ -250,7 +250,7 @@
           "zIndex": 1
         },
         {
-          "id": "b9305ea6-1ab2-473e-ae17-57b9e0905763",
+          "id": "09a43993-b6bc-44b4-8be3-e754f044fa85",
           "type": "text",
           "name": "Sep 2",
           "x": 328,
@@ -271,7 +271,7 @@
           "zIndex": 1
         },
         {
-          "id": "7e4ad81c-c731-4228-8095-fecacc6330b9",
+          "id": "1d1f8445-563f-41a4-9f06-614a52ed1e5f",
           "type": "link",
           "name": "LinkedIn",
           "x": 338,
@@ -296,7 +296,7 @@
           "zIndex": 1
         },
         {
-          "id": "6eb67405-61fa-41dc-b6f2-74f0cfd76164",
+          "id": "5fc4b6de-0126-4518-ba14-bf70527bc933",
           "type": "text",
           "name": "Sep 3",
           "x": 396,
@@ -317,7 +317,7 @@
           "zIndex": 1
         },
         {
-          "id": "240ce08b-6422-474a-b504-a330391c87a1",
+          "id": "69684dd0-0538-43fb-81f9-797902685f53",
           "type": "link",
           "name": "GitHub",
           "x": 406,
@@ -342,7 +342,7 @@
           "zIndex": 1
         },
         {
-          "id": "901c6e4b-cf04-41bd-8021-169fedbcdca9",
+          "id": "ccd09fce-9594-40ab-8069-ce0b967c9f16",
           "type": "text",
           "name": "Sep 4",
           "x": 524,
@@ -363,7 +363,7 @@
           "zIndex": 1
         },
         {
-          "id": "eedef121-b1ac-4147-917c-1a5d4d564a1f",
+          "id": "091d60b1-512f-499f-9605-9f41531b8bb5",
           "type": "link",
           "name": "Blog",
           "x": 534,
@@ -388,7 +388,7 @@
           "zIndex": 1
         },
         {
-          "id": "8ed0b1a6-c951-41e7-b940-f8c581f2ba4e",
+          "id": "aff7a6ef-b047-493c-947b-25dfc5b8d4e4",
           "type": "shape",
           "name": "Header rule",
           "x": 48,
@@ -405,7 +405,7 @@
           "zIndex": 1
         },
         {
-          "id": "aa6db321-8bf4-4d20-9bbc-30d297e9d490",
+          "id": "687f0109-395d-4f7a-b678-092f090d24e4",
           "type": "shape",
           "name": "Accent Experience",
           "x": 48,
@@ -423,7 +423,7 @@
           }
         },
         {
-          "id": "af6c2928-57e9-42b0-9724-2f342e197cf8",
+          "id": "f50d5323-5d92-4e3e-9b41-ab94af0f34f5",
           "type": "text",
           "name": "H Experience",
           "x": 64,
@@ -443,7 +443,7 @@
           }
         },
         {
-          "id": "5e5c4f7a-b685-416e-a7b0-0b2638567ee3",
+          "id": "0345387c-3a72-4377-a192-f22033dfe16a",
           "type": "shape",
           "name": "Rule Experience",
           "x": 48,
@@ -459,23 +459,23 @@
           }
         },
         {
-          "id": "10d8f350-d159-40c1-816b-84b60aa70851",
+          "id": "cc547078-81e2-4303-8662-96cc21f50930",
           "type": "group",
           "name": "Paynovate · Infrastructure Engineer",
           "x": 48,
           "y": 252,
           "w": 618,
-          "h": 156,
+          "h": 222,
           "content": {
             "blocks": [
               {
-                "id": "6afe66b3-2357-4bb7-a802-3fec759108d4",
+                "id": "b2ce24ee-08a6-4798-9b8c-d8b69be5f11f",
                 "type": "shape",
                 "name": "Job stripe",
                 "x": 0,
                 "y": 0,
                 "w": 3,
-                "h": 156,
+                "h": 222,
                 "content": {
                   "shape": "rect",
                   "filled": true
@@ -487,7 +487,7 @@
                 "zIndex": 0
               },
               {
-                "id": "2e951301-b231-44fb-828b-7b4cd8488a41",
+                "id": "fca229b3-0897-445b-8daa-2d56c41ac3bc",
                 "type": "shape",
                 "name": "Date pill",
                 "x": 470,
@@ -506,7 +506,7 @@
                 "zIndex": 1
               },
               {
-                "id": "82413529-48ce-4e60-aef9-6fbf18d57621",
+                "id": "948fd171-3bb9-4809-aab3-01fbd385df58",
                 "type": "text",
                 "name": "Job title",
                 "x": 16,
@@ -525,7 +525,7 @@
                 "zIndex": 2
               },
               {
-                "id": "ca0f2b9b-7eb5-4e2a-9d9f-895dbfb3ff74",
+                "id": "cffd4735-7506-4586-acd3-e1293e6e635d",
                 "type": "text",
                 "name": "Job dates",
                 "x": 470,
@@ -546,7 +546,7 @@
                 "zIndex": 2
               },
               {
-                "id": "534e325b-b75f-4e2a-a216-c4022bb4bcb4",
+                "id": "89c5b3c3-b059-49b3-8e6d-719c02b69c52",
                 "type": "text",
                 "name": "Job place",
                 "x": 16,
@@ -565,20 +565,23 @@
                 "zIndex": 2
               },
               {
-                "id": "4fc34eb6-7f14-44bd-9678-347b0c2d0af2",
+                "id": "d09621e3-c749-47c4-96d0-b0832b37773e",
                 "type": "list",
                 "name": "Job bullets",
                 "x": 16,
                 "y": 38,
                 "w": 602,
-                "h": 118,
+                "h": 184,
                 "content": {
                   "items": [
                     "Collaborated with security teams to audit, harden, and enforce compliance (PCI-DSS, ISO-27001, DORA, GDPR); supported external payment audits.",
-                    "Designed infrastructure decoupling for legacy systems; implemented Terraform and Ansible for reproducible IaC.",
-                    "Standardized CI/CD with development teams; led incident, change, and problem management (ITIL / GuardDuty).",
-                    "Centralized monitoring with Datadog; hardened legacy databases with backup enforcement.",
-                    "AWS multi-account org structures (landing zones, IAM guardrails); Xen/Proxmox → AWS migrations; coached teams on cloud practices."
+                    "Deployed scalable, robust environments for new and existing finance and business projects.",
+                    "Migrated legacy applications and infrastructure using several migration strategies; designed decoupling with Terraform and Ansible for reproducible IaC.",
+                    "AWS multi-account org structures (landing zones, IAM guardrails); Xen/Proxmox → AWS migrations.",
+                    "Standardized CI/CD with development teams; implemented incident management and led incident and change management across the company (ITIL / GuardDuty).",
+                    "Partnered with developers and project managers to promote better practices, ownership, and long-term product maintenance; coached teams on cloud practices.",
+                    "Supported external partners on network and application maintenance and security hardening.",
+                    "Centralized monitoring with Datadog; hardened legacy databases with backup enforcement."
                   ],
                   "markerColor": "#006e46"
                 },
@@ -597,17 +600,17 @@
           "zIndex": 1
         },
         {
-          "id": "cea0dc92-0fee-4c3e-8331-585980b92cda",
+          "id": "805a399c-4db9-4ae7-822a-ba4c967887e5",
           "type": "group",
           "name": "Sword Group · Production Engineer – CACEIS Bank",
           "x": 48,
-          "y": 420,
+          "y": 486,
           "w": 618,
           "h": 112,
           "content": {
             "blocks": [
               {
-                "id": "fcbaf785-6269-4c81-b707-3859375c839b",
+                "id": "232a2469-e084-48a1-89c9-424822d77698",
                 "type": "shape",
                 "name": "Job stripe",
                 "x": 0,
@@ -625,7 +628,7 @@
                 "zIndex": 0
               },
               {
-                "id": "39e2aa57-2bea-4c60-89e8-672c5437eddd",
+                "id": "0126d2ac-e486-496e-b4d6-836b801dc759",
                 "type": "shape",
                 "name": "Date pill",
                 "x": 470,
@@ -644,7 +647,7 @@
                 "zIndex": 1
               },
               {
-                "id": "c47de965-3834-4530-a56d-199beab62a07",
+                "id": "e09893df-64c6-420e-8e00-77d629b7c96d",
                 "type": "text",
                 "name": "Job title",
                 "x": 16,
@@ -663,7 +666,7 @@
                 "zIndex": 2
               },
               {
-                "id": "79bd224d-7f56-47ec-a81b-636feeef64c4",
+                "id": "10a826af-c399-444d-9363-99be6648a72a",
                 "type": "text",
                 "name": "Job dates",
                 "x": 470,
@@ -684,7 +687,7 @@
                 "zIndex": 2
               },
               {
-                "id": "6245a466-15d7-421a-a643-1f5113808c0b",
+                "id": "7fb6dd43-f786-4065-9b39-87be4b0c462f",
                 "type": "text",
                 "name": "Job place",
                 "x": 16,
@@ -703,7 +706,7 @@
                 "zIndex": 2
               },
               {
-                "id": "9b678f4c-a91c-43cd-b821-7c7264ca421e",
+                "id": "7bcd19ba-ff91-46bf-baa0-f159ead1868b",
                 "type": "list",
                 "name": "Job bullets",
                 "x": 16,
@@ -733,17 +736,17 @@
           "zIndex": 1
         },
         {
-          "id": "61f22248-0ad9-4383-8200-45d00f9eaa8c",
+          "id": "05d3343f-51d1-414e-aec3-8a6cd476b06b",
           "type": "group",
           "name": "Sword Group · Junior Production Engineer – Lalux Assurances",
           "x": 48,
-          "y": 544,
+          "y": 610,
           "w": 618,
           "h": 112,
           "content": {
             "blocks": [
               {
-                "id": "418ba3fc-51f3-4b26-9ba3-22aefe4696d3",
+                "id": "fe8eab48-1b09-4579-a440-c0f3064a1b7b",
                 "type": "shape",
                 "name": "Job stripe",
                 "x": 0,
@@ -761,7 +764,7 @@
                 "zIndex": 0
               },
               {
-                "id": "de5fe077-ac03-4189-8063-06738ad5360f",
+                "id": "9b50f278-a85b-4298-81a5-458ebaaf175a",
                 "type": "shape",
                 "name": "Date pill",
                 "x": 470,
@@ -780,7 +783,7 @@
                 "zIndex": 1
               },
               {
-                "id": "2d997036-33e7-4c3f-822e-7b7e6e05fcd3",
+                "id": "809984ef-fc40-4ab5-8bd3-e1c06460ebfe",
                 "type": "text",
                 "name": "Job title",
                 "x": 16,
@@ -799,7 +802,7 @@
                 "zIndex": 2
               },
               {
-                "id": "7f9e7115-5e29-4484-927d-edf330e5b79a",
+                "id": "d925fe81-d537-4e91-b22c-3bf522ad19bd",
                 "type": "text",
                 "name": "Job dates",
                 "x": 470,
@@ -820,7 +823,7 @@
                 "zIndex": 2
               },
               {
-                "id": "4129e0a5-08d8-437b-be83-2efcd2e72455",
+                "id": "b1bc92fc-92e6-4e41-b18f-7e6063902462",
                 "type": "text",
                 "name": "Job place",
                 "x": 16,
@@ -839,7 +842,7 @@
                 "zIndex": 2
               },
               {
-                "id": "7848a5d8-bcc9-4b14-a213-504c975af5b3",
+                "id": "d0fc9948-f332-4f27-a455-5394690203d6",
                 "type": "list",
                 "name": "Job bullets",
                 "x": 16,
@@ -869,17 +872,17 @@
           "zIndex": 1
         },
         {
-          "id": "48f89d2b-1ea1-45fe-a318-b4abbab54779",
+          "id": "ecb9504a-9804-4b80-a859-ed29c0b414ed",
           "type": "group",
           "name": "Devoteam · DevOps & Cloud Consultant (Internship)",
           "x": 48,
-          "y": 668,
+          "y": 734,
           "w": 618,
           "h": 90,
           "content": {
             "blocks": [
               {
-                "id": "846b3756-c49c-4218-8919-b532e8824629",
+                "id": "b4e7f8dd-9d6c-4a0b-b5f1-259bf41d2471",
                 "type": "shape",
                 "name": "Job stripe",
                 "x": 0,
@@ -897,7 +900,7 @@
                 "zIndex": 0
               },
               {
-                "id": "0dbf0bd8-dba6-4455-b8a5-51e140d1cb6e",
+                "id": "b2a92483-f02e-4660-ac6f-69affae330d8",
                 "type": "shape",
                 "name": "Date pill",
                 "x": 470,
@@ -916,7 +919,7 @@
                 "zIndex": 1
               },
               {
-                "id": "5dace2f3-9c65-49fc-ae71-a317ee6358be",
+                "id": "532d375d-5a95-445e-9f7a-deefe3ebe2a1",
                 "type": "text",
                 "name": "Job title",
                 "x": 16,
@@ -935,7 +938,7 @@
                 "zIndex": 2
               },
               {
-                "id": "38550ed3-1dca-4f07-a857-d5861efdcb5b",
+                "id": "aed11b30-bcbd-4369-bea2-3c653f1fda96",
                 "type": "text",
                 "name": "Job dates",
                 "x": 470,
@@ -956,7 +959,7 @@
                 "zIndex": 2
               },
               {
-                "id": "d7d5174b-455a-4e6f-ad6f-daed28ff09a7",
+                "id": "846cc91f-4a13-4739-92f9-aeb014dc4ed4",
                 "type": "text",
                 "name": "Job place",
                 "x": 16,
@@ -975,7 +978,7 @@
                 "zIndex": 2
               },
               {
-                "id": "23924c3c-2eb7-4113-8ace-c84af7a0475e",
+                "id": "79f50a66-d86d-43bc-be9a-a7fa4e7ed8d8",
                 "type": "list",
                 "name": "Job bullets",
                 "x": 16,
@@ -1004,11 +1007,11 @@
           "zIndex": 1
         },
         {
-          "id": "b5ab4593-6719-4dc1-b680-4f0370b9c308",
+          "id": "7c33bc1a-d859-41f9-b178-5c660321f245",
           "type": "shape",
-          "name": "Accent Education",
+          "name": "Accent Open source",
           "x": 48,
-          "y": 751,
+          "y": 847,
           "w": 9,
           "h": 9,
           "content": {
@@ -1022,15 +1025,15 @@
           }
         },
         {
-          "id": "998d94bd-df7c-48c4-ba29-0dc2a4209474",
+          "id": "34e40f7b-f25d-4e71-b82d-4dee082556d1",
           "type": "text",
-          "name": "H Education",
+          "name": "H Open source",
           "x": 64,
-          "y": 748,
+          "y": 844,
           "w": 602,
           "h": 16,
           "content": {
-            "text": "Education"
+            "text": "Open source"
           },
           "style": {
             "fontFamily": "ui",
@@ -1042,11 +1045,11 @@
           }
         },
         {
-          "id": "1ed915d5-830d-4c55-9be2-5c7b4aaca4b7",
+          "id": "65b28b43-a2f9-4c03-9e48-363194dc5df5",
           "type": "shape",
-          "name": "Rule Education",
+          "name": "Rule Open source",
           "x": 48,
-          "y": 766,
+          "y": 862,
           "w": 618,
           "h": 2,
           "content": {
@@ -1058,449 +1061,26 @@
           }
         },
         {
-          "id": "a90f67d0-7947-4b14-9548-efd06cd2c5fa",
-          "type": "group",
-          "name": "Education",
+          "id": "0ca5b678-0a4c-4bc0-b266-917d9c3282d8",
+          "type": "paragraph",
+          "name": "OSS",
           "x": 48,
-          "y": 776,
+          "y": 872,
           "w": 618,
-          "h": 148,
+          "h": 40,
           "content": {
-            "blocks": [
-              {
-                "id": "0d4a75b6-e2db-44d6-95fe-e51dbfbad77f",
-                "type": "shape",
-                "name": "Education card",
-                "x": 0,
-                "y": 0,
-                "w": 618,
-                "h": 148,
-                "content": {
-                  "shape": "rect",
-                  "variant": "rounded",
-                  "filled": true
-                },
-                "style": {
-                  "background": "#ffffff",
-                  "borderWidth": 1.5,
-                  "borderColor": "#b7d4c4",
-                  "borderRadius": 6
-                },
-                "zIndex": 0
-              },
-              {
-                "id": "928743b7-a709-4047-b8f4-a758871a1486",
-                "type": "shape",
-                "name": "Education card accent",
-                "x": 0,
-                "y": 0,
-                "w": 4,
-                "h": 148,
-                "content": {
-                  "shape": "rect",
-                  "filled": true
-                },
-                "style": {
-                  "background": "#006e46",
-                  "borderRadius": 6
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "5fcc1177-7009-4767-972b-f8c0a791a2b5",
-                "type": "shape",
-                "name": "Edu dot 0",
-                "x": 8,
-                "y": 24,
-                "w": 6,
-                "h": 6,
-                "content": {
-                  "shape": "rect",
-                  "variant": "rounded",
-                  "filled": true
-                },
-                "style": {
-                  "background": "#006e46",
-                  "borderRadius": 3
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "7643229a-074a-49c3-89af-6c3f9dd635f4",
-                "type": "text",
-                "name": "Edu kind 0",
-                "x": 22,
-                "y": 14,
-                "w": 100,
-                "h": 12,
-                "content": {
-                  "text": "Bootcamp"
-                },
-                "style": {
-                  "fontFamily": "ui",
-                  "fontSize": 8.5,
-                  "fontWeight": 700,
-                  "textTransform": "uppercase",
-                  "letterSpacing": 1.2,
-                  "color": "#006e46"
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "c8ae8e51-9f79-4ab2-b966-ef0ca1885356",
-                "type": "text",
-                "name": "Edu field 0",
-                "x": 22,
-                "y": 26,
-                "w": 464,
-                "h": 16,
-                "content": {
-                  "text": "SysAdmin & DevOps"
-                },
-                "style": {
-                  "fontFamily": "ui",
-                  "fontSize": 11,
-                  "fontWeight": 700,
-                  "color": "#14231c"
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "49e5c002-3152-4d51-8f84-e1b5d444b5a0",
-                "type": "text",
-                "name": "Edu school 0",
-                "x": 22,
-                "y": 40,
-                "w": 464,
-                "h": 12,
-                "content": {
-                  "text": "BeCode"
-                },
-                "style": {
-                  "fontFamily": "doc",
-                  "fontSize": 9.5,
-                  "fontStyle": "italic",
-                  "color": "#5c7468"
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "12dd3243-2606-4db4-b5f2-6c648f16cfb7",
-                "type": "shape",
-                "name": "Edu date pill 0",
-                "x": 500,
-                "y": 20,
-                "w": 118,
-                "h": 18,
-                "content": {
-                  "shape": "rect",
-                  "variant": "rounded",
-                  "filled": true
-                },
-                "style": {
-                  "background": "#d7ebe0",
-                  "borderRadius": 9
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "4e64dd6a-af2b-47f1-9082-211d12affcca",
-                "type": "text",
-                "name": "Edu dates 0",
-                "x": 500,
-                "y": 20,
-                "w": 118,
-                "h": 18,
-                "content": {
-                  "text": "Nov 2023 – Jan 2024"
-                },
-                "style": {
-                  "fontFamily": "ui",
-                  "fontSize": 9,
-                  "fontWeight": 600,
-                  "color": "#004d32",
-                  "textAlign": "center",
-                  "verticalAlign": "middle"
-                },
-                "zIndex": 2
-              },
-              {
-                "id": "91c896a2-5080-45c4-a79a-7dae7a7a7d56",
-                "type": "shape",
-                "name": "Edu rule 1",
-                "x": 12,
-                "y": 54,
-                "w": 594,
-                "h": 1,
-                "content": {
-                  "shape": "rect",
-                  "filled": true
-                },
-                "style": {
-                  "background": "#d7ebe0"
-                },
-                "zIndex": 0
-              },
-              {
-                "id": "02be2c73-ac7a-4840-b8ef-33f4a1067b35",
-                "type": "shape",
-                "name": "Edu dot 1",
-                "x": 8,
-                "y": 68,
-                "w": 6,
-                "h": 6,
-                "content": {
-                  "shape": "rect",
-                  "variant": "rounded",
-                  "filled": true
-                },
-                "style": {
-                  "background": "#006e46",
-                  "borderRadius": 3
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "e5ca1aa2-7088-4255-b344-b4095c86f904",
-                "type": "text",
-                "name": "Edu kind 1",
-                "x": 22,
-                "y": 58,
-                "w": 100,
-                "h": 12,
-                "content": {
-                  "text": "Master"
-                },
-                "style": {
-                  "fontFamily": "ui",
-                  "fontSize": 8.5,
-                  "fontWeight": 700,
-                  "textTransform": "uppercase",
-                  "letterSpacing": 1.2,
-                  "color": "#006e46"
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "2a4b7102-51d7-4a8e-a217-376aa3db61d8",
-                "type": "text",
-                "name": "Edu field 1",
-                "x": 22,
-                "y": 70,
-                "w": 464,
-                "h": 16,
-                "content": {
-                  "text": "Clinical Psychology"
-                },
-                "style": {
-                  "fontFamily": "ui",
-                  "fontSize": 11,
-                  "fontWeight": 700,
-                  "color": "#14231c"
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "a40bfa3b-a764-41d5-9fb4-91af5d67782c",
-                "type": "text",
-                "name": "Edu school 1",
-                "x": 22,
-                "y": 84,
-                "w": 464,
-                "h": 12,
-                "content": {
-                  "text": "Université Libre de Bruxelles"
-                },
-                "style": {
-                  "fontFamily": "doc",
-                  "fontSize": 9.5,
-                  "fontStyle": "italic",
-                  "color": "#5c7468"
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "d0a4f0d7-2b46-4b32-be43-6965a23630c1",
-                "type": "shape",
-                "name": "Edu date pill 1",
-                "x": 500,
-                "y": 64,
-                "w": 118,
-                "h": 18,
-                "content": {
-                  "shape": "rect",
-                  "variant": "rounded",
-                  "filled": true
-                },
-                "style": {
-                  "background": "#d7ebe0",
-                  "borderRadius": 9
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "c3e70ad0-584b-4d7e-87fa-937b7903136b",
-                "type": "text",
-                "name": "Edu dates 1",
-                "x": 500,
-                "y": 64,
-                "w": 118,
-                "h": 18,
-                "content": {
-                  "text": "Dec 2022"
-                },
-                "style": {
-                  "fontFamily": "ui",
-                  "fontSize": 9,
-                  "fontWeight": 600,
-                  "color": "#004d32",
-                  "textAlign": "center",
-                  "verticalAlign": "middle"
-                },
-                "zIndex": 2
-              },
-              {
-                "id": "5382e736-436b-4859-9af3-7ccd658c406d",
-                "type": "shape",
-                "name": "Edu rule 2",
-                "x": 12,
-                "y": 98,
-                "w": 594,
-                "h": 1,
-                "content": {
-                  "shape": "rect",
-                  "filled": true
-                },
-                "style": {
-                  "background": "#d7ebe0"
-                },
-                "zIndex": 0
-              },
-              {
-                "id": "17315d7c-0c8a-4264-8316-89219af714fc",
-                "type": "shape",
-                "name": "Edu dot 2",
-                "x": 8,
-                "y": 112,
-                "w": 6,
-                "h": 6,
-                "content": {
-                  "shape": "rect",
-                  "variant": "rounded",
-                  "filled": true
-                },
-                "style": {
-                  "background": "#006e46",
-                  "borderRadius": 3
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "61eeeb27-229e-449a-b767-5e41b206c0e0",
-                "type": "text",
-                "name": "Edu kind 2",
-                "x": 22,
-                "y": 102,
-                "w": 100,
-                "h": 12,
-                "content": {
-                  "text": "Bachelor"
-                },
-                "style": {
-                  "fontFamily": "ui",
-                  "fontSize": 8.5,
-                  "fontWeight": 700,
-                  "textTransform": "uppercase",
-                  "letterSpacing": 1.2,
-                  "color": "#006e46"
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "e090653c-92c0-4f09-93b4-1e8627c30a44",
-                "type": "text",
-                "name": "Edu field 2",
-                "x": 22,
-                "y": 114,
-                "w": 464,
-                "h": 16,
-                "content": {
-                  "text": "Psychological and Educational Sciences"
-                },
-                "style": {
-                  "fontFamily": "ui",
-                  "fontSize": 11,
-                  "fontWeight": 700,
-                  "color": "#14231c"
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "15d03ac7-3a6b-4bd8-a4c0-b85174d6037c",
-                "type": "text",
-                "name": "Edu school 2",
-                "x": 22,
-                "y": 128,
-                "w": 464,
-                "h": 12,
-                "content": {
-                  "text": "Université Libre de Bruxelles"
-                },
-                "style": {
-                  "fontFamily": "doc",
-                  "fontSize": 9.5,
-                  "fontStyle": "italic",
-                  "color": "#5c7468"
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "4d8b3d88-b021-44f8-8a96-32fbdbeb9103",
-                "type": "shape",
-                "name": "Edu date pill 2",
-                "x": 500,
-                "y": 108,
-                "w": 118,
-                "h": 18,
-                "content": {
-                  "shape": "rect",
-                  "variant": "rounded",
-                  "filled": true
-                },
-                "style": {
-                  "background": "#d7ebe0",
-                  "borderRadius": 9
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "b17ae439-0ee4-4775-9621-4ada896e51fa",
-                "type": "text",
-                "name": "Edu dates 2",
-                "x": 500,
-                "y": 108,
-                "w": 118,
-                "h": 18,
-                "content": {
-                  "text": "Jun 2020"
-                },
-                "style": {
-                  "fontFamily": "ui",
-                  "fontSize": 9,
-                  "fontWeight": 600,
-                  "color": "#004d32",
-                  "textAlign": "center",
-                  "verticalAlign": "middle"
-                },
-                "zIndex": 2
-              }
-            ]
+            "text": "Avid NixOS, Tailscale, Fish, and OpenTofu user. Also Rust and Go — side projects on GitHub; occasional notes on the blog."
           },
-          "style": {},
+          "style": {
+            "fontFamily": "doc",
+            "fontSize": 10.5,
+            "lineHeight": 1.45,
+            "color": "#14231c"
+          },
           "zIndex": 1
         },
         {
-          "id": "cdd9b373-8f90-48f4-b74c-d7028c750571",
+          "id": "22383b39-b423-4633-80b9-be146e1daad7",
           "type": "shape",
           "name": "Yassin Bousâadi  ·  1 / 2 page rule",
           "x": 48,
@@ -1521,7 +1101,7 @@
           }
         },
         {
-          "id": "bba57178-64b8-49f9-9f6f-f7145e152a44",
+          "id": "b95789a2-dc32-4a0f-92ec-df56fef07332",
           "type": "text",
           "name": "Yassin Bousâadi  ·  1 / 2 folio",
           "x": 48,
@@ -1545,11 +1125,11 @@
       ]
     },
     {
-      "id": "645272be-dce1-4762-af26-11d4ff052939",
-      "name": "Skills & certifications",
+      "id": "5766bab6-e278-4f61-ac32-43fd4117ceef",
+      "name": "Education, skills & certifications",
       "blocks": [
         {
-          "id": "6357041f-b950-4af2-a11c-ac02a3a4e9be",
+          "id": "dcfad052-8ba5-4825-b5ad-8380fe8f44a0",
           "type": "shape",
           "name": "Accent bar",
           "x": 0,
@@ -1571,7 +1151,7 @@
           }
         },
         {
-          "id": "b06fbf1c-79f2-4177-9139-a8ee138f55d5",
+          "id": "6be97153-a7f6-4011-a1d8-170a30355078",
           "type": "shape",
           "name": "Accent soft",
           "x": 12,
@@ -1594,7 +1174,7 @@
           }
         },
         {
-          "id": "02c7ddf3-7894-4bdf-aa52-6d430615f792",
+          "id": "efcb121d-c829-4026-a388-45b1d3d6140e",
           "type": "shape",
           "name": "Accent Certifications",
           "x": 48,
@@ -1612,7 +1192,7 @@
           }
         },
         {
-          "id": "4f359737-ee69-4776-91be-c83e4f9446ee",
+          "id": "7558b77c-94dd-4c93-aba2-04cd8cb0399e",
           "type": "text",
           "name": "H Certifications",
           "x": 64,
@@ -1632,7 +1212,7 @@
           }
         },
         {
-          "id": "d1ea6f24-8761-4da6-8f32-f6511e65a63b",
+          "id": "417b1e66-7220-411f-863c-92e6c916ef6b",
           "type": "shape",
           "name": "Rule Certifications",
           "x": 48,
@@ -1648,7 +1228,7 @@
           }
         },
         {
-          "id": "0cc6e9f4-a17e-4f48-9ef0-c26e8b5eb4f7",
+          "id": "0fc23482-fc51-4323-ac42-bea14799af61",
           "type": "group",
           "name": "Certifications",
           "x": 48,
@@ -1658,7 +1238,7 @@
           "content": {
             "blocks": [
               {
-                "id": "e967716c-e6b5-45b9-ada5-2c809ef6e727",
+                "id": "c95a3520-9145-4e07-89ef-385f2d57952a",
                 "type": "shape",
                 "name": "Certs card",
                 "x": 0,
@@ -1679,7 +1259,7 @@
                 "zIndex": 0
               },
               {
-                "id": "ab9ee33b-7e72-4221-bacc-13147d25dc00",
+                "id": "0d1ced53-302a-4248-a190-3e97b9c89f8c",
                 "type": "shape",
                 "name": "Cert mark 0",
                 "x": 8,
@@ -1698,7 +1278,7 @@
                 "zIndex": 1
               },
               {
-                "id": "f3d3cbc1-57b3-47e4-9a6a-92a9f3ec339f",
+                "id": "ce429f35-8850-48bd-8b70-aa8824bccf09",
                 "type": "text",
                 "name": "Cert name 0",
                 "x": 24,
@@ -1718,7 +1298,7 @@
                 "zIndex": 1
               },
               {
-                "id": "463887b5-5640-481c-ba03-8b79fcff8bf3",
+                "id": "46ec0398-fe2a-4c1c-a44c-73a2ef62f091",
                 "type": "shape",
                 "name": "Cert year pill 0",
                 "x": 566,
@@ -1737,7 +1317,7 @@
                 "zIndex": 1
               },
               {
-                "id": "846f14ae-18dc-4a38-928d-ed193429d5bc",
+                "id": "6069e686-317c-4633-bdec-b38781353f31",
                 "type": "text",
                 "name": "Cert year 0",
                 "x": 566,
@@ -1758,7 +1338,7 @@
                 "zIndex": 2
               },
               {
-                "id": "eddcb7ad-f079-440c-9d1b-1e2ead5df073",
+                "id": "d54e667b-5186-4c8c-bdb9-b3ce6dae783a",
                 "type": "shape",
                 "name": "Cert rule 1",
                 "x": 8,
@@ -1775,7 +1355,7 @@
                 "zIndex": 0
               },
               {
-                "id": "3cafaf00-f379-4332-8ffc-0f9c6452e649",
+                "id": "cd2983f2-98f9-4254-aceb-d2be0da79bb3",
                 "type": "shape",
                 "name": "Cert mark 1",
                 "x": 8,
@@ -1794,7 +1374,7 @@
                 "zIndex": 1
               },
               {
-                "id": "16662e9f-33a4-4d07-ac6a-0ac12c810af4",
+                "id": "6e187607-694a-4772-a8ef-8b36f5948f97",
                 "type": "text",
                 "name": "Cert name 1",
                 "x": 24,
@@ -1814,7 +1394,7 @@
                 "zIndex": 1
               },
               {
-                "id": "8eac643b-815e-400e-a98e-275db13a42fa",
+                "id": "576de055-9478-40ae-9fbb-2e7de7eefe7b",
                 "type": "shape",
                 "name": "Cert year pill 1",
                 "x": 566,
@@ -1833,7 +1413,7 @@
                 "zIndex": 1
               },
               {
-                "id": "4686bad1-816b-4d9f-a207-56411d1d9f4d",
+                "id": "f5e25594-6ddf-49bd-a617-34b3968321f2",
                 "type": "text",
                 "name": "Cert year 1",
                 "x": 566,
@@ -1854,7 +1434,7 @@
                 "zIndex": 2
               },
               {
-                "id": "a86b696a-db1a-4899-848c-4f5651589ccc",
+                "id": "9e4d69fe-3f34-464a-9fc5-b034aef8e179",
                 "type": "shape",
                 "name": "Cert rule 2",
                 "x": 8,
@@ -1871,7 +1451,7 @@
                 "zIndex": 0
               },
               {
-                "id": "0c8fa9bf-90a8-425f-84a0-c1ad9ab50264",
+                "id": "7f79a9fa-54c4-492a-acb8-35d133bffc46",
                 "type": "shape",
                 "name": "Cert mark 2",
                 "x": 8,
@@ -1890,7 +1470,7 @@
                 "zIndex": 1
               },
               {
-                "id": "3b708d83-4db4-449a-a0e7-4b6d34939ed6",
+                "id": "00219837-ff77-4cb0-8ef7-26996b2bfdf2",
                 "type": "text",
                 "name": "Cert name 2",
                 "x": 24,
@@ -1910,7 +1490,7 @@
                 "zIndex": 1
               },
               {
-                "id": "d0c3c2db-0786-47f9-bd53-024fc389da3e",
+                "id": "14b05b98-63db-4aee-a364-a9dbf852455e",
                 "type": "shape",
                 "name": "Cert year pill 2",
                 "x": 566,
@@ -1929,7 +1509,7 @@
                 "zIndex": 1
               },
               {
-                "id": "565b43c1-3d99-4ebe-bbad-de16fb16ec41",
+                "id": "a78b2e01-5917-4f6b-8c09-491fcb84f6a1",
                 "type": "text",
                 "name": "Cert year 2",
                 "x": 566,
@@ -1950,7 +1530,7 @@
                 "zIndex": 2
               },
               {
-                "id": "c8188c8f-f894-4fe7-a4c7-06b33c6f3c1f",
+                "id": "af866741-bc25-4406-adfc-5401a11c1c81",
                 "type": "shape",
                 "name": "Cert rule 3",
                 "x": 8,
@@ -1967,7 +1547,7 @@
                 "zIndex": 0
               },
               {
-                "id": "1f02292a-9b06-45e5-ad97-5ee968626c91",
+                "id": "28d3a4a4-6ed3-4480-aad3-2f9a60b8220c",
                 "type": "shape",
                 "name": "Cert mark 3",
                 "x": 8,
@@ -1986,7 +1566,7 @@
                 "zIndex": 1
               },
               {
-                "id": "0164f3d1-cfa7-4fdd-90b7-60d41d5ccc74",
+                "id": "eb2dd76f-25cc-4293-8c59-6fd9e56da015",
                 "type": "text",
                 "name": "Cert name 3",
                 "x": 24,
@@ -2006,7 +1586,7 @@
                 "zIndex": 1
               },
               {
-                "id": "8edcb3be-93c1-41e6-be71-11645d9c19e9",
+                "id": "422ca8e8-40ef-4c54-86c1-9dbba556e931",
                 "type": "shape",
                 "name": "Cert year pill 3",
                 "x": 566,
@@ -2025,7 +1605,7 @@
                 "zIndex": 1
               },
               {
-                "id": "37fe33a7-6c16-49a0-9fbc-a6a02c6f907e",
+                "id": "ffaecd8d-ea39-43fc-90d2-300772a46ffe",
                 "type": "text",
                 "name": "Cert year 3",
                 "x": 566,
@@ -2046,7 +1626,7 @@
                 "zIndex": 2
               },
               {
-                "id": "35a6e2f8-ed9f-42d7-8428-c8b034b01714",
+                "id": "1389fa2a-755c-444f-9dd3-9dbbd08db34c",
                 "type": "shape",
                 "name": "Cert rule 4",
                 "x": 8,
@@ -2063,7 +1643,7 @@
                 "zIndex": 0
               },
               {
-                "id": "5e018ee3-884b-462b-852c-288fbb287e0a",
+                "id": "1ad6744e-f733-4288-bb64-627f3bb2bde6",
                 "type": "shape",
                 "name": "Cert mark 4",
                 "x": 8,
@@ -2082,7 +1662,7 @@
                 "zIndex": 1
               },
               {
-                "id": "fec0635e-8360-4fae-8565-7b397c9f0a78",
+                "id": "463251d1-a94a-4d2d-8559-0757f6d8f0f5",
                 "type": "text",
                 "name": "Cert name 4",
                 "x": 24,
@@ -2102,7 +1682,7 @@
                 "zIndex": 1
               },
               {
-                "id": "48a68370-fbe7-4425-9bf5-ca5c5aec9dad",
+                "id": "bac66f3a-453e-4e4a-80a1-f75657edbb49",
                 "type": "shape",
                 "name": "Cert year pill 4",
                 "x": 566,
@@ -2121,7 +1701,7 @@
                 "zIndex": 1
               },
               {
-                "id": "c2192520-271b-4146-9999-e1108a12c154",
+                "id": "64ba0b25-5613-496f-9272-74b2f3f14fd4",
                 "type": "text",
                 "name": "Cert year 4",
                 "x": 566,
@@ -2147,9 +1727,9 @@
           "zIndex": 1
         },
         {
-          "id": "a62ea379-30bb-47ae-b6a4-0c3bc0e0b84f",
+          "id": "1117162b-aad6-46cc-92b4-266afc2c10b2",
           "type": "shape",
-          "name": "Accent Skills",
+          "name": "Accent Education",
           "x": 48,
           "y": 227,
           "w": 9,
@@ -2165,11 +1745,507 @@
           }
         },
         {
-          "id": "57c09ef8-9885-462f-b4b7-fcd13e92800c",
+          "id": "6695ef47-778e-44c3-8d67-c56e299f2515",
+          "type": "text",
+          "name": "H Education",
+          "x": 64,
+          "y": 224,
+          "w": 602,
+          "h": 16,
+          "content": {
+            "text": "Education"
+          },
+          "style": {
+            "fontFamily": "ui",
+            "fontSize": 11,
+            "fontWeight": 700,
+            "textTransform": "uppercase",
+            "letterSpacing": 1.8,
+            "color": "#006e46"
+          }
+        },
+        {
+          "id": "8682ca7e-8682-40cb-a904-c86b261cc3ee",
+          "type": "shape",
+          "name": "Rule Education",
+          "x": 48,
+          "y": 242,
+          "w": 618,
+          "h": 2,
+          "content": {
+            "shape": "rect",
+            "filled": true
+          },
+          "style": {
+            "background": "#006e46"
+          }
+        },
+        {
+          "id": "86cd9036-696f-4e30-9977-05f5ba15fa65",
+          "type": "group",
+          "name": "Education",
+          "x": 48,
+          "y": 252,
+          "w": 618,
+          "h": 148,
+          "content": {
+            "blocks": [
+              {
+                "id": "62a64d5b-281e-4cfb-84cc-8be79db33828",
+                "type": "shape",
+                "name": "Education card",
+                "x": 0,
+                "y": 0,
+                "w": 618,
+                "h": 148,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#ffffff",
+                  "borderWidth": 1.5,
+                  "borderColor": "#b7d4c4",
+                  "borderRadius": 6
+                },
+                "zIndex": 0
+              },
+              {
+                "id": "b180b0df-3705-4186-aa9c-b30920b9be38",
+                "type": "shape",
+                "name": "Education card accent",
+                "x": 0,
+                "y": 0,
+                "w": 4,
+                "h": 148,
+                "content": {
+                  "shape": "rect",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#006e46",
+                  "borderRadius": 6
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "858d087b-fe38-4345-bcb9-7292b8500860",
+                "type": "shape",
+                "name": "Edu dot 0",
+                "x": 8,
+                "y": 24,
+                "w": 6,
+                "h": 6,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#006e46",
+                  "borderRadius": 3
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "de4e25cb-3795-4e30-a66d-9f2cdb9631d2",
+                "type": "text",
+                "name": "Edu kind 0",
+                "x": 22,
+                "y": 14,
+                "w": 100,
+                "h": 12,
+                "content": {
+                  "text": "Bootcamp"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 8.5,
+                  "fontWeight": 700,
+                  "textTransform": "uppercase",
+                  "letterSpacing": 1.2,
+                  "color": "#006e46"
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "1c05309e-18d6-4a3f-972f-e4bb9fe617f7",
+                "type": "text",
+                "name": "Edu field 0",
+                "x": 22,
+                "y": 26,
+                "w": 464,
+                "h": 16,
+                "content": {
+                  "text": "SysAdmin & DevOps"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 11,
+                  "fontWeight": 700,
+                  "color": "#14231c"
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "80ca610e-d657-4672-85af-9067dc51b569",
+                "type": "text",
+                "name": "Edu school 0",
+                "x": 22,
+                "y": 40,
+                "w": 464,
+                "h": 12,
+                "content": {
+                  "text": "BeCode"
+                },
+                "style": {
+                  "fontFamily": "doc",
+                  "fontSize": 9.5,
+                  "fontStyle": "italic",
+                  "color": "#5c7468"
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "acf445bf-867e-481b-8925-9b5103e8ef76",
+                "type": "shape",
+                "name": "Edu date pill 0",
+                "x": 500,
+                "y": 20,
+                "w": 118,
+                "h": 18,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#d7ebe0",
+                  "borderRadius": 9
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "4748bf1c-0287-4218-bef3-f9ddc2f2cabd",
+                "type": "text",
+                "name": "Edu dates 0",
+                "x": 500,
+                "y": 20,
+                "w": 118,
+                "h": 18,
+                "content": {
+                  "text": "Nov 2023 – Jan 2024"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 9,
+                  "fontWeight": 600,
+                  "color": "#004d32",
+                  "textAlign": "center",
+                  "verticalAlign": "middle"
+                },
+                "zIndex": 2
+              },
+              {
+                "id": "caac1726-1c14-483f-b925-e77c98061972",
+                "type": "shape",
+                "name": "Edu rule 1",
+                "x": 12,
+                "y": 54,
+                "w": 594,
+                "h": 1,
+                "content": {
+                  "shape": "rect",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#d7ebe0"
+                },
+                "zIndex": 0
+              },
+              {
+                "id": "8d2538bc-ba39-4b96-9625-a49290c4c0fc",
+                "type": "shape",
+                "name": "Edu dot 1",
+                "x": 8,
+                "y": 68,
+                "w": 6,
+                "h": 6,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#006e46",
+                  "borderRadius": 3
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "582414f3-74a5-42fd-ba23-cefb7cad4555",
+                "type": "text",
+                "name": "Edu kind 1",
+                "x": 22,
+                "y": 58,
+                "w": 100,
+                "h": 12,
+                "content": {
+                  "text": "Master"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 8.5,
+                  "fontWeight": 700,
+                  "textTransform": "uppercase",
+                  "letterSpacing": 1.2,
+                  "color": "#006e46"
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "58056490-49df-4e87-b83e-a2af03632da7",
+                "type": "text",
+                "name": "Edu field 1",
+                "x": 22,
+                "y": 70,
+                "w": 464,
+                "h": 16,
+                "content": {
+                  "text": "Clinical Psychology"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 11,
+                  "fontWeight": 700,
+                  "color": "#14231c"
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "f3e9dcad-d6d8-42df-b657-81317bf5b89c",
+                "type": "text",
+                "name": "Edu school 1",
+                "x": 22,
+                "y": 84,
+                "w": 464,
+                "h": 12,
+                "content": {
+                  "text": "Université Libre de Bruxelles"
+                },
+                "style": {
+                  "fontFamily": "doc",
+                  "fontSize": 9.5,
+                  "fontStyle": "italic",
+                  "color": "#5c7468"
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "9311300f-187a-4855-ae19-7edd8b42eeaa",
+                "type": "shape",
+                "name": "Edu date pill 1",
+                "x": 500,
+                "y": 64,
+                "w": 118,
+                "h": 18,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#d7ebe0",
+                  "borderRadius": 9
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "c9582d8f-a9b9-4b23-ac2b-5b4e5f4fba07",
+                "type": "text",
+                "name": "Edu dates 1",
+                "x": 500,
+                "y": 64,
+                "w": 118,
+                "h": 18,
+                "content": {
+                  "text": "Dec 2022"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 9,
+                  "fontWeight": 600,
+                  "color": "#004d32",
+                  "textAlign": "center",
+                  "verticalAlign": "middle"
+                },
+                "zIndex": 2
+              },
+              {
+                "id": "e5aa8dbf-57b9-4537-89db-983002467c42",
+                "type": "shape",
+                "name": "Edu rule 2",
+                "x": 12,
+                "y": 98,
+                "w": 594,
+                "h": 1,
+                "content": {
+                  "shape": "rect",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#d7ebe0"
+                },
+                "zIndex": 0
+              },
+              {
+                "id": "a3d964b7-59d3-4523-a0fd-c86ce420bf07",
+                "type": "shape",
+                "name": "Edu dot 2",
+                "x": 8,
+                "y": 112,
+                "w": 6,
+                "h": 6,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#006e46",
+                  "borderRadius": 3
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "9096cf8a-92d4-4297-92c5-84a6c62c1696",
+                "type": "text",
+                "name": "Edu kind 2",
+                "x": 22,
+                "y": 102,
+                "w": 100,
+                "h": 12,
+                "content": {
+                  "text": "Bachelor"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 8.5,
+                  "fontWeight": 700,
+                  "textTransform": "uppercase",
+                  "letterSpacing": 1.2,
+                  "color": "#006e46"
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "3bb5e0ec-4635-4b82-815f-afda571c828f",
+                "type": "text",
+                "name": "Edu field 2",
+                "x": 22,
+                "y": 114,
+                "w": 464,
+                "h": 16,
+                "content": {
+                  "text": "Psychological and Educational Sciences"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 11,
+                  "fontWeight": 700,
+                  "color": "#14231c"
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "acf3a17a-26fc-454f-ab11-9e41814775ab",
+                "type": "text",
+                "name": "Edu school 2",
+                "x": 22,
+                "y": 128,
+                "w": 464,
+                "h": 12,
+                "content": {
+                  "text": "Université Libre de Bruxelles"
+                },
+                "style": {
+                  "fontFamily": "doc",
+                  "fontSize": 9.5,
+                  "fontStyle": "italic",
+                  "color": "#5c7468"
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "f966604a-6cf5-46a4-87fe-8ac5165652d1",
+                "type": "shape",
+                "name": "Edu date pill 2",
+                "x": 500,
+                "y": 108,
+                "w": 118,
+                "h": 18,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#d7ebe0",
+                  "borderRadius": 9
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "c2856e5a-d893-4ba5-8827-10755c215fba",
+                "type": "text",
+                "name": "Edu dates 2",
+                "x": 500,
+                "y": 108,
+                "w": 118,
+                "h": 18,
+                "content": {
+                  "text": "Jun 2020"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 9,
+                  "fontWeight": 600,
+                  "color": "#004d32",
+                  "textAlign": "center",
+                  "verticalAlign": "middle"
+                },
+                "zIndex": 2
+              }
+            ]
+          },
+          "style": {},
+          "zIndex": 1
+        },
+        {
+          "id": "cde9cb64-5369-4b71-a4d3-57791e2bab46",
+          "type": "shape",
+          "name": "Accent Skills",
+          "x": 48,
+          "y": 459,
+          "w": 9,
+          "h": 9,
+          "content": {
+            "shape": "rect",
+            "variant": "rounded",
+            "filled": true
+          },
+          "style": {
+            "background": "#006e46",
+            "borderRadius": 2
+          }
+        },
+        {
+          "id": "43410017-c04f-41cd-8b41-b4d2e4671cf7",
           "type": "text",
           "name": "H Skills",
           "x": 64,
-          "y": 224,
+          "y": 456,
           "w": 602,
           "h": 16,
           "content": {
@@ -2185,11 +2261,11 @@
           }
         },
         {
-          "id": "307d1833-edba-4dc8-9e4c-e853b730b623",
+          "id": "8e2c2c75-33a5-43df-9518-541512ac1466",
           "type": "shape",
           "name": "Rule Skills",
           "x": 48,
-          "y": 242,
+          "y": 474,
           "w": 618,
           "h": 2,
           "content": {
@@ -2201,11 +2277,11 @@
           }
         },
         {
-          "id": "b66ccd91-d22a-402b-8aac-b3263e62386f",
+          "id": "4055c5b9-5d84-464a-8288-55771f9b8bfe",
           "type": "shape",
           "name": "Skill chip Expert",
           "x": 386,
-          "y": 248,
+          "y": 480,
           "w": 56,
           "h": 22,
           "content": {
@@ -2222,11 +2298,11 @@
           "zIndex": 1
         },
         {
-          "id": "f31641ef-29f0-4644-b0b2-71d399cd6824",
+          "id": "9fc4dc76-5078-423e-9ca5-4551da272185",
           "type": "text",
           "name": "Skill chip label Expert",
           "x": 386,
-          "y": 248,
+          "y": 480,
           "w": 56,
           "h": 22,
           "content": {
@@ -2244,11 +2320,11 @@
           "zIndex": 2
         },
         {
-          "id": "c775858e-ca34-43c5-8967-e0e0ba0a819f",
+          "id": "44125306-51fc-47ec-8759-b0e1a8a1b976",
           "type": "shape",
           "name": "Skill chip Proficient",
           "x": 450,
-          "y": 248,
+          "y": 480,
           "w": 82,
           "h": 22,
           "content": {
@@ -2265,11 +2341,11 @@
           "zIndex": 1
         },
         {
-          "id": "95767b3c-9f72-40bf-9028-56cd0abcaaa6",
+          "id": "0b496daf-b083-4431-bd3a-7032aea71bba",
           "type": "text",
           "name": "Skill chip label Proficient",
           "x": 450,
-          "y": 248,
+          "y": 480,
           "w": 82,
           "h": 22,
           "content": {
@@ -2287,11 +2363,11 @@
           "zIndex": 2
         },
         {
-          "id": "930e0ef6-ac93-43f6-8af5-35f52791eea0",
+          "id": "b440d1f4-7416-4395-a3ba-c8d770381598",
           "type": "shape",
           "name": "Skill chip Exposure",
           "x": 540,
-          "y": 248,
+          "y": 480,
           "w": 69,
           "h": 22,
           "content": {
@@ -2308,11 +2384,11 @@
           "zIndex": 1
         },
         {
-          "id": "3b2d7561-2bb3-4a60-b0c6-da5a4456ce3c",
+          "id": "33396a7a-afbf-4631-8c08-0bf345af5184",
           "type": "text",
           "name": "Skill chip label Exposure",
           "x": 540,
-          "y": 248,
+          "y": 480,
           "w": 69,
           "h": 22,
           "content": {
@@ -2330,17 +2406,17 @@
           "zIndex": 2
         },
         {
-          "id": "aea52711-5bf6-4a08-abe7-a827df0b4d9d",
+          "id": "5a73b6cf-3da0-46e2-a0ee-bb8c25103afc",
           "type": "group",
           "name": "Skills · Programming",
           "x": 48,
-          "y": 272,
+          "y": 504,
           "w": 618,
           "h": 34,
           "content": {
             "blocks": [
               {
-                "id": "4f39fe45-0645-40a7-8ec8-79829ec6cb06",
+                "id": "768ca701-c61f-44ad-a107-aaa7b4a9fac8",
                 "type": "shape",
                 "name": "Programming skill wash",
                 "x": 0,
@@ -2360,7 +2436,7 @@
                 "zIndex": 0
               },
               {
-                "id": "d99bb26d-5586-47e5-b487-607fd2937b3f",
+                "id": "4b35da99-ae4b-4353-8614-4fd68ccaa0a2",
                 "type": "text",
                 "name": "Programming label",
                 "x": 10,
@@ -2380,7 +2456,7 @@
                 "zIndex": 1
               },
               {
-                "id": "48587c22-341a-447f-83d6-644e75bb47f8",
+                "id": "9836376e-e984-46b3-9cbd-041f49d0b2f2",
                 "type": "shape",
                 "name": "Skill chip Python",
                 "x": 128,
@@ -2401,7 +2477,7 @@
                 "zIndex": 1
               },
               {
-                "id": "d880087a-e995-4922-828b-65a115829bba",
+                "id": "03bd0613-54dc-4515-9aab-6605aaf41d8d",
                 "type": "text",
                 "name": "Skill chip label Python",
                 "x": 128,
@@ -2423,7 +2499,7 @@
                 "zIndex": 2
               },
               {
-                "id": "63075fe7-04c0-479f-85c5-3e617f442e4f",
+                "id": "1c08df7d-1a29-404a-a08c-cfddf3a2f6fa",
                 "type": "shape",
                 "name": "Skill chip JavaScript",
                 "x": 190,
@@ -2444,7 +2520,7 @@
                 "zIndex": 1
               },
               {
-                "id": "e0090c43-792f-4d16-a418-024cdec92931",
+                "id": "9aecd062-a850-4fb0-8182-89bb40dc7767",
                 "type": "text",
                 "name": "Skill chip label JavaScript",
                 "x": 190,
@@ -2466,7 +2542,7 @@
                 "zIndex": 2
               },
               {
-                "id": "fd4ab116-8b5f-45fa-acaf-7931069d2865",
+                "id": "de2ab396-e5f8-43bd-9121-b9e5dbd4a5d8",
                 "type": "shape",
                 "name": "Skill chip Node.js",
                 "x": 278,
@@ -2487,7 +2563,7 @@
                 "zIndex": 1
               },
               {
-                "id": "3532d040-4648-42c5-88ca-26fe9753b82d",
+                "id": "da8c8cc4-3aa7-4a4b-832f-dde3bda1f195",
                 "type": "text",
                 "name": "Skill chip label Node.js",
                 "x": 278,
@@ -2509,9 +2585,9 @@
                 "zIndex": 2
               },
               {
-                "id": "1dd08aaa-3345-4173-8090-5221235f66be",
+                "id": "050546a4-d47c-4a85-85dd-caaa443f6059",
                 "type": "shape",
-                "name": "Skill chip Java",
+                "name": "Skill chip Rust",
                 "x": 347,
                 "y": 6,
                 "w": 44,
@@ -2530,15 +2606,15 @@
                 "zIndex": 1
               },
               {
-                "id": "54cd6baf-06b4-4804-b6c7-8a500bd66987",
+                "id": "948023c6-04ae-4316-930e-a4fa7aae265d",
                 "type": "text",
-                "name": "Skill chip label Java",
+                "name": "Skill chip label Rust",
                 "x": 347,
                 "y": 6,
                 "w": 44,
                 "h": 22,
                 "content": {
-                  "text": "Java"
+                  "text": "Rust"
                 },
                 "style": {
                   "fontFamily": "ui",
@@ -2552,10 +2628,53 @@
                 "zIndex": 2
               },
               {
-                "id": "77d87125-b333-4e19-a7e4-dd754d2f930b",
+                "id": "05e64182-671e-41d8-a0d6-b22f7b361ffc",
+                "type": "shape",
+                "name": "Skill chip Go",
+                "x": 397,
+                "y": 6,
+                "w": 44,
+                "h": 22,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#d7ebe0",
+                  "borderWidth": 0,
+                  "borderColor": "#b7d4c4",
+                  "borderRadius": 11
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "b4230f9a-fa27-4b6a-985e-3aff7c93d773",
+                "type": "text",
+                "name": "Skill chip label Go",
+                "x": 397,
+                "y": 6,
+                "w": 44,
+                "h": 22,
+                "content": {
+                  "text": "Go"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 9,
+                  "fontWeight": 600,
+                  "color": "#004d32",
+                  "textAlign": "center",
+                  "verticalAlign": "middle",
+                  "whiteSpace": "nowrap"
+                },
+                "zIndex": 2
+              },
+              {
+                "id": "008de6c8-36be-4065-8ae2-eba6d972d962",
                 "type": "shape",
                 "name": "Skill chip Groovy",
-                "x": 397,
+                "x": 447,
                 "y": 6,
                 "w": 56,
                 "h": 22,
@@ -2573,10 +2692,10 @@
                 "zIndex": 1
               },
               {
-                "id": "baace283-4de4-422d-8f9f-635ec35ec26e",
+                "id": "ee871011-5e4e-41e1-a41a-a130e40f0df6",
                 "type": "text",
                 "name": "Skill chip label Groovy",
-                "x": 397,
+                "x": 447,
                 "y": 6,
                 "w": 56,
                 "h": 22,
@@ -2595,52 +2714,9 @@
                 "zIndex": 2
               },
               {
-                "id": "fc509962-9824-4ac5-a61f-0ca7b8ebb6b3",
+                "id": "a90add6a-f8a4-412e-8940-19f2fd015599",
                 "type": "shape",
-                "name": "Skill chip Rust",
-                "x": 459,
-                "y": 6,
-                "w": 44,
-                "h": 22,
-                "content": {
-                  "shape": "rect",
-                  "variant": "rounded",
-                  "filled": true
-                },
-                "style": {
-                  "background": "#ffffff",
-                  "borderWidth": 1,
-                  "borderColor": "#c5d4cb",
-                  "borderRadius": 11
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "76d92464-813e-49fa-a359-f76fd9b7bfb0",
-                "type": "text",
-                "name": "Skill chip label Rust",
-                "x": 459,
-                "y": 6,
-                "w": 44,
-                "h": 22,
-                "content": {
-                  "text": "Rust"
-                },
-                "style": {
-                  "fontFamily": "ui",
-                  "fontSize": 9,
-                  "fontWeight": 500,
-                  "color": "#5c7468",
-                  "textAlign": "center",
-                  "verticalAlign": "middle",
-                  "whiteSpace": "nowrap"
-                },
-                "zIndex": 2
-              },
-              {
-                "id": "3b1812aa-f2f6-43fe-a8b1-c21ced71f784",
-                "type": "shape",
-                "name": "Skill chip Go",
+                "name": "Skill chip Java",
                 "x": 509,
                 "y": 6,
                 "w": 44,
@@ -2659,15 +2735,15 @@
                 "zIndex": 1
               },
               {
-                "id": "566fff4f-57bb-4d4f-a2ac-10e64c45ca5e",
+                "id": "5f5e80b1-e78b-4feb-ac6f-4f626b1cdfda",
                 "type": "text",
-                "name": "Skill chip label Go",
+                "name": "Skill chip label Java",
                 "x": 509,
                 "y": 6,
                 "w": 44,
                 "h": 22,
                 "content": {
-                  "text": "Go"
+                  "text": "Java"
                 },
                 "style": {
                   "fontFamily": "ui",
@@ -2686,17 +2762,17 @@
           "zIndex": 1
         },
         {
-          "id": "3822fd47-3e51-40b3-b611-d3ee35db1f59",
+          "id": "ad89fedf-55f4-45b5-9e40-93e86c7e6e19",
           "type": "group",
           "name": "Skills · Shell",
           "x": 48,
-          "y": 312,
+          "y": 544,
           "w": 618,
           "h": 34,
           "content": {
             "blocks": [
               {
-                "id": "9301b84c-71b6-4b8f-827b-d6009e6b913a",
+                "id": "d5d1d30b-3f99-4408-87be-20ed7b1fa114",
                 "type": "shape",
                 "name": "Shell skill wash",
                 "x": 0,
@@ -2716,7 +2792,7 @@
                 "zIndex": 0
               },
               {
-                "id": "4a3c0074-86d5-457d-997e-49ba81999a85",
+                "id": "1e9e4955-399e-4580-a0f9-78ad8122850a",
                 "type": "text",
                 "name": "Shell label",
                 "x": 10,
@@ -2736,7 +2812,7 @@
                 "zIndex": 1
               },
               {
-                "id": "778c9dd4-729f-4e37-be30-f3435793b9d9",
+                "id": "262c917c-f948-43b3-90d3-6f375f06d230",
                 "type": "shape",
                 "name": "Skill chip Bash",
                 "x": 128,
@@ -2757,7 +2833,7 @@
                 "zIndex": 1
               },
               {
-                "id": "b7760df5-7e8c-4424-8f2f-a922ba5f62da",
+                "id": "5ae915d8-ebdf-46ef-a887-dca0e0b7d840",
                 "type": "text",
                 "name": "Skill chip label Bash",
                 "x": 128,
@@ -2779,7 +2855,7 @@
                 "zIndex": 2
               },
               {
-                "id": "8eba70f9-ec82-475b-9949-637120780a37",
+                "id": "dc32e0d3-7baa-4f83-8ed4-725706e36489",
                 "type": "shape",
                 "name": "Skill chip Fish",
                 "x": 178,
@@ -2800,7 +2876,7 @@
                 "zIndex": 1
               },
               {
-                "id": "168bab94-b2aa-4c3a-b65c-55b513feea0f",
+                "id": "284834a9-4cb9-42e4-adb6-90a9baef5943",
                 "type": "text",
                 "name": "Skill chip label Fish",
                 "x": 178,
@@ -2822,7 +2898,7 @@
                 "zIndex": 2
               },
               {
-                "id": "7ec4b974-de3b-4cf9-b60c-e07f5da6dc8f",
+                "id": "b0c0f2fd-6826-4966-86aa-62b54178814d",
                 "type": "shape",
                 "name": "Skill chip Zsh",
                 "x": 228,
@@ -2843,7 +2919,7 @@
                 "zIndex": 1
               },
               {
-                "id": "33256668-8d9a-4b55-b115-ef9df2f28405",
+                "id": "191c5c45-fbdf-4497-80e2-8860fe3c7dee",
                 "type": "text",
                 "name": "Skill chip label Zsh",
                 "x": 228,
@@ -2865,7 +2941,7 @@
                 "zIndex": 2
               },
               {
-                "id": "b8cd149c-236a-4474-88a6-1fc62c8e068b",
+                "id": "7dd7e9a5-2d15-448f-931c-9273c38d5d99",
                 "type": "shape",
                 "name": "Skill chip PowerShell",
                 "x": 278,
@@ -2886,7 +2962,7 @@
                 "zIndex": 1
               },
               {
-                "id": "7a43ef96-8611-460f-b46f-3f391e094f22",
+                "id": "41db90f5-8eff-49f5-82dd-8fc63485abca",
                 "type": "text",
                 "name": "Skill chip label PowerShell",
                 "x": 278,
@@ -2908,7 +2984,7 @@
                 "zIndex": 2
               },
               {
-                "id": "66fda316-12f2-44e9-b260-0afb38af6c3b",
+                "id": "e087079e-dc54-4257-8a53-d0cece6ed344",
                 "type": "shape",
                 "name": "Skill chip KornShell",
                 "x": 366,
@@ -2921,15 +2997,15 @@
                   "filled": true
                 },
                 "style": {
-                  "background": "#ffffff",
-                  "borderWidth": 1,
-                  "borderColor": "#c5d4cb",
+                  "background": "#d7ebe0",
+                  "borderWidth": 0,
+                  "borderColor": "#b7d4c4",
                   "borderRadius": 11
                 },
                 "zIndex": 1
               },
               {
-                "id": "ebbc7169-da6c-46df-a052-4738f382e4fc",
+                "id": "1bc32801-9990-4c0c-a02e-cb9100bc899f",
                 "type": "text",
                 "name": "Skill chip label KornShell",
                 "x": 366,
@@ -2942,8 +3018,8 @@
                 "style": {
                   "fontFamily": "ui",
                   "fontSize": 9,
-                  "fontWeight": 500,
-                  "color": "#5c7468",
+                  "fontWeight": 600,
+                  "color": "#004d32",
                   "textAlign": "center",
                   "verticalAlign": "middle",
                   "whiteSpace": "nowrap"
@@ -2956,19 +3032,19 @@
           "zIndex": 1
         },
         {
-          "id": "72801b7f-12f6-4377-a67b-659b1f126eae",
+          "id": "b5b7c41a-9b4e-47cc-a311-f8f8ced84bb7",
           "type": "group",
-          "name": "Skills · DevOps",
+          "name": "Skills · Provisioning",
           "x": 48,
-          "y": 352,
+          "y": 584,
           "w": 618,
           "h": 34,
           "content": {
             "blocks": [
               {
-                "id": "021f14e2-8bdb-4bcd-b65d-8b312bb4bcb4",
+                "id": "eb214ab3-178a-4a41-b48f-86387694aeed",
                 "type": "shape",
-                "name": "DevOps skill wash",
+                "name": "Provisioning skill wash",
                 "x": 0,
                 "y": 0,
                 "w": 618,
@@ -2986,15 +3062,15 @@
                 "zIndex": 0
               },
               {
-                "id": "87f82edf-2e49-4905-81f1-c28ea06785b7",
+                "id": "cd5a2cd9-12a3-4659-a9b2-1d877d5c10e6",
                 "type": "text",
-                "name": "DevOps label",
+                "name": "Provisioning label",
                 "x": 10,
                 "y": 0,
                 "w": 118,
                 "h": 34,
                 "content": {
-                  "text": "DevOps"
+                  "text": "Provisioning"
                 },
                 "style": {
                   "fontFamily": "ui",
@@ -3006,7 +3082,7 @@
                 "zIndex": 1
               },
               {
-                "id": "93d7cea3-aabb-4545-9483-db3ed8a3129c",
+                "id": "2f88ef55-ffe3-4397-9ba2-3042770c63ff",
                 "type": "shape",
                 "name": "Skill chip Terraform",
                 "x": 128,
@@ -3027,7 +3103,7 @@
                 "zIndex": 1
               },
               {
-                "id": "83df615e-e912-4900-9024-e0e92c42fdfd",
+                "id": "9bfcab61-139a-4404-a9e9-69916bd3d362",
                 "type": "text",
                 "name": "Skill chip label Terraform",
                 "x": 128,
@@ -3049,7 +3125,7 @@
                 "zIndex": 2
               },
               {
-                "id": "80cdcac2-815c-4687-8834-c61f4929326a",
+                "id": "1ee6befb-7360-49d3-b8d4-ae53718c9a4b",
                 "type": "shape",
                 "name": "Skill chip OpenTofu",
                 "x": 210,
@@ -3070,7 +3146,7 @@
                 "zIndex": 1
               },
               {
-                "id": "f47c9221-681c-4c51-8b20-32de4678bee6",
+                "id": "8776d0bc-719f-450d-b886-b25a940d61a5",
                 "type": "text",
                 "name": "Skill chip label OpenTofu",
                 "x": 210,
@@ -3092,7 +3168,7 @@
                 "zIndex": 2
               },
               {
-                "id": "55a3bc47-8b11-4c7d-9fce-24a0233a2a6f",
+                "id": "6b07fec1-16d8-4349-a64f-0059fd71dee9",
                 "type": "shape",
                 "name": "Skill chip Ansible",
                 "x": 285,
@@ -3113,7 +3189,7 @@
                 "zIndex": 1
               },
               {
-                "id": "adda0fda-b9e2-4712-b37b-cbcdc52f3e51",
+                "id": "f7048fc6-8074-48f9-9fa5-3c82509f8cd8",
                 "type": "text",
                 "name": "Skill chip label Ansible",
                 "x": 285,
@@ -3135,7 +3211,7 @@
                 "zIndex": 2
               },
               {
-                "id": "f05d14c7-a51c-4800-8d15-30b8fbd6235f",
+                "id": "a515d4aa-9e9b-47c2-89da-d82a730c0cb0",
                 "type": "shape",
                 "name": "Skill chip Packer",
                 "x": 354,
@@ -3156,7 +3232,7 @@
                 "zIndex": 1
               },
               {
-                "id": "e108c33c-fb69-4c58-92b6-b9347d729148",
+                "id": "13f343c1-272b-4dee-8b7d-3b86262f9a88",
                 "type": "text",
                 "name": "Skill chip label Packer",
                 "x": 354,
@@ -3178,7 +3254,7 @@
                 "zIndex": 2
               },
               {
-                "id": "e20b6581-6da7-4b99-9217-4cb3b54f3eec",
+                "id": "502aaec9-d344-4fe4-ac19-34083d7bda02",
                 "type": "shape",
                 "name": "Skill chip Vagrant",
                 "x": 416,
@@ -3199,7 +3275,7 @@
                 "zIndex": 1
               },
               {
-                "id": "f9f37796-9eb1-41a6-b72b-54be8d02d16e",
+                "id": "fda8fec7-7e63-4a82-ae36-369b8d728da6",
                 "type": "text",
                 "name": "Skill chip label Vagrant",
                 "x": 416,
@@ -3221,10 +3297,53 @@
                 "zIndex": 2
               },
               {
-                "id": "c8c60cb2-5701-4d50-9a70-4cd4d7929d84",
+                "id": "f9bbece4-a46c-4e77-9ce4-9923ff888a1d",
+                "type": "shape",
+                "name": "Skill chip Puppet",
+                "x": 485,
+                "y": 6,
+                "w": 56,
+                "h": 22,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#d7ebe0",
+                  "borderWidth": 0,
+                  "borderColor": "#b7d4c4",
+                  "borderRadius": 11
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "3ee0a924-2405-4a56-b1ff-e874fc4c273a",
+                "type": "text",
+                "name": "Skill chip label Puppet",
+                "x": 485,
+                "y": 6,
+                "w": 56,
+                "h": 22,
+                "content": {
+                  "text": "Puppet"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 9,
+                  "fontWeight": 600,
+                  "color": "#004d32",
+                  "textAlign": "center",
+                  "verticalAlign": "middle",
+                  "whiteSpace": "nowrap"
+                },
+                "zIndex": 2
+              },
+              {
+                "id": "cbca6fde-ddf1-4719-95a1-5be1bf5a275b",
                 "type": "shape",
                 "name": "Skill chip Rundeck",
-                "x": 485,
+                "x": 547,
                 "y": 6,
                 "w": 63,
                 "h": 22,
@@ -3242,10 +3361,10 @@
                 "zIndex": 1
               },
               {
-                "id": "f9e2d4be-62f9-4497-99cc-f99e61bf3df9",
+                "id": "982a923d-5ca4-4440-8769-7417a27a77de",
                 "type": "text",
                 "name": "Skill chip label Rundeck",
-                "x": 485,
+                "x": 547,
                 "y": 6,
                 "w": 63,
                 "h": 22,
@@ -3269,17 +3388,17 @@
           "zIndex": 1
         },
         {
-          "id": "0011e4d0-470c-43b8-b3fd-5d283f96cbc9",
+          "id": "4fec8484-5868-47ff-b00e-515bb823dfbc",
           "type": "group",
           "name": "Skills · CI/CD",
           "x": 48,
-          "y": 392,
+          "y": 624,
           "w": 618,
           "h": 34,
           "content": {
             "blocks": [
               {
-                "id": "6be06735-4ece-4f7b-a340-0514e68de746",
+                "id": "c8e697dc-1192-4b55-99ae-ba74f62f2149",
                 "type": "shape",
                 "name": "CI/CD skill wash",
                 "x": 0,
@@ -3299,7 +3418,7 @@
                 "zIndex": 0
               },
               {
-                "id": "65d81c14-b559-4661-8dd8-1b2cbe77bd20",
+                "id": "7aaeb950-3eea-474d-808f-145dd5579c95",
                 "type": "text",
                 "name": "CI/CD label",
                 "x": 10,
@@ -3319,7 +3438,7 @@
                 "zIndex": 1
               },
               {
-                "id": "89eabe68-67b5-46a6-871a-0a3f68e1d3fd",
+                "id": "158eaba4-3626-4900-b547-3e0f2824b1ae",
                 "type": "shape",
                 "name": "Skill chip GitHub Actions",
                 "x": 128,
@@ -3340,7 +3459,7 @@
                 "zIndex": 1
               },
               {
-                "id": "2de73c7a-e967-4d63-89c0-144c8db56ef2",
+                "id": "3d8969c1-89ce-4c89-a274-fce092f47639",
                 "type": "text",
                 "name": "Skill chip label GitHub Actions",
                 "x": 128,
@@ -3362,7 +3481,7 @@
                 "zIndex": 2
               },
               {
-                "id": "a2c5e022-24e6-4bbb-acd3-c0b3386b78a3",
+                "id": "70b9b81b-942f-43ed-b20b-c51179bf64a6",
                 "type": "shape",
                 "name": "Skill chip GitLab CI",
                 "x": 242,
@@ -3383,7 +3502,7 @@
                 "zIndex": 1
               },
               {
-                "id": "c4835541-e3d1-46e2-b0e1-067524ed37bb",
+                "id": "07a2633f-e571-4422-8e98-7d540fe5ee55",
                 "type": "text",
                 "name": "Skill chip label GitLab CI",
                 "x": 242,
@@ -3405,7 +3524,7 @@
                 "zIndex": 2
               },
               {
-                "id": "8967265b-3538-49ee-8195-0f580407f45f",
+                "id": "e6b2d0d7-b682-4bed-8fe2-3d00cc6c5927",
                 "type": "shape",
                 "name": "Skill chip Azure DevOps",
                 "x": 324,
@@ -3426,7 +3545,7 @@
                 "zIndex": 1
               },
               {
-                "id": "0b56098c-a98f-4a43-8814-87b1f7da6f5c",
+                "id": "c95175dd-a941-4efd-bd57-2f817d762f71",
                 "type": "text",
                 "name": "Skill chip label Azure DevOps",
                 "x": 324,
@@ -3448,7 +3567,7 @@
                 "zIndex": 2
               },
               {
-                "id": "a2fad84f-6110-4122-82e2-f0c266b2e50f",
+                "id": "c89590a0-29f4-44a4-8bbb-48f022b70069",
                 "type": "shape",
                 "name": "Skill chip Jenkins",
                 "x": 425,
@@ -3461,15 +3580,15 @@
                   "filled": true
                 },
                 "style": {
-                  "background": "#d7ebe0",
-                  "borderWidth": 0,
-                  "borderColor": "#b7d4c4",
+                  "background": "#ffffff",
+                  "borderWidth": 1,
+                  "borderColor": "#c5d4cb",
                   "borderRadius": 11
                 },
                 "zIndex": 1
               },
               {
-                "id": "0b8fa0ca-f67b-4e17-82a5-b138427ee871",
+                "id": "df2283cc-0622-43b6-95fa-6d0eb27e9d8f",
                 "type": "text",
                 "name": "Skill chip label Jenkins",
                 "x": 425,
@@ -3482,8 +3601,8 @@
                 "style": {
                   "fontFamily": "ui",
                   "fontSize": 9,
-                  "fontWeight": 600,
-                  "color": "#004d32",
+                  "fontWeight": 500,
+                  "color": "#5c7468",
                   "textAlign": "center",
                   "verticalAlign": "middle",
                   "whiteSpace": "nowrap"
@@ -3496,17 +3615,17 @@
           "zIndex": 1
         },
         {
-          "id": "3364ec5e-6966-4848-aa8c-98a1e93f76af",
+          "id": "d02c61c2-454d-4098-8b32-c61ac17475d3",
           "type": "group",
           "name": "Skills · Cloud",
           "x": 48,
-          "y": 432,
+          "y": 664,
           "w": 618,
           "h": 34,
           "content": {
             "blocks": [
               {
-                "id": "230c33dc-7884-4765-859a-6a1f7350f44c",
+                "id": "0c1ee97a-eacc-4a8e-ac50-715505edb9c3",
                 "type": "shape",
                 "name": "Cloud skill wash",
                 "x": 0,
@@ -3526,7 +3645,7 @@
                 "zIndex": 0
               },
               {
-                "id": "0aba7f23-03c0-4565-9045-7dc5284c8c23",
+                "id": "88c6349e-2a46-4fbb-afc5-218eb9b34c8e",
                 "type": "text",
                 "name": "Cloud label",
                 "x": 10,
@@ -3546,7 +3665,7 @@
                 "zIndex": 1
               },
               {
-                "id": "1fe0edeb-8600-453e-bf68-ed0721507479",
+                "id": "47f6b3e8-4c36-478d-8885-241496966530",
                 "type": "shape",
                 "name": "Skill chip AWS",
                 "x": 128,
@@ -3567,7 +3686,7 @@
                 "zIndex": 1
               },
               {
-                "id": "510ef29a-04a2-45a4-ac02-9dfa69ab7f71",
+                "id": "f6ddc167-2416-4a08-8027-960594197c0a",
                 "type": "text",
                 "name": "Skill chip label AWS",
                 "x": 128,
@@ -3589,7 +3708,7 @@
                 "zIndex": 2
               },
               {
-                "id": "f33b06f9-bc5a-44d4-b565-79a7b71a979d",
+                "id": "e1e4e6fc-9103-46b9-a277-9444a141f415",
                 "type": "shape",
                 "name": "Skill chip Azure",
                 "x": 178,
@@ -3610,7 +3729,7 @@
                 "zIndex": 1
               },
               {
-                "id": "5ee13653-9632-40a7-9f4f-1172975cf9bb",
+                "id": "9b8b7c46-dee7-475d-b1e2-8e3e8fb41b75",
                 "type": "text",
                 "name": "Skill chip label Azure",
                 "x": 178,
@@ -3632,9 +3751,9 @@
                 "zIndex": 2
               },
               {
-                "id": "21dd9415-81a1-485d-b6f5-ac4f5c6d152d",
+                "id": "1e518eb2-37aa-4ac2-8b31-6a5ea0673775",
                 "type": "shape",
-                "name": "Skill chip Oracle Cloud",
+                "name": "Skill chip DigitalOcean",
                 "x": 234,
                 "y": 6,
                 "w": 95,
@@ -3645,29 +3764,29 @@
                   "filled": true
                 },
                 "style": {
-                  "background": "#ffffff",
-                  "borderWidth": 1,
-                  "borderColor": "#c5d4cb",
+                  "background": "#d7ebe0",
+                  "borderWidth": 0,
+                  "borderColor": "#b7d4c4",
                   "borderRadius": 11
                 },
                 "zIndex": 1
               },
               {
-                "id": "f598e0d6-c82a-4ae5-8bb4-8e4a16bd544c",
+                "id": "5ba372cf-008d-4b3b-b933-89bf79b6682f",
                 "type": "text",
-                "name": "Skill chip label Oracle Cloud",
+                "name": "Skill chip label DigitalOcean",
                 "x": 234,
                 "y": 6,
                 "w": 95,
                 "h": 22,
                 "content": {
-                  "text": "Oracle Cloud"
+                  "text": "DigitalOcean"
                 },
                 "style": {
                   "fontFamily": "ui",
                   "fontSize": 9,
-                  "fontWeight": 500,
-                  "color": "#5c7468",
+                  "fontWeight": 600,
+                  "color": "#004d32",
                   "textAlign": "center",
                   "verticalAlign": "middle",
                   "whiteSpace": "nowrap"
@@ -3675,10 +3794,96 @@
                 "zIndex": 2
               },
               {
-                "id": "5f828daf-9fba-4eb6-a247-d13e10ba2aa6",
+                "id": "df90ff08-f77e-4a54-95e5-029a73543154",
                 "type": "shape",
-                "name": "Skill chip DigitalOcean",
+                "name": "Skill chip Linode",
                 "x": 335,
+                "y": 6,
+                "w": 56,
+                "h": 22,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#d7ebe0",
+                  "borderWidth": 0,
+                  "borderColor": "#b7d4c4",
+                  "borderRadius": 11
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "7718041f-5e62-4909-bfc8-371829a21235",
+                "type": "text",
+                "name": "Skill chip label Linode",
+                "x": 335,
+                "y": 6,
+                "w": 56,
+                "h": 22,
+                "content": {
+                  "text": "Linode"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 9,
+                  "fontWeight": 600,
+                  "color": "#004d32",
+                  "textAlign": "center",
+                  "verticalAlign": "middle",
+                  "whiteSpace": "nowrap"
+                },
+                "zIndex": 2
+              },
+              {
+                "id": "d13b98ac-3b25-4e0e-8004-6e9cd38cadf0",
+                "type": "shape",
+                "name": "Skill chip UpCloud",
+                "x": 397,
+                "y": 6,
+                "w": 63,
+                "h": 22,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#d7ebe0",
+                  "borderWidth": 0,
+                  "borderColor": "#b7d4c4",
+                  "borderRadius": 11
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "0eef0434-cd8a-4fb2-ac8f-be1375c83c79",
+                "type": "text",
+                "name": "Skill chip label UpCloud",
+                "x": 397,
+                "y": 6,
+                "w": 63,
+                "h": 22,
+                "content": {
+                  "text": "UpCloud"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 9,
+                  "fontWeight": 600,
+                  "color": "#004d32",
+                  "textAlign": "center",
+                  "verticalAlign": "middle",
+                  "whiteSpace": "nowrap"
+                },
+                "zIndex": 2
+              },
+              {
+                "id": "6d9eeec1-3f5f-44ef-a831-a245f5b2ae7e",
+                "type": "shape",
+                "name": "Skill chip Oracle Cloud",
+                "x": 466,
                 "y": 6,
                 "w": 95,
                 "h": 22,
@@ -3696,15 +3901,15 @@
                 "zIndex": 1
               },
               {
-                "id": "eb9118a8-bf6e-4321-bee0-1021bea275c4",
+                "id": "804e55ac-409d-47ea-a0c4-c066cefe83b3",
                 "type": "text",
-                "name": "Skill chip label DigitalOcean",
-                "x": 335,
+                "name": "Skill chip label Oracle Cloud",
+                "x": 466,
                 "y": 6,
                 "w": 95,
                 "h": 22,
                 "content": {
-                  "text": "DigitalOcean"
+                  "text": "Oracle Cloud"
                 },
                 "style": {
                   "fontFamily": "ui",
@@ -3723,17 +3928,17 @@
           "zIndex": 1
         },
         {
-          "id": "34f015e7-7f6f-40db-9860-6d9c8d83e1cc",
+          "id": "c50dc2c6-b6d9-47cd-80ab-6db2e3446dfc",
           "type": "group",
           "name": "Skills · Containers",
           "x": 48,
-          "y": 472,
+          "y": 704,
           "w": 618,
           "h": 34,
           "content": {
             "blocks": [
               {
-                "id": "fcf91ef1-9d62-45fe-bd02-38cc01443100",
+                "id": "2afda290-32d0-4fa0-b6ea-2ef4ea3433a1",
                 "type": "shape",
                 "name": "Containers skill wash",
                 "x": 0,
@@ -3753,7 +3958,7 @@
                 "zIndex": 0
               },
               {
-                "id": "3fef6560-4790-496e-8950-05962bd5c375",
+                "id": "a427d3b2-93d6-4ff8-9ad5-39cec470e173",
                 "type": "text",
                 "name": "Containers label",
                 "x": 10,
@@ -3773,7 +3978,7 @@
                 "zIndex": 1
               },
               {
-                "id": "803f65bd-31ef-475c-9217-318dc0810105",
+                "id": "814f6f0f-2e1a-46b3-b8ea-06ca3363458c",
                 "type": "shape",
                 "name": "Skill chip Docker",
                 "x": 128,
@@ -3794,7 +3999,7 @@
                 "zIndex": 1
               },
               {
-                "id": "a713f962-8a16-4416-95a0-21a9d7d043b2",
+                "id": "7dabdd3d-b7cc-4af7-a99f-0438d58df1a6",
                 "type": "text",
                 "name": "Skill chip label Docker",
                 "x": 128,
@@ -3816,7 +4021,7 @@
                 "zIndex": 2
               },
               {
-                "id": "0a02e7d2-79fd-4b94-ad7f-2eceb9097cc5",
+                "id": "a1f217e0-d197-4517-b208-cf9683894e9d",
                 "type": "shape",
                 "name": "Skill chip Podman",
                 "x": 190,
@@ -3829,15 +4034,15 @@
                   "filled": true
                 },
                 "style": {
-                  "background": "#d7ebe0",
+                  "background": "#006e46",
                   "borderWidth": 0,
-                  "borderColor": "#b7d4c4",
+                  "borderColor": "#006e46",
                   "borderRadius": 11
                 },
                 "zIndex": 1
               },
               {
-                "id": "53d9f138-8171-4024-8cfd-92b122a347eb",
+                "id": "9203245a-7cfd-4025-b551-5885bc828705",
                 "type": "text",
                 "name": "Skill chip label Podman",
                 "x": 190,
@@ -3850,8 +4055,8 @@
                 "style": {
                   "fontFamily": "ui",
                   "fontSize": 9,
-                  "fontWeight": 600,
-                  "color": "#004d32",
+                  "fontWeight": 700,
+                  "color": "#ffffff",
                   "textAlign": "center",
                   "verticalAlign": "middle",
                   "whiteSpace": "nowrap"
@@ -3859,7 +4064,7 @@
                 "zIndex": 2
               },
               {
-                "id": "03e6ae8a-10ef-438f-88da-d706c8bbfdb6",
+                "id": "02340122-ad22-4770-a1de-0797f58d2701",
                 "type": "shape",
                 "name": "Skill chip Kubernetes",
                 "x": 252,
@@ -3880,7 +4085,7 @@
                 "zIndex": 1
               },
               {
-                "id": "e7509688-0843-4da4-9e23-2070c6a34c27",
+                "id": "9ebbfa5f-a52b-4c8a-82fc-235316df9ae2",
                 "type": "text",
                 "name": "Skill chip label Kubernetes",
                 "x": 252,
@@ -3907,17 +4112,17 @@
           "zIndex": 1
         },
         {
-          "id": "5ee90503-12fd-4729-970b-3ede7ebf9c7e",
+          "id": "3a3c023d-3476-45e2-8465-d6f027cfc266",
           "type": "group",
           "name": "Skills · Databases",
           "x": 48,
-          "y": 512,
+          "y": 744,
           "w": 618,
           "h": 34,
           "content": {
             "blocks": [
               {
-                "id": "28960221-a22c-4cdf-9e8f-bf6065e1fd6d",
+                "id": "05d5c7cf-5f5b-44f0-bb38-2c8b57f8815a",
                 "type": "shape",
                 "name": "Databases skill wash",
                 "x": 0,
@@ -3937,7 +4142,7 @@
                 "zIndex": 0
               },
               {
-                "id": "2c825221-35f1-41b9-994a-1462d6807fc3",
+                "id": "5633ff87-aaa7-4032-88ee-b31fbad94ab5",
                 "type": "text",
                 "name": "Databases label",
                 "x": 10,
@@ -3957,10 +4162,53 @@
                 "zIndex": 1
               },
               {
-                "id": "f217159a-ff9d-43d8-9b42-48c78dee8d23",
+                "id": "8f48356c-b34d-42ff-86fa-492b6cc32e6a",
+                "type": "shape",
+                "name": "Skill chip MariaDB",
+                "x": 128,
+                "y": 6,
+                "w": 63,
+                "h": 22,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#006e46",
+                  "borderWidth": 0,
+                  "borderColor": "#006e46",
+                  "borderRadius": 11
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "77af4650-d81d-4abd-b463-6dcf3afc046c",
+                "type": "text",
+                "name": "Skill chip label MariaDB",
+                "x": 128,
+                "y": 6,
+                "w": 63,
+                "h": 22,
+                "content": {
+                  "text": "MariaDB"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 9,
+                  "fontWeight": 700,
+                  "color": "#ffffff",
+                  "textAlign": "center",
+                  "verticalAlign": "middle",
+                  "whiteSpace": "nowrap"
+                },
+                "zIndex": 2
+              },
+              {
+                "id": "c997a98f-7c41-442a-b7b9-09e1a03673f2",
                 "type": "shape",
                 "name": "Skill chip PostgreSQL",
-                "x": 128,
+                "x": 197,
                 "y": 6,
                 "w": 82,
                 "h": 22,
@@ -3978,10 +4226,10 @@
                 "zIndex": 1
               },
               {
-                "id": "0691751c-3049-42f1-879d-bf695a5c0730",
+                "id": "67058c40-ff1b-4b8c-9a5a-4a8a63af9b2e",
                 "type": "text",
                 "name": "Skill chip label PostgreSQL",
-                "x": 128,
+                "x": 197,
                 "y": 6,
                 "w": 82,
                 "h": 22,
@@ -4000,50 +4248,7 @@
                 "zIndex": 2
               },
               {
-                "id": "d595104c-2719-4040-8ebd-13c0e2ee3499",
-                "type": "shape",
-                "name": "Skill chip MariaDB",
-                "x": 216,
-                "y": 6,
-                "w": 63,
-                "h": 22,
-                "content": {
-                  "shape": "rect",
-                  "variant": "rounded",
-                  "filled": true
-                },
-                "style": {
-                  "background": "#d7ebe0",
-                  "borderWidth": 0,
-                  "borderColor": "#b7d4c4",
-                  "borderRadius": 11
-                },
-                "zIndex": 1
-              },
-              {
-                "id": "4f34a0cd-71b5-43be-86b0-2a9486992d04",
-                "type": "text",
-                "name": "Skill chip label MariaDB",
-                "x": 216,
-                "y": 6,
-                "w": 63,
-                "h": 22,
-                "content": {
-                  "text": "MariaDB"
-                },
-                "style": {
-                  "fontFamily": "ui",
-                  "fontSize": 9,
-                  "fontWeight": 600,
-                  "color": "#004d32",
-                  "textAlign": "center",
-                  "verticalAlign": "middle",
-                  "whiteSpace": "nowrap"
-                },
-                "zIndex": 2
-              },
-              {
-                "id": "e3b55f08-8159-4ce2-8867-28802d734c6d",
+                "id": "c7f71e81-aa7b-45cf-89a7-5b6c2f377a9f",
                 "type": "shape",
                 "name": "Skill chip MySQL",
                 "x": 285,
@@ -4064,7 +4269,7 @@
                 "zIndex": 1
               },
               {
-                "id": "0d9e02de-67aa-40ae-9614-a25fcf36c2d7",
+                "id": "93765cc9-b7f7-4e1a-9fcd-557c47937c9a",
                 "type": "text",
                 "name": "Skill chip label MySQL",
                 "x": 285,
@@ -4086,7 +4291,7 @@
                 "zIndex": 2
               },
               {
-                "id": "134be1d7-149c-414d-9fa7-884b2e3a34fb",
+                "id": "d1be0368-8706-4db0-8635-5e0ad850e5cb",
                 "type": "shape",
                 "name": "Skill chip SQLite",
                 "x": 341,
@@ -4099,15 +4304,15 @@
                   "filled": true
                 },
                 "style": {
-                  "background": "#ffffff",
-                  "borderWidth": 1,
-                  "borderColor": "#c5d4cb",
+                  "background": "#d7ebe0",
+                  "borderWidth": 0,
+                  "borderColor": "#b7d4c4",
                   "borderRadius": 11
                 },
                 "zIndex": 1
               },
               {
-                "id": "ebe1e378-348f-4cdf-bfe1-bddbe0c13c37",
+                "id": "4e7d2a94-0a14-4312-ae91-e3701623fe61",
                 "type": "text",
                 "name": "Skill chip label SQLite",
                 "x": 341,
@@ -4120,8 +4325,8 @@
                 "style": {
                   "fontFamily": "ui",
                   "fontSize": 9,
-                  "fontWeight": 500,
-                  "color": "#5c7468",
+                  "fontWeight": 600,
+                  "color": "#004d32",
                   "textAlign": "center",
                   "verticalAlign": "middle",
                   "whiteSpace": "nowrap"
@@ -4134,17 +4339,17 @@
           "zIndex": 1
         },
         {
-          "id": "86696c93-bacf-4b6e-bfbc-627ea70e18d4",
+          "id": "1289826a-8f17-42b0-9024-7c562654d086",
           "type": "group",
           "name": "Skills · Observability",
           "x": 48,
-          "y": 552,
+          "y": 784,
           "w": 618,
           "h": 34,
           "content": {
             "blocks": [
               {
-                "id": "86f45dd8-8661-403b-b585-529cd6cd780e",
+                "id": "7755c745-703c-4370-82f6-bdfa35f36dcd",
                 "type": "shape",
                 "name": "Observability skill wash",
                 "x": 0,
@@ -4164,7 +4369,7 @@
                 "zIndex": 0
               },
               {
-                "id": "63b4446f-f354-4b4e-a2b4-844b5c241f8e",
+                "id": "7b78f852-6891-43f7-82bc-4965bd7b5ff1",
                 "type": "text",
                 "name": "Observability label",
                 "x": 10,
@@ -4184,7 +4389,7 @@
                 "zIndex": 1
               },
               {
-                "id": "82d18689-e990-4d8c-bdfd-47886ab3cc01",
+                "id": "c5e8efd4-7d8e-44e8-ab17-004a1ba52400",
                 "type": "shape",
                 "name": "Skill chip Datadog",
                 "x": 128,
@@ -4205,7 +4410,7 @@
                 "zIndex": 1
               },
               {
-                "id": "d40afbc4-3940-40f7-a960-2c6e71bb2eff",
+                "id": "8598464b-792e-4c0c-8c80-25c037f6e5cc",
                 "type": "text",
                 "name": "Skill chip label Datadog",
                 "x": 128,
@@ -4227,7 +4432,7 @@
                 "zIndex": 2
               },
               {
-                "id": "c16cc21f-1d89-4872-b177-cf5583441d5b",
+                "id": "b0573669-fc6a-41e5-baf6-cbfee2f39f88",
                 "type": "shape",
                 "name": "Skill chip Prometheus",
                 "x": 197,
@@ -4248,7 +4453,7 @@
                 "zIndex": 1
               },
               {
-                "id": "fb4d3527-a594-47a0-a88a-a447baa301a9",
+                "id": "e2ec7e55-8a02-42f7-afcb-3fee6cd6a75e",
                 "type": "text",
                 "name": "Skill chip label Prometheus",
                 "x": 197,
@@ -4270,7 +4475,7 @@
                 "zIndex": 2
               },
               {
-                "id": "fe3fa273-b187-4b86-ac74-f07d250b910d",
+                "id": "1cc08f2a-b76f-4bd9-9565-faa155878897",
                 "type": "shape",
                 "name": "Skill chip Grafana",
                 "x": 285,
@@ -4291,7 +4496,7 @@
                 "zIndex": 1
               },
               {
-                "id": "16cb86f3-af8d-47e9-9195-bd5119768375",
+                "id": "01dacfd5-dbbf-4f82-a79f-85f30d40b7d1",
                 "type": "text",
                 "name": "Skill chip label Grafana",
                 "x": 285,
@@ -4313,7 +4518,7 @@
                 "zIndex": 2
               },
               {
-                "id": "a0a09e69-4717-434e-972c-5f636a1b4111",
+                "id": "93f9f280-a02a-4935-b63d-b1d563dd5eb6",
                 "type": "shape",
                 "name": "Skill chip ELK",
                 "x": 354,
@@ -4334,7 +4539,7 @@
                 "zIndex": 1
               },
               {
-                "id": "c544722e-7076-4a25-8474-0b352b4949a6",
+                "id": "5f74890f-7fbe-4a8d-aaf9-8f7efac9b749",
                 "type": "text",
                 "name": "Skill chip label ELK",
                 "x": 354,
@@ -4356,7 +4561,7 @@
                 "zIndex": 2
               },
               {
-                "id": "1fbe1877-e6a1-43e3-a2fb-5790e706e77e",
+                "id": "e3771007-4252-46fb-8849-38ddc9d620b5",
                 "type": "shape",
                 "name": "Skill chip Wazuh",
                 "x": 404,
@@ -4377,7 +4582,7 @@
                 "zIndex": 1
               },
               {
-                "id": "b72b9670-f624-4224-880f-3357bea04ccc",
+                "id": "0bf52fd2-e503-4d1f-9be6-85d456f8d249",
                 "type": "text",
                 "name": "Skill chip label Wazuh",
                 "x": 404,
@@ -4404,23 +4609,23 @@
           "zIndex": 1
         },
         {
-          "id": "330bfed4-6768-4586-9412-38d14c4c5b3b",
+          "id": "055f5b52-be34-49f8-8cc2-8c67c3cfddf8",
           "type": "group",
           "name": "Skills · Platforms",
           "x": 48,
-          "y": 592,
+          "y": 824,
           "w": 618,
-          "h": 34,
+          "h": 62,
           "content": {
             "blocks": [
               {
-                "id": "ad6f63aa-4202-4d09-a6d4-290736c33968",
+                "id": "5a31a765-c2c3-443e-b35a-ae932b232e84",
                 "type": "shape",
                 "name": "Platforms skill wash",
                 "x": 0,
                 "y": 0,
                 "w": 618,
-                "h": 34,
+                "h": 62,
                 "content": {
                   "shape": "rect",
                   "filled": true
@@ -4434,13 +4639,13 @@
                 "zIndex": 0
               },
               {
-                "id": "235aaf67-48ac-437b-b1bf-76145e829dc3",
+                "id": "0415157f-0767-428a-b366-d1d7e8d0cb45",
                 "type": "text",
                 "name": "Platforms label",
                 "x": 10,
                 "y": 0,
                 "w": 118,
-                "h": 34,
+                "h": 62,
                 "content": {
                   "text": "Platforms"
                 },
@@ -4454,7 +4659,7 @@
                 "zIndex": 1
               },
               {
-                "id": "4110fbf2-9315-48e0-bdd7-0e1b95abd74c",
+                "id": "00800239-84f0-49f3-8228-4009045d9075",
                 "type": "shape",
                 "name": "Skill chip Linux",
                 "x": 128,
@@ -4475,7 +4680,7 @@
                 "zIndex": 1
               },
               {
-                "id": "bb35288d-8324-4e48-946d-c6ecf98b5b3f",
+                "id": "36c455ed-22c9-491f-b28f-0adf153d64f1",
                 "type": "text",
                 "name": "Skill chip label Linux",
                 "x": 128,
@@ -4497,7 +4702,7 @@
                 "zIndex": 2
               },
               {
-                "id": "184966db-5a2d-4f6c-a0dd-a081b46a11da",
+                "id": "d8432b0c-381f-4c5d-a4e9-cebf65785db5",
                 "type": "shape",
                 "name": "Skill chip NixOS",
                 "x": 184,
@@ -4518,7 +4723,7 @@
                 "zIndex": 1
               },
               {
-                "id": "70f70cb9-7f4e-4bfe-8efa-4dce7d9b27f8",
+                "id": "d4e5d276-4ca7-4c58-9adb-f6e16ed3bc56",
                 "type": "text",
                 "name": "Skill chip label NixOS",
                 "x": 184,
@@ -4540,9 +4745,9 @@
                 "zIndex": 2
               },
               {
-                "id": "05433920-233b-49bd-ad4a-7a0e13f8cac7",
+                "id": "32bf4b6b-399f-4fe7-99f4-ad2f763f2d78",
                 "type": "shape",
-                "name": "Skill chip Proxmox",
+                "name": "Skill chip Red Hat",
                 "x": 240,
                 "y": 6,
                 "w": 63,
@@ -4561,10 +4766,139 @@
                 "zIndex": 1
               },
               {
-                "id": "e6414fcc-f52e-4b1c-8138-b26caea73ffc",
+                "id": "542548cc-9097-4ee7-a870-469cb435b949",
+                "type": "text",
+                "name": "Skill chip label Red Hat",
+                "x": 240,
+                "y": 6,
+                "w": 63,
+                "h": 22,
+                "content": {
+                  "text": "Red Hat"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 9,
+                  "fontWeight": 600,
+                  "color": "#004d32",
+                  "textAlign": "center",
+                  "verticalAlign": "middle",
+                  "whiteSpace": "nowrap"
+                },
+                "zIndex": 2
+              },
+              {
+                "id": "b632d9be-dd82-4239-bef2-dac96e312342",
+                "type": "shape",
+                "name": "Skill chip Rocky Linux",
+                "x": 309,
+                "y": 6,
+                "w": 88,
+                "h": 22,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#d7ebe0",
+                  "borderWidth": 0,
+                  "borderColor": "#b7d4c4",
+                  "borderRadius": 11
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "64f2dcb0-122d-424a-8e1e-2e5a510ce1af",
+                "type": "text",
+                "name": "Skill chip label Rocky Linux",
+                "x": 309,
+                "y": 6,
+                "w": 88,
+                "h": 22,
+                "content": {
+                  "text": "Rocky Linux"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 9,
+                  "fontWeight": 600,
+                  "color": "#004d32",
+                  "textAlign": "center",
+                  "verticalAlign": "middle",
+                  "whiteSpace": "nowrap"
+                },
+                "zIndex": 2
+              },
+              {
+                "id": "4f7441e3-8cef-4eb0-8a44-294c75aaf61a",
+                "type": "shape",
+                "name": "Skill chip Alma Linux",
+                "x": 403,
+                "y": 6,
+                "w": 82,
+                "h": 22,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#d7ebe0",
+                  "borderWidth": 0,
+                  "borderColor": "#b7d4c4",
+                  "borderRadius": 11
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "8fcd2a3c-137f-4b15-94b9-2cd821772b8d",
+                "type": "text",
+                "name": "Skill chip label Alma Linux",
+                "x": 403,
+                "y": 6,
+                "w": 82,
+                "h": 22,
+                "content": {
+                  "text": "Alma Linux"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 9,
+                  "fontWeight": 600,
+                  "color": "#004d32",
+                  "textAlign": "center",
+                  "verticalAlign": "middle",
+                  "whiteSpace": "nowrap"
+                },
+                "zIndex": 2
+              },
+              {
+                "id": "c41eb191-a4f0-4b64-b4e5-1a187e86713f",
+                "type": "shape",
+                "name": "Skill chip Proxmox",
+                "x": 491,
+                "y": 6,
+                "w": 63,
+                "h": 22,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#d7ebe0",
+                  "borderWidth": 0,
+                  "borderColor": "#b7d4c4",
+                  "borderRadius": 11
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "decd3a37-5529-49f5-8648-b4abd3f3cecd",
                 "type": "text",
                 "name": "Skill chip label Proxmox",
-                "x": 240,
+                "x": 491,
                 "y": 6,
                 "w": 63,
                 "h": 22,
@@ -4583,11 +4917,11 @@
                 "zIndex": 2
               },
               {
-                "id": "3f804629-ee7d-4a2e-81ba-dbdd19ad2dfc",
+                "id": "c844bfe7-688d-431b-b2c7-92a729b1603f",
                 "type": "shape",
                 "name": "Skill chip FreeBSD",
-                "x": 309,
-                "y": 6,
+                "x": 128,
+                "y": 34,
                 "w": 63,
                 "h": 22,
                 "content": {
@@ -4604,15 +4938,58 @@
                 "zIndex": 1
               },
               {
-                "id": "be79e67f-0fee-49ac-a636-1994c09e9701",
+                "id": "e6df58de-0865-40ea-acfd-0cca3c72694a",
                 "type": "text",
                 "name": "Skill chip label FreeBSD",
-                "x": 309,
-                "y": 6,
+                "x": 128,
+                "y": 34,
                 "w": 63,
                 "h": 22,
                 "content": {
                   "text": "FreeBSD"
+                },
+                "style": {
+                  "fontFamily": "ui",
+                  "fontSize": 9,
+                  "fontWeight": 500,
+                  "color": "#5c7468",
+                  "textAlign": "center",
+                  "verticalAlign": "middle",
+                  "whiteSpace": "nowrap"
+                },
+                "zIndex": 2
+              },
+              {
+                "id": "9ccf0d4d-ac00-46ba-a160-db42475e6292",
+                "type": "shape",
+                "name": "Skill chip Windows Server",
+                "x": 197,
+                "y": 34,
+                "w": 108,
+                "h": 22,
+                "content": {
+                  "shape": "rect",
+                  "variant": "rounded",
+                  "filled": true
+                },
+                "style": {
+                  "background": "#ffffff",
+                  "borderWidth": 1,
+                  "borderColor": "#c5d4cb",
+                  "borderRadius": 11
+                },
+                "zIndex": 1
+              },
+              {
+                "id": "b89d14a2-39ac-4536-a971-911f06916fef",
+                "type": "text",
+                "name": "Skill chip label Windows Server",
+                "x": 197,
+                "y": 34,
+                "w": 108,
+                "h": 22,
+                "content": {
+                  "text": "Windows Server"
                 },
                 "style": {
                   "fontFamily": "ui",
@@ -4631,17 +5008,17 @@
           "zIndex": 1
         },
         {
-          "id": "89f53fde-24ad-402e-a30b-9ecb1891f4af",
+          "id": "14a7ca94-b4ec-4ccf-a8b3-28b067e3f0f2",
           "type": "group",
           "name": "Skills · IAM / SSO",
           "x": 48,
-          "y": 632,
+          "y": 892,
           "w": 618,
           "h": 34,
           "content": {
             "blocks": [
               {
-                "id": "f7f2bc04-6ada-4300-86bd-552cab93958d",
+                "id": "724690ac-c6c2-4d7f-9ff7-05060d3b0ccf",
                 "type": "shape",
                 "name": "IAM / SSO skill wash",
                 "x": 0,
@@ -4661,7 +5038,7 @@
                 "zIndex": 0
               },
               {
-                "id": "45c409e9-ddd2-4767-9a08-30bb8698d0b9",
+                "id": "22bf40c8-5a8b-4d25-a884-563a0d0ef461",
                 "type": "text",
                 "name": "IAM / SSO label",
                 "x": 10,
@@ -4681,7 +5058,7 @@
                 "zIndex": 1
               },
               {
-                "id": "37d2860f-0cf9-4cc0-b309-38b4c3ae9b0f",
+                "id": "6e30f6c6-bbb3-4faa-986e-102713e92d4a",
                 "type": "shape",
                 "name": "Skill chip IAM",
                 "x": 128,
@@ -4702,7 +5079,7 @@
                 "zIndex": 1
               },
               {
-                "id": "5eff0356-cb05-4f4c-b7e6-ea8312173a0b",
+                "id": "0129a28c-9b4c-4271-894c-158cc5ab22c3",
                 "type": "text",
                 "name": "Skill chip label IAM",
                 "x": 128,
@@ -4724,7 +5101,7 @@
                 "zIndex": 2
               },
               {
-                "id": "24c2b7b0-bc0c-4148-8cbe-d05aa35cf6fe",
+                "id": "bf460936-3b1f-4104-ad82-3c70dd8cf337",
                 "type": "shape",
                 "name": "Skill chip Okta",
                 "x": 178,
@@ -4745,7 +5122,7 @@
                 "zIndex": 1
               },
               {
-                "id": "08344162-0831-471e-adad-1d8b066da59f",
+                "id": "1f8ff414-46c3-4bfe-88ea-554287a88c02",
                 "type": "text",
                 "name": "Skill chip label Okta",
                 "x": 178,
@@ -4767,7 +5144,7 @@
                 "zIndex": 2
               },
               {
-                "id": "522f5816-0325-437a-a40d-ea63b14384a7",
+                "id": "487c378e-1b9a-4014-9944-4eeeb1bccb0c",
                 "type": "shape",
                 "name": "Skill chip Keycloak",
                 "x": 228,
@@ -4788,7 +5165,7 @@
                 "zIndex": 1
               },
               {
-                "id": "f986f63d-8cac-4a55-bf51-c1141be5174c",
+                "id": "9891f2a2-77e5-4dc2-8373-8cd79b392032",
                 "type": "text",
                 "name": "Skill chip label Keycloak",
                 "x": 228,
@@ -4810,7 +5187,7 @@
                 "zIndex": 2
               },
               {
-                "id": "7f82d019-efcd-4538-9127-102e52155942",
+                "id": "b89938c4-a974-4e72-8896-c83a5751bb83",
                 "type": "shape",
                 "name": "Skill chip Auth0",
                 "x": 303,
@@ -4831,7 +5208,7 @@
                 "zIndex": 1
               },
               {
-                "id": "9053c1b5-b5b5-490f-bb14-ea93e3fe646e",
+                "id": "632a306d-0a11-4568-85f8-3a431fa062ee",
                 "type": "text",
                 "name": "Skill chip label Auth0",
                 "x": 303,
@@ -4858,17 +5235,17 @@
           "zIndex": 1
         },
         {
-          "id": "c99c301e-d876-4da5-ba30-28c07cb81181",
+          "id": "afb28825-5069-49f4-941d-c3c6aa444f66",
           "type": "group",
           "name": "Skills · AI tooling",
           "x": 48,
-          "y": 672,
+          "y": 932,
           "w": 618,
           "h": 34,
           "content": {
             "blocks": [
               {
-                "id": "9a6ba54a-18a2-41b6-abad-0519c3bdb313",
+                "id": "4519f830-5650-4d22-9ccc-cdab44f4f234",
                 "type": "shape",
                 "name": "AI tooling skill wash",
                 "x": 0,
@@ -4888,7 +5265,7 @@
                 "zIndex": 0
               },
               {
-                "id": "25104714-cbf5-46e0-928a-b0b2eaa6dbd4",
+                "id": "ad425e65-a906-43d0-b9b9-0aa476534f9b",
                 "type": "text",
                 "name": "AI tooling label",
                 "x": 10,
@@ -4908,7 +5285,7 @@
                 "zIndex": 1
               },
               {
-                "id": "9bc01f19-c39d-4632-8358-6e1d69e8532f",
+                "id": "86837dc4-1b96-4c31-9dda-323fe43e1184",
                 "type": "shape",
                 "name": "Skill chip Cursor",
                 "x": 128,
@@ -4929,7 +5306,7 @@
                 "zIndex": 1
               },
               {
-                "id": "97aa87f5-1eb5-4830-994d-eeaf6c6ce817",
+                "id": "638eb249-be74-41c4-b079-c1a552dffe26",
                 "type": "text",
                 "name": "Skill chip label Cursor",
                 "x": 128,
@@ -4951,7 +5328,7 @@
                 "zIndex": 2
               },
               {
-                "id": "f9910d19-a123-4f65-90fc-782ffadcaa11",
+                "id": "4e2ea25e-f301-44db-84a5-629f31aa8fbe",
                 "type": "shape",
                 "name": "Skill chip OpenCode",
                 "x": 190,
@@ -4972,7 +5349,7 @@
                 "zIndex": 1
               },
               {
-                "id": "12e3f972-ddaf-46f5-885a-ea06ac448c9f",
+                "id": "3ff34729-7512-4de3-a927-ea5d211add53",
                 "type": "text",
                 "name": "Skill chip label OpenCode",
                 "x": 190,
@@ -4994,7 +5371,7 @@
                 "zIndex": 2
               },
               {
-                "id": "dbc379cd-20b2-4243-ab96-b08319b8b988",
+                "id": "bd9acbc9-fe0d-4a1d-9210-2719338a3d76",
                 "type": "shape",
                 "name": "Skill chip Anthropic",
                 "x": 265,
@@ -5015,7 +5392,7 @@
                 "zIndex": 1
               },
               {
-                "id": "c38b7200-3433-414d-8fe5-1623c805a419",
+                "id": "8ead3972-fb32-4f9d-a6ea-030a7dd5e5d6",
                 "type": "text",
                 "name": "Skill chip label Anthropic",
                 "x": 265,
@@ -5042,80 +5419,7 @@
           "zIndex": 1
         },
         {
-          "id": "e3e8b1a5-3887-49a8-a745-d01223533fc0",
-          "type": "shape",
-          "name": "Accent Open source",
-          "x": 48,
-          "y": 771,
-          "w": 9,
-          "h": 9,
-          "content": {
-            "shape": "rect",
-            "variant": "rounded",
-            "filled": true
-          },
-          "style": {
-            "background": "#006e46",
-            "borderRadius": 2
-          }
-        },
-        {
-          "id": "f480afe2-966e-4d4d-9b51-c2fb15b4496d",
-          "type": "text",
-          "name": "H Open source",
-          "x": 64,
-          "y": 768,
-          "w": 602,
-          "h": 16,
-          "content": {
-            "text": "Open source"
-          },
-          "style": {
-            "fontFamily": "ui",
-            "fontSize": 11,
-            "fontWeight": 700,
-            "textTransform": "uppercase",
-            "letterSpacing": 1.8,
-            "color": "#006e46"
-          }
-        },
-        {
-          "id": "28cea920-9bbe-4206-9480-b82863c647f3",
-          "type": "shape",
-          "name": "Rule Open source",
-          "x": 48,
-          "y": 786,
-          "w": 618,
-          "h": 2,
-          "content": {
-            "shape": "rect",
-            "filled": true
-          },
-          "style": {
-            "background": "#006e46"
-          }
-        },
-        {
-          "id": "63f4dae1-c376-4c78-95ed-cb657f0bddbd",
-          "type": "paragraph",
-          "name": "OSS",
-          "x": 48,
-          "y": 796,
-          "w": 618,
-          "h": 40,
-          "content": {
-            "text": "Avid NixOS, Tailscale, Fish, and OpenTofu user. Also Rust and Go — side projects on GitHub; occasional notes on the blog."
-          },
-          "style": {
-            "fontFamily": "doc",
-            "fontSize": 10.5,
-            "lineHeight": 1.45,
-            "color": "#14231c"
-          },
-          "zIndex": 1
-        },
-        {
-          "id": "b127cf93-02f2-4ec7-82f4-cb3d895c566d",
+          "id": "7211f645-7d09-4f41-8f97-bbaf57a5d7c8",
           "type": "shape",
           "name": "Yassin Bousâadi  ·  2 / 2 page rule",
           "x": 48,
@@ -5136,7 +5440,7 @@
           }
         },
         {
-          "id": "abaefd41-deb0-4135-8e84-c13a60a49e94",
+          "id": "bcde3de0-ef01-4f2f-8ac7-7beb12024ded",
           "type": "text",
           "name": "Yassin Bousâadi  ·  2 / 2 folio",
           "x": 48,
@@ -5169,7 +5473,7 @@
     },
     {
       "id": "out-pdf-a4",
-      "name": "PDF A4",
+      "name": "Page A4",
       "kind": "pdf",
       "pageSize": "A4",
       "enabled": true
@@ -5245,14 +5549,14 @@
   "language": "en",
   "customObjects": [
     {
-      "id": "4da98cf5-82e8-4673-be6e-4625be685a68",
+      "id": "be75a1d0-af8c-429f-b49c-56b69d46463e",
       "name": "Experience entry",
-      "createdAt": "2026-08-27T05:16:33.922Z",
+      "createdAt": "2026-08-27T21:13:54.709Z",
       "w": 618,
       "h": 112,
       "blocks": [
         {
-          "id": "95d895a6-3009-4d80-bf62-b6e3925c219f",
+          "id": "df56fa59-2cb7-4f71-9797-ce656f860cbe",
           "type": "shape",
           "name": "Job stripe",
           "x": 0,
@@ -5270,7 +5574,7 @@
           "zIndex": 0
         },
         {
-          "id": "210930eb-113d-41a3-9562-274e50923722",
+          "id": "83a513f6-1997-435b-a5f9-58bbd16c7a3c",
           "type": "shape",
           "name": "Date pill",
           "x": 470,
@@ -5289,7 +5593,7 @@
           "zIndex": 1
         },
         {
-          "id": "43553783-9fe5-48e9-a62a-b40595a41231",
+          "id": "67209b82-fed6-4c21-a21f-daa833705f8d",
           "type": "text",
           "name": "Job title",
           "x": 16,
@@ -5308,7 +5612,7 @@
           "zIndex": 2
         },
         {
-          "id": "cdfcc4dd-4fdf-4f6c-8f62-52bf45ee6566",
+          "id": "90b3e274-bced-4c73-b924-874707bc6a6c",
           "type": "text",
           "name": "Job dates",
           "x": 470,
@@ -5329,7 +5633,7 @@
           "zIndex": 2
         },
         {
-          "id": "c27f71d5-5d65-4b1a-9fcc-60a6ebdebc9d",
+          "id": "cd64acc8-cfd7-4e54-b7de-088941e1e488",
           "type": "text",
           "name": "Job place",
           "x": 16,
@@ -5348,7 +5652,7 @@
           "zIndex": 2
         },
         {
-          "id": "be5640cf-1495-47b5-9616-03f0959ddbc8",
+          "id": "ace5c328-fb5e-425e-a13a-1c1a97da5b5a",
           "type": "list",
           "name": "Job bullets",
           "x": 16,

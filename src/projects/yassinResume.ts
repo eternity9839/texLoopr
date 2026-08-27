@@ -1,7 +1,8 @@
 /**
- * Personal project — Yassin Bousâadi CV.
+ * Personal project — local CV (not shipped in the app sample catalog).
  * Print-friendly A4 engineering résumé composed in texLooper.
- * Open: http://localhost:1420/?load=yassin-resume
+ * Regenerate JSON: nix develop -c npx --yes tsx scripts/write-yassin-resume.ts
+ * Open locally: texLooper menu → Open JSON → projects/yassin-bousaadi-resume.json
  */
 import type { Block, CustomObject, Project } from "../model/document";
 import { b, id, page, shell } from "../model/demos/helpers";
@@ -786,10 +787,13 @@ const EXPERIENCES: ExperienceEntry[] = [
     dates: "Dec 2024 – Present",
     bullets: [
       "Collaborated with security teams to audit, harden, and enforce compliance (PCI-DSS, ISO-27001, DORA, GDPR); supported external payment audits.",
-      "Designed infrastructure decoupling for legacy systems; implemented Terraform and Ansible for reproducible IaC.",
-      "Standardized CI/CD with development teams; led incident, change, and problem management (ITIL / GuardDuty).",
+      "Deployed scalable, robust environments for new and existing finance and business projects.",
+      "Migrated legacy applications and infrastructure using several migration strategies; designed decoupling with Terraform and Ansible for reproducible IaC.",
+      "AWS multi-account org structures (landing zones, IAM guardrails); Xen/Proxmox → AWS migrations.",
+      "Standardized CI/CD with development teams; implemented incident management and led incident and change management across the company (ITIL / GuardDuty).",
+      "Partnered with developers and project managers to promote better practices, ownership, and long-term product maintenance; coached teams on cloud practices.",
+      "Supported external partners on network and application maintenance and security hardening.",
       "Centralized monitoring with Datadog; hardened legacy databases with backup enforcement.",
-      "AWS multi-account org structures (landing zones, IAM guardrails); Xen/Proxmox → AWS migrations; coached teams on cloud practices.",
     ],
   },
   {
@@ -862,10 +866,10 @@ const SKILL_CATEGORIES: SkillCategory[] = [
       { name: "Python", tier: "expert" },
       { name: "JavaScript", tier: "proficient" },
       { name: "Node.js", tier: "proficient" },
-      { name: "Java", tier: "proficient" },
+      { name: "Rust", tier: "proficient" },
+      { name: "Go", tier: "proficient" },
       { name: "Groovy", tier: "proficient" },
-      { name: "Rust", tier: "working" },
-      { name: "Go", tier: "working" },
+      { name: "Java", tier: "working" },
     ],
   },
   {
@@ -875,17 +879,18 @@ const SKILL_CATEGORIES: SkillCategory[] = [
       { name: "Fish", tier: "expert" },
       { name: "Zsh", tier: "proficient" },
       { name: "PowerShell", tier: "proficient" },
-      { name: "KornShell", tier: "working" },
+      { name: "KornShell", tier: "proficient" },
     ],
   },
   {
-    label: "DevOps",
+    label: "Provisioning",
     items: [
       { name: "Terraform", tier: "expert" },
       { name: "OpenTofu", tier: "expert" },
       { name: "Ansible", tier: "expert" },
       { name: "Packer", tier: "proficient" },
       { name: "Vagrant", tier: "proficient" },
+      { name: "Puppet", tier: "proficient" },
       { name: "Rundeck", tier: "working" },
     ],
   },
@@ -895,7 +900,7 @@ const SKILL_CATEGORIES: SkillCategory[] = [
       { name: "GitHub Actions", tier: "expert" },
       { name: "GitLab CI", tier: "proficient" },
       { name: "Azure DevOps", tier: "proficient" },
-      { name: "Jenkins", tier: "proficient" },
+      { name: "Jenkins", tier: "working" },
     ],
   },
   {
@@ -903,25 +908,27 @@ const SKILL_CATEGORIES: SkillCategory[] = [
     items: [
       { name: "AWS", tier: "expert" },
       { name: "Azure", tier: "proficient" },
+      { name: "DigitalOcean", tier: "proficient" },
+      { name: "Linode", tier: "proficient" },
+      { name: "UpCloud", tier: "proficient" },
       { name: "Oracle Cloud", tier: "working" },
-      { name: "DigitalOcean", tier: "working" },
     ],
   },
   {
     label: "Containers",
     items: [
       { name: "Docker", tier: "expert" },
-      { name: "Podman", tier: "proficient" },
+      { name: "Podman", tier: "expert" },
       { name: "Kubernetes", tier: "proficient" },
     ],
   },
   {
     label: "Databases",
     items: [
+      { name: "MariaDB", tier: "expert" },
       { name: "PostgreSQL", tier: "proficient" },
-      { name: "MariaDB", tier: "proficient" },
       { name: "MySQL", tier: "proficient" },
-      { name: "SQLite", tier: "working" },
+      { name: "SQLite", tier: "proficient" },
     ],
   },
   {
@@ -939,8 +946,12 @@ const SKILL_CATEGORIES: SkillCategory[] = [
     items: [
       { name: "Linux", tier: "expert" },
       { name: "NixOS", tier: "expert" },
+      { name: "Red Hat", tier: "proficient" },
+      { name: "Rocky Linux", tier: "proficient" },
+      { name: "Alma Linux", tier: "proficient" },
       { name: "Proxmox", tier: "proficient" },
       { name: "FreeBSD", tier: "working" },
+      { name: "Windows Server", tier: "working" },
     ],
   },
   {
@@ -972,6 +983,14 @@ function layoutExperienceGroups(startY: number, gap = 12): Block[] {
   return blocks;
 }
 
+function experienceSectionEndY(startY: number, gap = 12): number {
+  let y = startY;
+  for (const exp of EXPERIENCES) {
+    y += experienceGroupHeight(exp) + gap;
+  }
+  return y - gap;
+}
+
 function layoutSkillCategories(startY: number, gap = 8): Block[] {
   const blocks: Block[] = [];
   let y = startY;
@@ -985,8 +1004,10 @@ function layoutSkillCategories(startY: number, gap = 8): Block[] {
 
 /** Build Yassin's resume as a normal studio project (literal copy). */
 export function buildYassinResume(): Project {
-  const eduY = 748;
   const expStartY = 252;
+  const ossSectionY = experienceSectionEndY(expStartY) + 20;
+  const eduSectionY = 224;
+  const skillsSectionY = 456;
 
   return shell(
     {
@@ -1135,31 +1156,12 @@ export function buildYassinResume(): Project {
 
           ...section("Experience", 224),
           ...layoutExperienceGroups(expStartY),
-          ...section("Education", eduY),
-          ...educationSection(eduY + 28, EDUCATION),
 
-          ...footer("Yassin Bousâadi  ·  1 / 2"),
-        ],
-        { spread: false },
-      ),
-
-      page(
-        "Skills & certifications",
-        [
-          ...accentBar(),
-
-          ...section("Certifications", 36),
-          ...certificationsSection(64, CERTIFICATIONS),
-
-          ...section("Skills", 224),
-          ...skillLegend(248),
-          ...layoutSkillCategories(272, 6),
-
-          ...section("Open source", 768),
+          ...section("Open source", ossSectionY),
           b("paragraph", {
             name: "OSS",
             x: X,
-            y: 796,
+            y: ossSectionY + 28,
             w: W,
             h: 40,
             content: {
@@ -1173,6 +1175,26 @@ export function buildYassinResume(): Project {
             },
             zIndex: 1,
           }),
+
+          ...footer("Yassin Bousâadi  ·  1 / 2"),
+        ],
+        { spread: false },
+      ),
+
+      page(
+        "Education, skills & certifications",
+        [
+          ...accentBar(),
+
+          ...section("Certifications", 36),
+          ...certificationsSection(64, CERTIFICATIONS),
+
+          ...section("Education", eduSectionY),
+          ...educationSection(eduSectionY + 28, EDUCATION),
+
+          ...section("Skills", skillsSectionY),
+          ...skillLegend(skillsSectionY + 24),
+          ...layoutSkillCategories(skillsSectionY + 48, 6),
 
           ...footer("Yassin Bousâadi  ·  2 / 2"),
         ],
