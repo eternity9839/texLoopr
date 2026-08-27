@@ -1,7 +1,7 @@
 # Cross-platform Tauri desktop builds (Linux, Windows, macOS arm64 + x64).
 # - Tag pushes (v*): create/update the GitHub Release and attach bundles.
 # - workflow_dispatch: build and upload workflow artifacts only (no release).
-# Release workflow tags main → this job runs automatically on v*.
+# One workflow, separate jobs per gate and per OS (fail-fast isolated).
 name: Desktop build
 
 on:
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       platforms:
-        description: Which matrix slice to build
+        description: Which platform jobs to run
         type: choice
         options:
           - all
@@ -27,181 +27,111 @@ permissions:
   contents: write
 
 jobs:
-  test:
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+
+  test-model:
+    name: test-model
     runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
-
       - name: Install frontend dependencies
         run: npm ci
+      - name: Unit tests (model)
+        run: npm test -- src/model
 
-      - name: Typecheck
-        run: npm run typecheck
-
-      - name: Unit tests
-        run: npm test
-
-  # Emit matrix JSON so slice filtering does not need `matrix` in a job-level `if`
-  # (workflow_dispatch validation rejects that expression).
-  select:
+  test-app:
+    name: test-app
     runs-on: ubuntu-22.04
-    outputs:
-      include: ${{ steps.pick.outputs.include }}
-    steps:
-      - id: pick
-        shell: bash
-        run: |
-          set -euo pipefail
-          slice="${{ github.event.inputs.platforms || 'all' }}"
-          if [[ "${{ github.event_name }}" == "push" ]]; then
-            slice="all"
-          fi
-          case "$slice" in
-            all)
-              include='[
-                {"id":"macos-arm","platform":"macos-latest","args":"--target aarch64-apple-darwin","rust_targets":"aarch64-apple-darwin,x86_64-apple-darwin","slice":"macos"},
-                {"id":"macos-x64","platform":"macos-latest","args":"--target x86_64-apple-darwin","rust_targets":"aarch64-apple-darwin,x86_64-apple-darwin","slice":"macos"},
-                {"id":"linux","platform":"ubuntu-22.04","args":"","rust_targets":"","slice":"linux"},
-                {"id":"windows","platform":"windows-latest","args":"","rust_targets":"","slice":"windows"}
-              ]'
-              ;;
-            macos)
-              include='[
-                {"id":"macos-arm","platform":"macos-latest","args":"--target aarch64-apple-darwin","rust_targets":"aarch64-apple-darwin,x86_64-apple-darwin","slice":"macos"},
-                {"id":"macos-x64","platform":"macos-latest","args":"--target x86_64-apple-darwin","rust_targets":"aarch64-apple-darwin,x86_64-apple-darwin","slice":"macos"}
-              ]'
-              ;;
-            linux)
-              include='[{"id":"linux","platform":"ubuntu-22.04","args":"","rust_targets":"","slice":"linux"}]'
-              ;;
-            windows)
-              include='[{"id":"windows","platform":"windows-latest","args":"","rust_targets":"","slice":"windows"}]'
-              ;;
-            *)
-              echo "Unknown platforms slice: $slice" >&2
-              exit 1
-              ;;
-          esac
-          # Compact to a single line for the output
-          echo "include=$(jq -c . <<<"$include")" >> "$GITHUB_OUTPUT"
-
-  build:
-    needs: [test, select]
-    timeout-minutes: 90
-    strategy:
-      fail-fast: false
-      matrix:
-        include: ${{ fromJSON(needs.select.outputs.include) }}
-
-    runs-on: ${{ matrix.platform }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: npm
-
-      - name: Install Rust stable
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.rust_targets }}
-
-      - name: Install Linux dependencies
-        if: matrix.slice == 'linux'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            build-essential \
-            curl \
-            wget \
-            file \
-            libxdo-dev \
-            libssl-dev \
-            libgtk-3-dev \
-            libwebkit2gtk-4.1-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev \
-            patchelf \
-            xdg-utils
-
-      - uses: swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri
-          prefix-key: desktop-${{ matrix.id }}
-
       - name: Install frontend dependencies
         run: npm ci
+      - name: Unit tests (app / UI / storage)
+        run: npm test -- src/features src/ui src/state src/runtimeConfig.test.ts
 
-      - name: Detect prerelease channel
-        id: meta
-        shell: bash
-        run: |
-          set -euo pipefail
-          VER="$(node -p "require('./package.json').version")"
-          echo "version=${VER}" >> "$GITHUB_OUTPUT"
-          if [[ "$VER" == *-* ]]; then
-            echo "prerelease=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "prerelease=false" >> "$GITHUB_OUTPUT"
-          fi
+  build-linux:
+    name: linux
+    needs: [typecheck, test-model, test-app]
+    if: >-
+      github.event_name == 'push'
+      || github.event.inputs.platforms == 'all'
+      || github.event.inputs.platforms == 'linux'
+    uses: ./.github/workflows/desktop-build-platform.yml
+    secrets: inherit
+    with:
+      id: linux
+      platform: ubuntu-22.04
+      slice: linux
+      args: ""
+      rust_targets: ""
 
-      # WiX/MSI only accepts numeric prerelease (0.3.3-1), not 0.3.3-alpha.
-      # Override bundle.windows.wix.version so MSI still builds for alpha tags.
-      - name: Set numeric WiX version for prereleases
-        if: matrix.slice == 'windows'
-        shell: bash
-        run: |
-          set -euo pipefail
-          VER="$(node -p "require('./package.json').version")"
-          if [[ "$VER" != *-* ]]; then
-            echo "stable version ${VER}; WiX override not needed"
-            exit 0
-          fi
-          BASE="${VER%%-*}"
-          export WIX_VER="${BASE}.1"
-          node <<'NODE'
-          const fs = require("fs");
-          const path = "src-tauri/tauri.conf.json";
-          const j = JSON.parse(fs.readFileSync(path, "utf8"));
-          const wixVer = process.env.WIX_VER;
-          j.bundle = j.bundle || {};
-          j.bundle.windows = j.bundle.windows || {};
-          j.bundle.windows.wix = { ...(j.bundle.windows.wix || {}), version: wixVer };
-          fs.writeFileSync(path, `${JSON.stringify(j, null, 2)}\n`);
-          console.log(`WiX version override: ${wixVer}`);
-          NODE
+  build-windows:
+    name: windows
+    needs: [typecheck, test-model, test-app]
+    if: >-
+      github.event_name == 'push'
+      || github.event.inputs.platforms == 'all'
+      || github.event.inputs.platforms == 'windows'
+    uses: ./.github/workflows/desktop-build-platform.yml
+    secrets: inherit
+    with:
+      id: windows
+      platform: windows-latest
+      slice: windows
+      args: ""
+      rust_targets: ""
 
-      - name: Build and publish Tauri bundles (release)
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: tauri-apps/tauri-action@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tagName: v__VERSION__
-          releaseName: texLooper v__VERSION__
-          releaseBody: |
-            Desktop builds for Linux (AppImage / deb / rpm), Windows (msi / nsis), and macOS (dmg).
+  build-macos-arm:
+    name: macos-arm
+    needs: [typecheck, test-model, test-app]
+    if: >-
+      github.event_name == 'push'
+      || github.event.inputs.platforms == 'all'
+      || github.event.inputs.platforms == 'macos'
+    uses: ./.github/workflows/desktop-build-platform.yml
+    secrets: inherit
+    with:
+      id: macos-arm
+      platform: macos-latest
+      slice: macos
+      args: "--target aarch64-apple-darwin"
+      rust_targets: "aarch64-apple-darwin,x86_64-apple-darwin"
 
-            Launch on NixOS with `nix run .#texlooper` after a local build — do not install the `.deb` on NixOS.
-          generateReleaseNotes: true
-          releaseDraft: false
-          prerelease: ${{ steps.meta.outputs.prerelease }}
-          args: ${{ matrix.args }}
-          releaseAssetNamePattern: texlooper-v[version]-[platform]-[arch][ext]
-          uploadWorkflowArtifacts: true
-          workflowArtifactNamePattern: texlooper-v[version]-[platform]-[arch]-[bundle]
-
-      - name: Build Tauri bundles (manual / artifacts only)
-        if: github.event_name == 'workflow_dispatch'
-        uses: tauri-apps/tauri-action@v1
-        with:
-          args: ${{ matrix.args }}
-          uploadWorkflowArtifacts: true
-          workflowArtifactNamePattern: texlooper-v[version]-[platform]-[arch]-[bundle]
+  build-macos-x64:
+    name: macos-x64
+    needs: [typecheck, test-model, test-app]
+    if: >-
+      github.event_name == 'push'
+      || github.event.inputs.platforms == 'all'
+      || github.event.inputs.platforms == 'macos'
+    uses: ./.github/workflows/desktop-build-platform.yml
+    secrets: inherit
+    with:
+      id: macos-x64
+      platform: macos-latest
+      slice: macos
+      args: "--target x86_64-apple-darwin"
+      rust_targets: "aarch64-apple-darwin,x86_64-apple-darwin"

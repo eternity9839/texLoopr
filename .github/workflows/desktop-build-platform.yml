@@ -1,0 +1,142 @@
+# Reusable single-platform Tauri desktop build.
+# Called from desktop-build.yml so each OS is its own job.
+name: Desktop build platform
+
+on:
+  workflow_call:
+    inputs:
+      id:
+        description: Matrix-style id used in cache keys / artifact names
+        type: string
+        required: true
+      platform:
+        description: GitHub Actions runner label
+        type: string
+        required: true
+      slice:
+        description: linux | windows | macos
+        type: string
+        required: true
+      args:
+        description: Extra args for tauri build (e.g. --target …)
+        type: string
+        required: false
+        default: ""
+      rust_targets:
+        description: Comma-separated rustup targets (empty = host only)
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: build-${{ inputs.id }}
+    runs-on: ${{ inputs.platform }}
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ inputs.rust_targets }}
+
+      - name: Install Linux dependencies
+        if: inputs.slice == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            wget \
+            file \
+            libxdo-dev \
+            libssl-dev \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            xdg-utils
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          prefix-key: desktop-${{ inputs.id }}
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Detect prerelease channel
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          VER="$(node -p "require('./package.json').version")"
+          echo "version=${VER}" >> "$GITHUB_OUTPUT"
+          if [[ "$VER" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # WiX/MSI only accepts numeric prerelease (0.3.3-1), not 0.3.3-alpha.
+      - name: Set numeric WiX version for prereleases
+        if: inputs.slice == 'windows'
+        shell: bash
+        run: |
+          set -euo pipefail
+          VER="$(node -p "require('./package.json').version")"
+          if [[ "$VER" != *-* ]]; then
+            echo "stable version ${VER}; WiX override not needed"
+            exit 0
+          fi
+          BASE="${VER%%-*}"
+          export WIX_VER="${BASE}.1"
+          node <<'NODE'
+          const fs = require("fs");
+          const path = "src-tauri/tauri.conf.json";
+          const j = JSON.parse(fs.readFileSync(path, "utf8"));
+          const wixVer = process.env.WIX_VER;
+          j.bundle = j.bundle || {};
+          j.bundle.windows = j.bundle.windows || {};
+          j.bundle.windows.wix = { ...(j.bundle.windows.wix || {}), version: wixVer };
+          fs.writeFileSync(path, `${JSON.stringify(j, null, 2)}\n`);
+          console.log(`WiX version override: ${wixVer}`);
+          NODE
+
+      - name: Build and publish Tauri bundles (release)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: tauri-apps/tauri-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: v__VERSION__
+          releaseName: texLooper v__VERSION__
+          releaseBody: |
+            Desktop builds for Linux (AppImage / deb / rpm), Windows (msi / nsis), and macOS (dmg).
+
+            Launch on NixOS with `nix run .#texlooper` after a local build — do not install the `.deb` on NixOS.
+          generateReleaseNotes: true
+          releaseDraft: false
+          prerelease: ${{ steps.meta.outputs.prerelease }}
+          args: ${{ inputs.args }}
+          releaseAssetNamePattern: texlooper-v[version]-[platform]-[arch][ext]
+          uploadWorkflowArtifacts: true
+          workflowArtifactNamePattern: texlooper-v[version]-[platform]-[arch]-[bundle]
+
+      - name: Build Tauri bundles (manual / artifacts only)
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        uses: tauri-apps/tauri-action@v1
+        with:
+          args: ${{ inputs.args }}
+          uploadWorkflowArtifacts: true
+          workflowArtifactNamePattern: texlooper-v[version]-[platform]-[arch]-[bundle]
