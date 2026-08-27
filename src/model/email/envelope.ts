@@ -13,6 +13,8 @@ export interface EmailEnvelope {
   subject?: string;
   /** Preheader / preview text */
   preheader?: string;
+  /** Attach the rendered PDF when the caller provides it. */
+  attachPdf?: boolean;
   /**
    * Extra headers as `Name: value` or `Name=value` lines.
    * Templates OK. Reserved/system headers are dropped.
@@ -53,6 +55,7 @@ export function mergeEmailEnvelope(
     bcc: pick(outputEmail?.bcc, projectEmail?.bcc),
     subject: pick(outputEmail?.subject, projectEmail?.subject),
     preheader: pick(outputEmail?.preheader, projectEmail?.preheader),
+    attachPdf: Boolean(projectEmail?.attachPdf || outputEmail?.attachPdf),
     headers: mergeHeaderBlocks(projectEmail?.headers, outputEmail?.headers),
   };
 }

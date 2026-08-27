@@ -339,18 +339,31 @@ export async function renderEmailBatchBackend(opts: {
   includeZip?: boolean;
   projectId?: string | null;
 }): Promise<RenderBatchResult> {
-  const { buildEmailArtifacts } = await import("./email");
+  const {
+    buildEmailArtifacts,
+    mergeEmailEnvelope,
+    resolveEmailPdfAttachment,
+  } = await import("./email");
   const output = opts.output as import("./workflow").OutputProfile;
   const files: RenderBatchFile[] = [];
   const errors: string[] = [];
   for (let i = 0; i < opts.rows.length; i += 1) {
     const row = opts.rows[i] ?? {};
     try {
+      const envelope = mergeEmailEnvelope(opts.project.email, output.email);
+      const attachment = envelope.attachPdf
+        ? await resolveEmailPdfAttachment({
+            project: opts.project,
+            row,
+            projectId: opts.projectId,
+          })
+        : null;
       const art = buildEmailArtifacts({
         project: opts.project,
         row,
         output,
         projectId: opts.projectId,
+        attachments: attachment ? [attachment] : undefined,
       });
       const safe = art.subject.replace(/[^\w.-]+/g, "_").slice(0, 40) || "message";
       const bytes = new TextEncoder().encode(art.eml);

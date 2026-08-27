@@ -2,6 +2,9 @@ import type { Block, BlockStyle } from "../document";
 import type { DataRow } from "../bindings";
 import type { RuntimeContext } from "../expr";
 import { resolveDateBlockText } from "../dateBlock";
+import { parseLinkHook, resolveLinkTarget } from "../linkHook";
+import { resolveSignatureMode } from "../signatureMode";
+import { resolveSignatureInk } from "../signatureInk";
 import {
   EMAIL_CONTENT_WIDTH,
   layoutEmailBlocks,
@@ -18,6 +21,7 @@ export interface EmailHtmlOptions {
   inlineDataUri?: boolean;
   contentWidth?: number;
   title?: string;
+  preheader?: string;
   /**
    * preview — keep unresolved {{fields}} and mark them in HTML.
    * emit — blank missing fields for deliverable .eml HTML.
@@ -114,13 +118,14 @@ function blockInnerHtml(
         ctx,
         mode,
       );
-      const href = resolveText(
-        String(block.content.target ?? "#"),
+      const hook = parseLinkHook(block.content.hook);
+      const href = resolveLinkTarget(
+        hook,
+        String(block.content.target ?? ""),
         row,
         ctx,
-        mode,
       );
-      return `<a href="${esc(href)}" style="${styleAttr(block.style, "color:#0b57d0")}">${formatHtmlText(label, mode)}</a>`;
+      return `<a href="${esc(href)}" style="${styleAttr(block.style, "display:inline-block;padding:10px 18px;border-radius:4px;background:#0b57d0;color:#ffffff;text-decoration:none;font-weight:600")}">${formatHtmlText(label, mode)}</a>`;
     }
     case "picture": {
       const src = String(block.content.src ?? "");
@@ -133,6 +138,29 @@ function blockInnerHtml(
       if (!imgSrc) return null;
       const w = Math.min(Math.round(block.w), EMAIL_CONTENT_WIDTH - 48);
       return `<img src="${esc(imgSrc)}" alt="${alt}" width="${w}" style="display:block;max-width:100%;height:auto;border:0;${styleAttr(block.style)}" />`;
+    }
+    case "signature": {
+      const caption = resolveText(
+        String(block.content.caption ?? ""),
+        row,
+        ctx,
+        mode,
+      );
+      const name = resolveText(String(block.content.name ?? ""), row, ctx, mode);
+      const src = resolveSignatureInk({
+        mode: resolveSignatureMode(block.content),
+        src: resolveText(String(block.content.src ?? ""), row, ctx, mode),
+        caption,
+        name,
+      });
+      if (!src && !caption) return null;
+      const image = src
+        ? `<img src="${esc(src)}" alt="${esc(caption.split(/\r?\n/, 1)[0] || "Signature")}" style="display:block;max-width:240px;max-height:72px;height:auto;border:0;" />`
+        : "";
+      const captionHtml = caption
+        ? `<div style="${styleAttr(block.style, "margin-top:6px")}">${formatHtmlText(caption, mode)}</div>`
+        : "";
+      return `${image}${captionHtml}`;
     }
     case "shape": {
       const bg = block.style.background ?? "#eef2f6";
@@ -202,6 +230,9 @@ export function buildEmailHtml(
   const items = layoutEmailBlocks(blocks, width);
   const body = items.map((it) => rowHtml(it, opts)).filter(Boolean).join("\n");
   const title = esc(opts.title ?? "Message");
+  const preheader = opts.preheader
+    ? `<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;mso-hide:all;">${esc(opts.preheader)}</div>`
+    : "";
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -210,6 +241,7 @@ export function buildEmailHtml(
 <title>${title}</title>
 </head>
 <body style="margin:0;padding:0;background:#e8eaed;">
+${preheader}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#e8eaed;">
   <tr>
     <td align="center" style="padding:16px 8px;">

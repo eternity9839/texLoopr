@@ -27,6 +27,28 @@ describe("email pipeline", () => {
     expect(eml).toMatch(/Message-ID: </);
   });
 
+  it("wraps the message in multipart/mixed with file attachments", () => {
+    const eml = buildEmlMessage({
+      subject: "Attached",
+      text: "plain",
+      html: "<p>hi</p>",
+      attachments: [
+        {
+          filename: "document.pdf",
+          mime: "application/pdf",
+          dataBase64: "UERG",
+        },
+      ],
+    });
+    expect(eml).toContain("Content-Type: multipart/mixed");
+    expect(eml).toContain("Content-Type: multipart/alternative");
+    expect(eml).toContain("Content-Type: application/pdf; name=\"document.pdf\"");
+    expect(eml).toContain(
+      "Content-Disposition: attachment; filename=\"document.pdf\"",
+    );
+    expect(eml).toContain("UERG");
+  });
+
   it("buildEmailArtifacts for newsletter demo", () => {
     const project = email();
     const row = {
@@ -61,6 +83,13 @@ describe("email pipeline", () => {
       row,
       output,
       installId: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+      attachments: [
+        {
+          filename: "notes.txt",
+          mime: "text/plain",
+          dataBase64: "bm90ZXM=",
+        },
+      ],
     });
     expect(art.html).toContain("Ship notes");
     expect(art.html.toLowerCase()).toContain("<table");
@@ -70,6 +99,10 @@ describe("email pipeline", () => {
     expect(art.eml).toContain("X-Mailer: texLooper/");
     expect(art.text).toContain("Ship notes");
     expect(art.subject).toContain("Ada");
+    expect(art.attachments).toEqual([{ filename: "notes.txt" }]);
+    expect(art.eml).toContain("filename=\"notes.txt\"");
+    expect(art.html).toContain("display:none");
+    expect(art.html).toContain("Skim in a minute");
   });
 
   it("preview HTML keeps unresolved merge tokens visible", () => {

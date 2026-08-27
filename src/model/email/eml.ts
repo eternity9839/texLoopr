@@ -6,6 +6,12 @@ export interface EmlImagePart {
   filename?: string;
 }
 
+export interface EmlFileAttachment {
+  filename: string;
+  mime: string;
+  dataBase64: string;
+}
+
 export interface BuildEmlInput {
   from?: string;
   to?: string;
@@ -16,6 +22,7 @@ export interface BuildEmlInput {
   text: string;
   html: string;
   images?: EmlImagePart[];
+  attachments?: EmlFileAttachment[];
   date?: Date;
   /** App semver / channel label, e.g. 0.3.2-alpha */
   appVersion?: string;
@@ -105,7 +112,9 @@ export function imagesFromDataUriBlocks(
 export function buildEmlMessage(input: BuildEmlInput): string {
   const boundaryAlt = `=_alt_${Date.now().toString(36)}`;
   const boundaryRel = `=_rel_${Date.now().toString(36)}`;
+  const boundaryMixed = `=_mixed_${Date.now().toString(36)}`;
   const hasImages = (input.images?.length ?? 0) > 0;
+  const hasAttachments = (input.attachments?.length ?? 0) > 0;
   const date = (input.date ?? new Date()).toUTCString().replace(/GMT$/, "+0000");
   const version = headerToken(input.appVersion ?? "0.0.0");
   const channel = headerToken(input.appChannel ?? "dev");
@@ -140,7 +149,9 @@ export function buildEmlMessage(input: BuildEmlInput): string {
   }
   headers.push("MIME-Version: 1.0");
   headers.push(
-    hasImages
+    hasAttachments
+      ? `Content-Type: multipart/mixed; boundary="${boundaryMixed}"`
+      : hasImages
       ? `Content-Type: multipart/related; boundary="${boundaryRel}"`
       : `Content-Type: multipart/alternative; boundary="${boundaryAlt}"`,
   );
@@ -160,6 +171,7 @@ export function buildEmlMessage(input: BuildEmlInput): string {
   ].join("\r\n");
 
   let body: string;
+  let bodyContentType: string;
   if (hasImages) {
     const imageParts = (input.images ?? [])
       .map((img) => {
@@ -183,8 +195,41 @@ export function buildEmlMessage(input: BuildEmlInput): string {
       imageParts,
       `--${boundaryRel}--`,
     ].join("\r\n");
+    bodyContentType = `multipart/related; boundary="${boundaryRel}"`;
   } else {
     body = altPart;
+    bodyContentType = `multipart/alternative; boundary="${boundaryAlt}"`;
+  }
+
+  if (hasAttachments) {
+    const attachmentParts = (input.attachments ?? [])
+      .map((attachment) => {
+        const filename = headerToken(attachment.filename).replace(/["\\]/g, "_");
+        const mime =
+          headerToken(attachment.mime).replace(/[^A-Za-z0-9!#$&^_.+/-]/g, "") ||
+          "application/octet-stream";
+        const folded = attachment.dataBase64
+          .replace(/\s+/g, "")
+          .replace(/(.{76})/g, "$1\r\n")
+          .replace(/\r\n$/, "");
+        return [
+          `--${boundaryMixed}`,
+          `Content-Type: ${mime}; name="${filename}"`,
+          "Content-Transfer-Encoding: base64",
+          `Content-Disposition: attachment; filename="${filename}"`,
+          "",
+          folded,
+        ].join("\r\n");
+      })
+      .join("\r\n");
+    body = [
+      `--${boundaryMixed}`,
+      `Content-Type: ${bodyContentType}`,
+      "",
+      body,
+      attachmentParts,
+      `--${boundaryMixed}--`,
+    ].join("\r\n");
   }
 
   return `${headers.join("\r\n")}\r\n\r\n${body}\r\n`;

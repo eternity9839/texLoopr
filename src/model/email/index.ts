@@ -4,7 +4,11 @@ import { resolveTemplate } from "../bindings";
 import type { OutputProfile } from "../workflow";
 import { buildEmailHtml } from "./html";
 import { buildEmailText } from "./text";
-import { buildEmlMessage, imagesFromDataUriBlocks } from "./eml";
+import {
+  buildEmlMessage,
+  imagesFromDataUriBlocks,
+  type EmlFileAttachment,
+} from "./eml";
 import {
   appChannelLabel,
   appVersionLabel,
@@ -31,6 +35,7 @@ export interface EmailArtifacts {
   bcc: string;
   preheader: string;
   extraHeaders: { name: string; value: string }[];
+  attachments: { filename: string }[];
 }
 
 export interface BuildEmailOptions {
@@ -45,6 +50,7 @@ export interface BuildEmailOptions {
   projectId?: string | null;
   /** Override install id (tests) */
   installId?: string;
+  attachments?: EmlFileAttachment[];
 }
 
 function resolveField(
@@ -121,6 +127,7 @@ export function buildEmailArtifacts(opts: BuildEmailOptions): EmailArtifacts {
     cidByBlockId,
     inlineDataUri: false,
     title: subject,
+    preheader,
     mode: "emit",
   });
 
@@ -129,6 +136,7 @@ export function buildEmailArtifacts(opts: BuildEmailOptions): EmailArtifacts {
     ctx,
     inlineDataUri: true,
     title: subject,
+    preheader,
     mode: "preview",
   });
 
@@ -144,6 +152,7 @@ export function buildEmailArtifacts(opts: BuildEmailOptions): EmailArtifacts {
     text,
     html: htmlEmit,
     images,
+    attachments: opts.attachments,
     extraHeaders,
     appVersion: appVersionLabel(),
     appChannel: appChannelLabel(),
@@ -165,12 +174,16 @@ export function buildEmailArtifacts(opts: BuildEmailOptions): EmailArtifacts {
     bcc,
     preheader,
     extraHeaders,
+    attachments: (opts.attachments ?? []).map(({ filename }) => ({ filename })),
   };
 }
 
 export { buildEmailHtml } from "./html";
 export { buildEmailText } from "./text";
-export { buildEmlMessage } from "./eml";
+export {
+  buildEmlMessage,
+  type EmlFileAttachment,
+} from "./eml";
 export { layoutEmailBlocks, EMAIL_CONTENT_WIDTH } from "./layout";
 export {
   buildSmsArtifacts,
@@ -183,3 +196,5 @@ export {
   patchEmailEnvelope,
   type EmailEnvelope,
 } from "./envelope";
+export { resolveEmailPdfAttachment } from "./attachPdf";
+export { attachmentFilename, ticketPdfBase64 } from "./pdfStub";

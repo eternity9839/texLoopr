@@ -1,4 +1,4 @@
-import { useMemo } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 import {
   activeOutputProfile,
   catalogProjectId,
@@ -9,13 +9,22 @@ import {
   project,
 } from "../../state/store";
 import { ensureProjectAutomation } from "../../model/document";
-import { buildEmailArtifacts } from "../../model/email";
+import {
+  buildEmailArtifacts,
+  mergeEmailEnvelope,
+  resolveEmailPdfAttachment,
+  type EmlFileAttachment,
+} from "../../model/email";
 import { downloadBytes, mimeForOutputKind } from "../../model/download";
 import { t } from "../../i18n";
 
 /** Fair HTML email client preview (not the canvas, not raw EML). */
 export function EmailPreviewFrame() {
-  const proj = ensureProjectAutomation(project.value);
+  const sourceProject = project.value;
+  const proj = useMemo(
+    () => ensureProjectAutomation(sourceProject),
+    [sourceProject],
+  );
   const rows = dataRows.value;
   const idx = Math.min(previewRowIndex.value, Math.max(rows.length - 1, 0));
   const row = rows[idx] ?? {};
@@ -23,6 +32,27 @@ export function EmailPreviewFrame() {
   const langOverride = previewLanguageOverride.value;
   const conditionOverrides = previewConditionOverrides.value;
   const projectId = catalogProjectId.value;
+  const [attachment, setAttachment] = useState<EmlFileAttachment | null>(null);
+  const attachPdf = Boolean(
+    output?.kind === "email" &&
+      mergeEmailEnvelope(proj.email, output.email).attachPdf,
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    setAttachment(null);
+    if (!attachPdf) return () => {
+      cancelled = true;
+    };
+    void resolveEmailPdfAttachment({ project: proj, row, projectId }).then(
+      (resolved) => {
+        if (!cancelled) setAttachment(resolved);
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [attachPdf, proj, row, projectId]);
 
   const artifacts = useMemo(() => {
     if (!output || output.kind !== "email") return null;
@@ -34,13 +64,22 @@ export function EmailPreviewFrame() {
         languageOverride: langOverride,
         conditionOverrides,
         projectId,
+        attachments: attachment ? [attachment] : undefined,
       });
     } catch (err) {
       return {
         error: err instanceof Error ? err.message : String(err),
       } as const;
     }
-  }, [proj, row, output, langOverride, conditionOverrides, projectId]);
+  }, [
+    proj,
+    row,
+    output,
+    langOverride,
+    conditionOverrides,
+    projectId,
+    attachment,
+  ]);
 
   if (!output || output.kind !== "email") return null;
 
@@ -101,6 +140,14 @@ export function EmailPreviewFrame() {
               <div class="mail-client__row mail-client__row--muted">
                 <span class="mail-client__key">{t("emailPreviewPreheader")}</span>
                 <span class="mail-client__val">{artifacts.preheader}</span>
+              </div>
+            ) : null}
+            {artifacts.attachments?.length ? (
+              <div class="mail-client__row mail-client__row--muted">
+                <span class="mail-client__key">{t("emailPreviewAttachments")}</span>
+                <span class="mail-client__val">
+                  {artifacts.attachments.map((attachment) => attachment.filename).join(", ")}
+                </span>
               </div>
             ) : null}
             {artifacts.extraHeaders.length > 0 ? (

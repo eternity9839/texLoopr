@@ -33,6 +33,7 @@ describe("email envelope", () => {
       {
         from: "docs@example.com",
         replyTo: "help@example.com",
+        attachPdf: true,
         headers: "X-Campaign: base\nX-Keep: yes",
       },
       {
@@ -44,6 +45,7 @@ describe("email envelope", () => {
     expect(merged.from).toBe("campaign@example.com");
     expect(merged.replyTo).toBe("help@example.com");
     expect(merged.cc).toBe("ops@example.com");
+    expect(merged.attachPdf).toBe(true);
     expect(merged.headers).toContain("X-Campaign: override");
     expect(merged.headers).toContain("X-Keep: yes");
   });
