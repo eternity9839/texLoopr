@@ -11,7 +11,7 @@ import {
 } from "../model/document";
 import type { RulerUnit } from "../model/rulerUnits";
 import { isRulerUnit } from "../model/rulerUnits";
-import { runtimeConfig } from "../runtimeConfig";
+import { hasTauriIpc, runtimeConfig } from "../runtimeConfig";
 import {
   applyDesktopShellGeometry,
   readSanitizedViewport,
@@ -50,7 +50,8 @@ export const DESKTOP_WIDE_MIN = 640;
 export function detectShell(): LayoutShell {
   if (typeof window === "undefined") return "web";
   if (runtimeConfig().profile === "desktop") return "desktop";
-  if ("__TAURI_INTERNALS__" in window) return "desktop";
+  if (runtimeConfig().embeddedInDesktopHost) return "desktop";
+  if (hasTauriIpc()) return "desktop";
   return "web";
 }
 

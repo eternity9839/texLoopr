@@ -83,6 +83,40 @@ const DESKTOP_HOST_HTML: &str = r#"<!DOCTYPE html>
       } catch (e) {}
     }
 
+    function bridgeTauri(win) {
+      try {
+        if (!win) return;
+        // Release desktop: Tauri injects IPC on the outer host webview only.
+        // The SPA runs in a same-origin iframe and must share those globals.
+        if (window.__TAURI_INTERNALS__) {
+          win.__TAURI_INTERNALS__ = window.__TAURI_INTERNALS__;
+        }
+        if (window.__TAURI__) {
+          win.__TAURI__ = window.__TAURI__;
+        }
+      } catch (e) {
+        dump('host-tauri-bridge-error', { message: String(e) });
+      }
+    }
+
+    function pushRuntime(win) {
+      try {
+        if (!win) return;
+        bridgeTauri(win);
+        win.__TEXLOOPER__ = Object.assign({}, win.__TEXLOOPER__ || {}, t, {
+          profile: 'desktop',
+          embeddedInDesktopHost: true,
+          transport: 'tauri-local',
+          windowSize: t.windowSize || logicalSize(),
+          cssWindowSize: t.cssWindowSize,
+          hostScale: t.hostScale
+        });
+        win.dispatchEvent(new Event('texlooper-window-size'));
+      } catch (e) {
+        dump('host-iframe-bridge-error', { message: String(e) });
+      }
+    }
+
     function logicalSize() {
       if (t.windowSize && t.windowSize.w >= 320 && t.windowSize.h >= 320) {
         return { w: Math.round(t.windowSize.w), h: Math.round(t.windowSize.h) };
@@ -139,19 +173,7 @@ const DESKTOP_HOST_HTML: &str = r#"<!DOCTYPE html>
         t.cssWindowSize = { w: w, h: h, factor: 1 };
         t.hostScale = 1;
         dump('host-layout', { logical: { w: w, h: h }, cssViewport: { w: w, h: h }, scale: 1, mode: 'fill' });
-        try {
-          var win = frame.contentWindow;
-          if (win) {
-            win.__TEXLOOPER__ = Object.assign({}, win.__TEXLOOPER__ || {}, {
-              profile: 'desktop',
-              embeddedInDesktopHost: true,
-              windowSize: t.windowSize,
-              cssWindowSize: t.cssWindowSize,
-              hostScale: 1
-            });
-            win.dispatchEvent(new Event('texlooper-window-size'));
-          }
-        } catch (e) {}
+        pushRuntime(frame.contentWindow);
         return;
       }
 
@@ -165,24 +187,17 @@ const DESKTOP_HOST_HTML: &str = r#"<!DOCTYPE html>
       t.cssWindowSize = { w: Math.round(v.w), h: Math.round(v.h), factor: scale };
       t.hostScale = scale;
       dump('host-layout', { logical: s, cssViewport: v, scale: scale, mode: 'scale' });
+      pushRuntime(frame.contentWindow);
     }
 
     frame.addEventListener('load', function () {
       dump('host-iframe-load', { rootHTML: (frame.contentDocument && frame.contentDocument.body)
         ? frame.contentDocument.body.innerHTML.length : 0 });
-      try {
-        var win = frame.contentWindow;
-        if (win) {
-          win.__TEXLOOPER__ = Object.assign({}, win.__TEXLOOPER__ || {}, t, {
-            profile: 'desktop',
-            embeddedInDesktopHost: true,
-            windowSize: t.windowSize || logicalSize()
-          });
-          win.dispatchEvent(new Event('texlooper-window-size'));
-        }
-      } catch (e) {
-        dump('host-iframe-bridge-error', { message: String(e) });
-      }
+      pushRuntime(frame.contentWindow);
+      // Tauri may inject globals slightly after first paint — retry briefly.
+      [50, 200, 600, 1500].forEach(function (ms) {
+        setTimeout(function () { pushRuntime(frame.contentWindow); }, ms);
+      });
     });
 
     window.addEventListener('resize', layout);

@@ -43,6 +43,12 @@ describe("runtimeConfig", () => {
     expect(resolveBackendTransport()).toBe("js-fallback");
   });
 
+  it("resolveBackendTransport treats desktop profile as tauri-local", () => {
+    delete (window as Window & { __TAURI_INTERNALS__?: unknown }).__TAURI_INTERNALS__;
+    window.__TEXLOOPER__ = { profile: "desktop", embeddedInDesktopHost: true };
+    expect(resolveBackendTransport()).toBe("tauri-local");
+  });
+
   it("isDesktopShell reads profile and Tauri internals", () => {
     delete window.__TEXLOOPER__;
     expect(isDesktopShell()).toBe(false);

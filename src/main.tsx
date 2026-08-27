@@ -16,22 +16,21 @@ import "./styles/editor.css";
 import App from "./App";
 import {
   hydrateFromCatalog,
-  loadImportedProject,
   maybeAutoStartTour,
   prefs,
 } from "./state/store";
 import { syncDocumentLocale } from "./i18n";
 import { loadBundledProjectJson } from "./features/import/ProjectJsonImport";
-import { buildYassinResume } from "./projects/yassinResume";
 import { suppressBenignResizeObserverError } from "./ui/observeResize";
 import {
   applyLayoutDeviceAttrs,
   detectLayoutDevice,
   subscribeLayoutDevice,
 } from "./ui/layoutDevice";
-import { isLayoutDebugEnabled } from "./runtimeConfig";
+import { isLayoutDebugEnabled, bridgeTauriIpcFromParent } from "./runtimeConfig";
 
 suppressBenignResizeObserverError();
+bridgeTauriIpcFromParent();
 
 if (typeof document !== "undefined") {
   try {
@@ -52,10 +51,6 @@ async function maybeLoadQueryProject(): Promise<void> {
   if (typeof location === "undefined") return;
   const load = new URLSearchParams(location.search).get("load");
   if (!load) return;
-  if (load === "yassin-resume") {
-    loadImportedProject(buildYassinResume());
-    return;
-  }
   if (load.endsWith(".json")) {
     await loadBundledProjectJson(load);
   }

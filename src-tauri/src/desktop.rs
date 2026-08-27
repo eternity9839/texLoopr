@@ -43,9 +43,12 @@ fn inject_window_size(window: &tauri::WebviewWindow) {
     var frame=document.getElementById('frame');
     var win=frame&&frame.contentWindow;
     if(win){{
+      if(window.__TAURI_INTERNALS__) win.__TAURI_INTERNALS__=window.__TAURI_INTERNALS__;
+      if(window.__TAURI__) win.__TAURI__=window.__TAURI__;
       win.__TEXLOOPER__=Object.assign({{}},win.__TEXLOOPER__||{{}},{{
         profile:'desktop',
         embeddedInDesktopHost:true,
+        transport:'tauri-local',
         windowSize:t.windowSize,
         cssWindowSize:t.cssWindowSize,
         hostScale:t.hostScale
@@ -64,7 +67,8 @@ fn inject_window_size(window: &tauri::WebviewWindow) {
         inner:[innerWidth,innerHeight],
         windowSize:t.windowSize,
         hostScale:t.hostScale||null,
-        hasFrame:!!document.getElementById('frame')
+        hasFrame:!!document.getElementById('frame'),
+        hasTauri:!!(window.__TAURI_INTERNALS__||window.__TAURI__)
       }}),
       keepalive:true
     }}).catch(function(){{}});
