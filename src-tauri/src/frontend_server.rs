@@ -48,15 +48,57 @@ const DESKTOP_HOST_HTML: &str = r#"<!DOCTYPE html>
       transform-origin: left top;
       background: #f4f4f5;
     }
+    #host-splash {
+      position: fixed;
+      inset: 0;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      background: #f4f4f5;
+      color: #3f3f46;
+      font: 600 14px/1.4 system-ui, sans-serif;
+      transition: opacity 160ms ease;
+    }
+    #host-splash[hidden] { display: none; }
+    #host-splash .bar {
+      width: 9rem;
+      height: 3px;
+      margin-top: 0.85rem;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #0d9488, #2dd4bf, #0d9488);
+      background-size: 200% 100%;
+      animation: tex-load 1s linear infinite;
+    }
+    @keyframes tex-load {
+      0% { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
+    }
   </style>
 </head>
 <body>
+  <div id="host-splash" aria-busy="true" aria-live="polite">
+    <div>
+      <div>texLooper</div>
+      <div class="bar" aria-hidden="true"></div>
+    </div>
+  </div>
   <iframe id="frame" title="texLooper" allow="clipboard-read; clipboard-write; downloads"></iframe>
   <script>
   (function () {
     var frame = document.getElementById('frame');
+    var splash = document.getElementById('host-splash');
     var t = window.__TEXLOOPER__ = window.__TEXLOOPER__ || { profile: 'desktop', ephemeral: false };
     t.profile = 'desktop';
+
+    function hideSplash() {
+      if (!splash || splash.hidden) return;
+      splash.hidden = true;
+    }
+    window.addEventListener('message', function (ev) {
+      if (ev && ev.data && ev.data.type === 'texlooper-spa-ready') hideSplash();
+    });
+    // Fallback if the SPA never posts (older builds).
+    setTimeout(hideSplash, 8000);
 
     function dump(tag, extra) {
       try {

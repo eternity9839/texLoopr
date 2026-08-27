@@ -27,7 +27,19 @@ import {
   detectLayoutDevice,
   subscribeLayoutDevice,
 } from "./ui/layoutDevice";
-import { isLayoutDebugEnabled, bridgeTauriIpcFromParent } from "./runtimeConfig";
+import {
+  isLayoutDebugEnabled,
+  bridgeTauriIpcFromParent,
+  syncDebugLogFlagFromRust,
+} from "./runtimeConfig";
+import { AppFeedbackHost } from "./ui/AppFeedbackHost";
+import {
+  hideLoading,
+  reportAppError,
+  showLoading,
+} from "./state/appFeedback";
+import { ErrorCodes } from "./model/appErrors";
+import { log } from "./debug/logger";
 
 suppressBenignResizeObserverError();
 bridgeTauriIpcFromParent();
@@ -47,6 +59,14 @@ if (typeof document !== "undefined") {
   }
 }
 
+function BootRoot() {
+  return (
+    <>
+      <AppFeedbackHost />
+    </>
+  );
+}
+
 async function maybeLoadQueryProject(): Promise<void> {
   if (typeof location === "undefined") return;
   const load = new URLSearchParams(location.search).get("load");
@@ -56,14 +76,51 @@ async function maybeLoadQueryProject(): Promise<void> {
   }
 }
 
+function dismissHostSplash(): void {
+  try {
+    window.parent?.postMessage({ type: "texlooper-spa-ready" }, "*");
+  } catch {
+    /* ignore */
+  }
+  const el = document.getElementById("texlooper-boot-splash");
+  el?.remove();
+}
+
 void (async () => {
-  await hydrateFromCatalog();
-  syncDocumentLocale(
-    prefs.value.locale === "fr" || prefs.value.locale === "en"
-      ? prefs.value.locale
-      : "en",
-  );
-  await maybeLoadQueryProject();
-  render(<App />, document.getElementById("root")!);
-  maybeAutoStartTour();
+  const root = document.getElementById("root")!;
+  render(<BootRoot />, root);
+  showLoading("boot");
+  log.info("boot", "starting");
+  try {
+    await syncDebugLogFlagFromRust();
+    await hydrateFromCatalog();
+    syncDocumentLocale(
+      prefs.value.locale === "fr" || prefs.value.locale === "en"
+        ? prefs.value.locale
+        : "en",
+    );
+    await maybeLoadQueryProject();
+    log.info("boot", "ready");
+    render(
+      <>
+        <App />
+        <AppFeedbackHost />
+      </>,
+      root,
+    );
+    hideLoading();
+    dismissHostSplash();
+    maybeAutoStartTour();
+  } catch (e) {
+    hideLoading();
+    reportAppError({
+      code: ErrorCodes.BOOT_HYDRATE,
+      message: "Failed to start texLooper",
+      cause: e,
+    });
+    dismissHostSplash();
+    log.error("boot", "startup failed", {
+      detail: e instanceof Error ? e.message : String(e),
+    });
+  }
 })();

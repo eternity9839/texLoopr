@@ -57,4 +57,15 @@ describe("runtimeConfig", () => {
     window.__TEXLOOPER__ = { profile: "official" };
     expect(isDesktopShell()).toBe(false);
   });
+
+  it("isDebugFileLoggerEnabled stays off for ephemeral/official", async () => {
+    const { isDebugFileLoggerEnabled, setRustDebugLogEnabled } = await import(
+      "./runtimeConfig"
+    );
+    setRustDebugLogEnabled(false);
+    window.__TEXLOOPER__ = { ephemeral: true, profile: "ephemeral" };
+    expect(isDebugFileLoggerEnabled()).toBe(false);
+    window.__TEXLOOPER__ = { profile: "official" };
+    expect(isDebugFileLoggerEnabled()).toBe(false);
+  });
 });

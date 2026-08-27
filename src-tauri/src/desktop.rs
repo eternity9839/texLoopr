@@ -14,6 +14,7 @@ use crate::pdf_import::{
 use crate::render_batch::RenderBatchResult;
 use crate::db;
 use serde_json::Value;
+use std::io::Write;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, Manager, State};
@@ -260,7 +261,11 @@ fn download_dir() -> Result<PathBuf, String> {
 
 fn sanitize_download_name(raw: &str) -> String {
     let trimmed = raw.trim();
-    let base = if trimmed.is_empty() { "texlooper-export" } else { trimmed };
+    let base = if trimmed.is_empty() {
+        "texlooper-export"
+    } else {
+        trimmed
+    };
     let cleaned: String = base
         .chars()
         .map(|c| match c {
@@ -275,6 +280,65 @@ fn sanitize_download_name(raw: &str) -> String {
     } else {
         cleaned.chars().take(180).collect()
     }
+}
+
+/// Local debug log — OFF for release packages unless TEXLOOPER_DEBUG_LOG is set.
+fn debug_log_enabled() -> bool {
+    cfg!(debug_assertions) || std::env::var_os("TEXLOOPER_DEBUG_LOG").is_some()
+}
+
+fn debug_log_file(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = app
+        .path()
+        .app_data_dir()
+        .map_err(|e| e.to_string())?
+        .join("logs");
+    std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    Ok(dir.join("texlooper-debug.jsonl"))
+}
+
+#[tauri::command]
+fn debug_log_enabled_cmd() -> bool {
+    debug_log_enabled()
+}
+
+#[tauri::command]
+fn append_debug_log(app: AppHandle, line: String) -> Result<bool, String> {
+    if !debug_log_enabled() {
+        return Ok(false);
+    }
+    let path = debug_log_file(&app)?;
+    let mut file = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(&path)
+        .map_err(|e| e.to_string())?;
+    let trimmed = line.trim_end_matches(['\r', '\n']);
+    writeln!(file, "{trimmed}").map_err(|e| e.to_string())?;
+    Ok(true)
+}
+
+#[tauri::command]
+fn debug_log_path(app: AppHandle) -> Result<Option<String>, String> {
+    if !debug_log_enabled() {
+        return Ok(None);
+    }
+    Ok(Some(
+        debug_log_file(&app)?.to_string_lossy().into_owned(),
+    ))
+}
+
+#[tauri::command]
+fn open_debug_log(app: AppHandle) -> Result<bool, String> {
+    if !debug_log_enabled() {
+        return Ok(false);
+    }
+    let path = debug_log_file(&app)?;
+    if !path.exists() {
+        std::fs::write(&path, "").map_err(|e| e.to_string())?;
+    }
+    let _ = std::process::Command::new("xdg-open").arg(&path).spawn();
+    Ok(true)
 }
 
 #[tauri::command]
@@ -510,6 +574,10 @@ pub fn run() {
             render_project_pdf_cmd,
             render_batch_cmd,
             save_bytes_cmd,
+            debug_log_enabled_cmd,
+            append_debug_log,
+            debug_log_path,
+            open_debug_log,
             catalog_db_path,
             catalog_list_filesystems,
             catalog_upsert_filesystem,

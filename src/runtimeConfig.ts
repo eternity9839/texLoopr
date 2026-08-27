@@ -105,6 +105,49 @@ export function isLayoutDebugEnabled(): boolean {
   return false;
 }
 
+/**
+ * Local debug file logger.
+ * ON: Vite/dev profile, TEXLOOPER_DEBUG_LOG (via Rust), or ?debugLog=1.
+ * OFF: ephemeral/official hosted and release packages by default.
+ */
+let rustDebugLogEnabled: boolean | null = null;
+
+export function setRustDebugLogEnabled(on: boolean): void {
+  rustDebugLogEnabled = on;
+}
+
+export function isDebugFileLoggerEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  if (isEphemeral()) return false;
+  if (runtimeConfig().profile === "ephemeral") return false;
+  if (runtimeConfig().profile === "official") return false;
+  if (rustDebugLogEnabled === true) return true;
+  try {
+    if (sessionStorage.getItem("texlooper:debugLog") === "1") return true;
+    if (new URLSearchParams(location.search).get("debugLog") === "1") {
+      sessionStorage.setItem("texlooper:debugLog", "1");
+      return true;
+    }
+  } catch {
+    /* ignore */
+  }
+  if (import.meta.env.DEV) return true;
+  if (runtimeConfig().profile === "dev") return true;
+  return false;
+}
+
+/** Ask Rust whether the file logger is active (debug build or TEXLOOPER_DEBUG_LOG). */
+export async function syncDebugLogFlagFromRust(): Promise<void> {
+  if (!hasTauriIpc()) return;
+  try {
+    const { invoke } = await import("./platform/tauri");
+    const on = await invoke<boolean>("debug_log_enabled_cmd");
+    setRustDebugLogEnabled(Boolean(on));
+  } catch {
+    setRustDebugLogEnabled(false);
+  }
+}
+
 export function getApiBaseUrl(): string | null {
   const u = runtimeConfig().apiBaseUrl?.trim();
   return u || null;
