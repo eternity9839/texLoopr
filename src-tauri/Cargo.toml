@@ -1,6 +1,6 @@
 [package]
 name = "texlooper"
-version = "0.3.6-alpha"
+version = "0.3.7-alpha"
 description = "texLooper — document studio with Rust runtime backbone"
 authors = ["texLooper"]
 edition = "2021"
