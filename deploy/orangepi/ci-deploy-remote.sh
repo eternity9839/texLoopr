@@ -33,8 +33,11 @@ ts_ssh() {
   done
 }
 
-echo "waiting for ${HOST} on tailnet…"
-tailscale ping -c 5 "${HOST}" || true
+echo "waiting for ${HOST} on tailnet (SSH; ACL does not grant ICMP ping)…"
+# Do not require `tailscale ping` — tag:texloopr-ci is limited to TCP :22/:443.
+timeout 15s tailscale ssh "${USER}@${HOST}" -- true \
+  || timeout 8s bash -c "exec 3<>/dev/tcp/${HOST}/22" \
+  || echo "warn: initial SSH probe failed; retries below will continue" >&2
 tailscale status | head -40 || true
 
 ts_ssh "mkdir -p ${REMOTE}/deploy/orangepi/app/html"

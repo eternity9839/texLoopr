@@ -112,7 +112,7 @@ for (const s of subjects) {
   }
   if (/^feat(\([^)]*\))?:/.test(s)) minor = true;
 }
-const bump = major ? "major" : minor : "patch";
+const bump = major ? "major" : minor ? "minor" : "patch";
 
 const { maj, min, pat } = parseCoreSemver(pkg.version);
 const nextCore =

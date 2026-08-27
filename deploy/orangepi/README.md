@@ -34,7 +34,7 @@ Full pipeline doc: [ci-pipeline.md](./ci-pipeline.md) · ACL example: [tailscale
 Workflow: [`.github/workflows/deploy-orangepi.yml`](../../.github/workflows/deploy-orangepi.yml)  
 Triggers: push to `main` (paths under `src/` / `deploy/orangepi/`) or manual.
 
-**Tailscale:** dedicated OAuth tag **`tag:texloopr-ci`** (not shared `tag:ci`). ACL: allow `443` + `22` to `tag:homelab` only.
+**Tailscale:** dedicated OAuth tag **`tag:texloopr-ci`** (not shared `tag:ci`). ACL: allow `443` + `22` to `tag:homelab` only (ICMP / `tailscale ping` is intentionally not granted — CI probes SSH instead).
 
 Repo secrets:
 

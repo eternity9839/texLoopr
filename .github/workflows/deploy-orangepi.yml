@@ -68,6 +68,22 @@ jobs:
           tailscale status --self || true
           echo "tags: $(tailscale status --json | jq -r '.Self.Tags // empty | join(",")')"
 
+          # ACL for tag:texloopr-ci only grants TCP :22 and :443 to tag:homelab.
+          # `tailscale ping` uses a different path and often fails under that policy,
+          # so probe SSH (deploy) instead — Attic HTTPS is best-effort later.
+          reachable() {
+            # Prefer a real SSH handshake via Tailscale SSH when available.
+            if timeout 8s tailscale ssh orangepi@orangepi5 -- true >/dev/null 2>&1; then
+              return 0
+            fi
+            # Fallback: TCP connect to MagicDNS :22
+            if timeout 5s bash -c 'exec 3<>/dev/tcp/orangepi5/22' >/dev/null 2>&1; then
+              exec 3>&- 3<&- || true
+              return 0
+            fi
+            return 1
+          }
+
           # Fail fast when control already marks the Pi offline; then backoff.
           # ~5 minutes total — enough for a reboot, not an overnight OOM storm.
           deadline=$((SECONDS + 300))
@@ -87,16 +103,16 @@ jobs:
               exit 1
             fi
 
-            if tailscale ping -c 1 --timeout 3s orangepi5 >/dev/null 2>&1; then
-              echo "orangepi5 reachable after ${attempt} attempt(s)"
-              tailscale ping -c 3 orangepi5
+            if reachable; then
+              echo "orangepi5 reachable over SSH after ${attempt} attempt(s)"
+              tailscale status | head -40 || true
               exit 0
             fi
 
             sleep $(( attempt < 5 ? 2 : 5 ))
           done
 
-          echo "error: orangepi5 never answered ping within 5m" >&2
+          echo "error: orangepi5 never answered SSH within 5m (ACL allows :22/:443 only; ping is expected to fail)" >&2
           tailscale status || true
           exit 1
 
