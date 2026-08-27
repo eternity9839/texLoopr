@@ -1,6 +1,5 @@
 import type { Block, Project } from "../../document";
-import { b, page, shell } from "../helpers";
-import { defaultOutputs } from "../../workflow";
+import { b, outputsFor, page, shell } from "../helpers";
 import {
   mergeExperienceEntryTemplate,
   mergeExperienceGroup,
@@ -9,7 +8,6 @@ import {
   resumeAccentBar,
   resumeFooter,
   resumePalette,
-  resumePaletteCondition,
   resumeSection,
   RESUME_INK,
   RESUME_MUTED,
@@ -394,9 +392,8 @@ export function resumeEngineering(): Project {
     ],
     {
       language: "en",
-      outputs: defaultOutputs(),
+      outputs: outputsFor("preview", "pdf", "image"),
       artboard: "a4",
-      conditions: [resumePaletteCondition()],
       customObjects: [mergeExperienceEntryTemplate(teal)],
     },
   );

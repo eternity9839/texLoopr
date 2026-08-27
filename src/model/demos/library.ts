@@ -7,19 +7,50 @@ import {
   decisionNotice,
   memo,
   shippingLabel,
+  affidavit,
+  contractEmployees,
+  legalDecision,
+  rentalHouse,
+  rentalCar,
+  hospitalBill,
+  ratesFines,
+  companyChart,
 } from "./business";
 import {
-  email,
+  newsletterProduct,
+  newsletterDigest,
   paper,
   newspaper,
   landscapeSlide,
   a5Handout,
+  handoutWorkshop,
+  handoutPromo,
 } from "./mass-publication";
+import {
+  A5_HANDOUT_CSV,
+  AFFIDAVIT_CSV,
+  COMPANY_CHART_CSV,
+  CONTRACT_EMPLOYEES_JSON,
+  CONTRACT_LONG_CSV,
+  HANDOUT_PROMO_CSV,
+  HANDOUT_WORKSHOP_CSV,
+  HOSPITAL_BILL_JSON,
+  LEGAL_DECISION_CSV,
+  NEWSLETTER_DIGEST_CSV,
+  NEWSLETTER_PRODUCT_CSV,
+  RATES_FINES_JSON,
+  RENTAL_CAR_JSON,
+  RENTAL_HOUSE_JSON,
+  TICKET_CONCERT_CSV,
+  TICKET_GIFT_CSV,
+  TICKET_TRIP_CSV,
+} from "./catalogData";
 import { welcome, resume } from "./personal";
 import { resumeCreative, resumeSidebar, transformsDemo } from "./personal/resumes";
 import { resumeEngineering } from "./personal/resumeEngineering";
 import { advertisement } from "./ads";
 import { weddingInvite } from "./personal/wedding";
+import { ticketConcert, ticketGift, ticketTrip } from "./tickets";
 import { RESUME_ENGINEERING_SAMPLE, RESUME_PROFILES_CSV } from "./personal/resumeData";
 import type { DemoEntry } from "./types";
 
@@ -118,15 +149,55 @@ Edsger Dijkstra,Texas Instruments,Computer Scientist,en,2026-05-01,4,60`,
     title: "Service agreement",
     category: "Legal",
     bucket: "business",
-    blurb: "MSA clauses, fee schedule, signatures.",
-    sampleCsv: `contract_id,start_date,provider,client,net_days,term_years,jurisdiction,notice_days,approved,signer_name,signer_role,signed_at,line1,qty1,unit1,amt1,line2,qty2,unit2,amt2,total
-MSA-2026-18,2026-09-01,Northline Systems BV,Acme Retail NV,30,3,Belgium,30,yes,Jordan Hale,Managing Director,2026-08-20,Platform license,1,yr,"€24,000",Support hours,40,hr,"€6,000","€30,000"
-MSA-2026-19,2026-09-15,Northline Systems BV,Orbit Labs,45,2,Netherlands,60,no,Jordan Hale,Managing Director,2026-08-22,Implementation,1,proj,"€12,500",Training seats,8,seat,"€3,200","€15,700"
-MSA-2026-20,2026-10-01,Northline Systems BV,Kanaal Bank,30,2,Belgium,45,pending,Rowan Ellis,Legal Counsel,2026-08-25,Data pipeline retainer,12,mo,"€9,600",On-call coverage,90,day,"€4,500","€14,100"
-MSA-2026-21,2026-10-15,Northline Systems BV,Fleetwise BV,60,3,Netherlands,30,yes,Jordan Hale,Managing Director,2026-09-01,Telematics integration,1,proj,"€28,000",Managed hosting,12,mo,"€7,200","€35,200"
-MSA-2026-22,2026-11-01,Northline Systems BV,Clara Health,45,4,Belgium,60,pending,Petra Vos,VP Partnerships,2026-09-05,Compliance review,1,proj,"€16,000",Security audits,4,qtr,"€5,600","€21,600"
-MSA-2026-23,2026-11-15,Northline Systems BV,Wolke Systems,30,1,Belgium,30,yes,Jordan Hale,Managing Director,2026-09-10,Migration assessment,1,proj,"€8,400",Enablement workshops,6,day,"€2,700","€11,100"`,
+    blurb:
+      "Six-page EN/FR MSA with status branches, service schedule, portal QR, approval stamp, and provider/client signatures.",
+    sampleCsv: CONTRACT_LONG_CSV,
     build: contract,
+  },
+  {
+    id: "contract-employees",
+    title: "Employee agreement pack",
+    category: "Legal",
+    bucket: "business",
+    blurb: "EN/FR employment terms, employee repeater, policy schedule, portal QR, and dual signatures.",
+    sampleCsv: CONTRACT_EMPLOYEES_JSON,
+    build: contractEmployees,
+  },
+  {
+    id: "affidavit",
+    title: "Affidavit and jurat",
+    category: "Legal",
+    bucket: "business",
+    blurb: "EN/FR sworn statement with docket QR, sworn axis, jurat, and deponent/witness signatures.",
+    sampleCsv: AFFIDAVIT_CSV,
+    build: affidavit,
+  },
+  {
+    id: "rental-house",
+    title: "Residential lease",
+    category: "Legal",
+    bucket: "business",
+    blurb: "EN/FR furnished lease, inventory rows, daily late-fee calculation, portal QR, and signatures.",
+    sampleCsv: RENTAL_HOUSE_JSON,
+    build: rentalHouse,
+  },
+  {
+    id: "rental-car",
+    title: "Vehicle rental agreement",
+    category: "Legal",
+    bucket: "business",
+    blurb: "EN/FR rental pack with insurance axis, extras, literal daily-rate calculation, and handover signatures.",
+    sampleCsv: RENTAL_CAR_JSON,
+    build: rentalCar,
+  },
+  {
+    id: "legal-decision",
+    title: "Administrative decision dossier",
+    category: "Legal",
+    bucket: "business",
+    blurb: "Full EN/FR dossier with four decisions, reasons, orders, optional fine, appeal links, and signature.",
+    sampleCsv: LEGAL_DECISION_CSV,
+    build: legalDecision,
   },
   {
     id: "advertisement",
@@ -208,21 +279,23 @@ MSA-2026-23,2026-11-15,Northline Systems BV,Wolke Systems,30,1,Belgium,30,yes,Jo
     build: advertisement,
   },
   {
-    id: "email",
-    title: "Email newsletter",
+    id: "newsletter-product",
+    title: "Product launch newsletter",
     category: "Email",
     bucket: "mass-publication",
-    blurb: "Preheader, modules, unsubscribe footer.",
-    sampleCsv: `preheader,title,first_name,intro,mod1_title,mod1_body,mod2_title,mod2_body,cta_label,cta_url,sender_name,sender_role,email,unsub_url,year,language
-Your August digest is ready,Product updates for August,Maya,"Here is what shipped this month for your workspace.",Automations,Conditional emit to webhooks,Editor,Faster block resize on dense pages,Read the notes,https://northline.example/notes,Sam Ortega,Product,maya@client.example,https://northline.example/unsub,2026,en
-Votre digest d'août,Mises à jour produit — août,Camille,"Voici ce qui a été livré ce mois-ci.",Automatisations,Émission conditionnelle vers webhooks,Éditeur,Redimensionnement plus rapide,Lire les notes,https://northline.example/notes,Sam Ortega,Product,camille@client.example,https://northline.example/unsub,2026,fr
-September release notes,Autumn refresh is live,Noah,"Smaller fixes with outsized impact — the full changelog is one click away.",Templates,Saved templates sync across devices,Data view,Csv paste now maps columns automatically,See what changed,https://northline.example/changelog,Sam Ortega,Product,noah@client.example,https://northline.example/unsub,2026,en
-You are on the early list,Beta: batch PDF export,Ivy,"As an early-access workspace you can now queue hundred-page exports.",Batch export,Queue up to 500 pages per job,Webhooks,Retry policy now configurable,Join the beta,https://northline.example/beta,Priya Anand,Engineering,ivy@client.example,https://northline.example/unsub,2026,en
-A faster Data view landed,Performance update,Omar,"Large datasets scroll smoothly again after this week's tuning.",Virtual lists,Hundred-thousand-row sheets stay at 60fps,Filters,Column search now matches type aliases,Open the app,https://northline.example/login,Priya Anand,Engineering,omar@client.example,https://northline.example/unsub,2026,en
-Invitation: templating meetup October,Talks and workshops,Elif,"Northline hosts a community evening on document automation in Antwerp.",Program,Three talks plus open clinic time,Venue,Harbor Lane studio doors at 18:30,RSVP here,https://northline.example/meetup,Dana Willems,Community,elif@client.example,https://northline.example/unsub,2026,en
-Your invoice is ready (no action needed),Receipt for September billing,Lucas,"This is a courtesy copy of your automated monthly receipt.",Billing,Plan: Studio — €29.00 incl VAT,Usage,4,120 documents rendered in September,View billing,https://northline.example/billing,Northline Billing,Finance,lucas@client.example,https://northline.example/unsub,2026,en
-Welcome week: getting started,Onboarding track for new workspaces,Amir,"Five short lessons to get your first merged PDF out the door.",Lesson 1,Load data from csv or json,Lesson 2,Compose blocks and bind fields,Start lesson 1,https://northline.example/start,Dana Willems,Community,amir@client.example,https://northline.example/unsub,2026,en`,
-    build: email,
+    blurb: "EN/FR B2B and consumer launch email with CTA, unsubscribe/web URLs, and print/PDF QR.",
+    sampleCsv: NEWSLETTER_PRODUCT_CSV,
+    build: newsletterProduct,
+  },
+  {
+    id: "newsletter-digest",
+    title: "Publication digest",
+    category: "Publishing",
+    bucket: "mass-publication",
+    blurb: "A4 EN/FR multi-column digest with segment editions, compact email branch, web link, and QR.",
+    artboard: "a4",
+    sampleCsv: NEWSLETTER_DIGEST_CSV,
+    build: newsletterDigest,
   },
   {
     id: "invoice",
@@ -369,6 +442,26 @@ Welcome week: getting started,Onboarding track for new workspaces,Amir,"Five sho
   }
 ]`,
     build: invoice,
+  },
+  {
+    id: "hospital-bill",
+    title: "Hospital bill",
+    category: "Finance",
+    bucket: "business",
+    blurb: "A4 EN/FR patient statement with coverage axis, line items, payment QR, reconciliation totals, and reminders.",
+    artboard: "a4",
+    sampleCsv: HOSPITAL_BILL_JSON,
+    build: hospitalBill,
+  },
+  {
+    id: "rates-fines",
+    title: "Rates and fines",
+    category: "Finance",
+    bucket: "business",
+    blurb: "EN/FR municipal rate card and fine notice with type axis, literal calculations, payment QR, and signature.",
+    artboard: "a4",
+    sampleCsv: RATES_FINES_JSON,
+    build: ratesFines,
   },
   {
     id: "paper",
@@ -566,7 +659,7 @@ Northline Freight,Pallet,NL9 5512 0340 7,Northline DC,"14 Harbor Lane",Kanaal Ba
     category: "Legal",
     bucket: "business",
     blurb:
-      "Declare a decision axis; Preview chips flip approved/pending/revoked on the same Page.",
+      "Thin decision-axis demo for approved/pending/revoked states; see legal-decision for the full dossier.",
     sampleCsv: `name,case_id,decision,decision_date,reason
 Marcus Chen,CASE-4412,approved,2026-08-20,Your access request for the Harbor Mutual workspace is approved.
 Priya Nair,CASE-4418,pending,2026-08-22,Compliance is reviewing the data residency addendum.
@@ -590,17 +683,44 @@ Hire kit,"Welcome packet for {{company}} engineering onboarding.",Harbor Mutual
     build: landscapeSlide,
   },
   {
+    id: "company-chart",
+    title: "Company organization chart",
+    category: "Office",
+    bucket: "business",
+    blurb: "Landscape EN/FR organization chart with leadership/full views and a compact email branch.",
+    artboard: "landscape",
+    sampleCsv: COMPANY_CHART_CSV,
+    build: companyChart,
+  },
+  {
     id: "a5-handout",
     title: "A5 handout",
     category: "Print",
     bucket: "mass-publication",
-    blurb: "505×714 one-pager with highlights and output-specific footer.",
+    blurb: "EN/FR/NL A5 event handout with highlights, agenda, output-specific details, links, and RSVP QR.",
     artboard: "a5",
-    sampleCsv: `date,title,body,company,contact,highlight_1,highlight_2,highlight_3
-25 Aug 2026,Workshop invite,"Join us for a half-day session on bulk merge and template design. Bring your CSV samples — we will wire conditions live.",Northline Systems,ops@northline.example,Live merge demo,Landscape + A5 artboards,Output-kind conditions
-01 Sep 2026,Product brief,"Compact flyer for desk distribution. Fields bind from Data; switch preview row for alternate campaigns.",Harbor Mutual,hello@harbor.example,Multi-dataset lookup,Print-safe margins,Pinned header/footer
-`,
+    sampleCsv: A5_HANDOUT_CSV,
     build: a5Handout,
+  },
+  {
+    id: "handout-workshop",
+    title: "Workshop handout",
+    category: "Print",
+    bucket: "mass-publication",
+    blurb: "A4 EN/FR workshop agenda with in-person/online branches, outcomes, schedule, and RSVP QR.",
+    artboard: "a4",
+    sampleCsv: HANDOUT_WORKSHOP_CSV,
+    build: handoutWorkshop,
+  },
+  {
+    id: "handout-promo",
+    title: "Promotional handout",
+    category: "Print",
+    bucket: "mass-publication",
+    blurb: "A5 EN/FR offer sheet with price tiers, literal VAT calculations, channel strip, and store QR.",
+    artboard: "a5",
+    sampleCsv: HANDOUT_PROMO_CSV,
+    build: handoutPromo,
   },
   {
     id: "wedding",
@@ -615,6 +735,36 @@ Marcus Chen,Priya Nair,2027-06-14,Orangerie Harbor Lane,Antwerp,2027-05-01,en
 Sofia Reyes,,2027-06-14,Orangerie Harbor Lane,Antwerp,2027-05-01,en
 Léa Martin,Noah Berg,2027-06-14,Orangerie Harbor Lane,Antwerp,2027-05-01,fr`,
     build: weddingInvite,
+  },
+  {
+    id: "ticket-concert",
+    title: "Concert ticket",
+    category: "Tickets",
+    bucket: "personal",
+    blurb: "A5 EN/FR admission ticket with status, check-in QR, and attached PDF email.",
+    artboard: "a5",
+    sampleCsv: TICKET_CONCERT_CSV,
+    build: ticketConcert,
+  },
+  {
+    id: "ticket-trip",
+    title: "Trip ticket",
+    category: "Tickets",
+    bucket: "personal",
+    blurb: "A4 EN/FR travel ticket with PNR, check-in QR, and attached PDF email.",
+    artboard: "a4",
+    sampleCsv: TICKET_TRIP_CSV,
+    build: ticketTrip,
+  },
+  {
+    id: "ticket-gift",
+    title: "Gift ticket",
+    category: "Tickets",
+    bucket: "personal",
+    blurb: "A5 EN/FR gift voucher with redemption QR, status, and attached PDF email.",
+    artboard: "a5",
+    sampleCsv: TICKET_GIFT_CSV,
+    build: ticketGift,
   },
 
 ];

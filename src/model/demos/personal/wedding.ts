@@ -1,5 +1,5 @@
 import type { Project } from "../../document";
-import { b, page, shell } from "../helpers";
+import { b, outputsFor, page, shell } from "../helpers";
 import { northlineStyleExtras, nlText, NL } from "../brand/northlineStyles";
 
 /** Bilingual wedding invitation — EN/FR via vars.language (ADR 0015). */
@@ -161,6 +161,7 @@ export function weddingInvite(): Project {
     ],
     {
       artboard: "a5",
+      outputs: outputsFor("preview", "pdf", "print"),
       ...northlineStyleExtras("en"),
     },
   );

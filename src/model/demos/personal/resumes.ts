@@ -1,9 +1,8 @@
 import type { Project } from "../../document";
-import { b, page, shell } from "../helpers";
+import { b, outputsFor, page, shell } from "../helpers";
 import {
   mergeSkillChipSlot,
   resumePalette,
-  resumePaletteCondition,
 } from "./resumeShared";
 
 const SIDE_BG = "#1a2332";
@@ -592,7 +591,7 @@ export function resumeSidebar(): Project {
         },
       ),
     ],
-    { conditions: [resumePaletteCondition()] },
+    { outputs: outputsFor("preview", "pdf", "image") },
   );
 }
 
@@ -1067,7 +1066,7 @@ export function resumeCreative(): Project {
         },
       ),
     ],
-    { conditions: [resumePaletteCondition()] },
+    { outputs: outputsFor("preview", "pdf", "image") },
   );
 }
 
@@ -1454,5 +1453,6 @@ export function transformsDemo(): Project {
         { background: "#ffffff" },
       ),
     ],
+    { outputs: outputsFor("preview", "pdf", "image") },
   );
 }

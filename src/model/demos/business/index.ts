@@ -1,12 +1,24 @@
 import type { Project } from "../../document";
 import { createId } from "../../document";
-import {
-  defaultOutputs,
-  optionalOutputTemplates,
-} from "../../workflow";
 import { DEMO_IMG } from "../assets";
-import { b, page, shell, id } from "../helpers";
+import { b, page, shell, id, outputsFor } from "../helpers";
 import { northlineStyleExtras, nlText, NL } from "../brand/northlineStyles";
+import { contractLong } from "./contracts";
+
+export { affidavit } from "./affidavit";
+export { contractEmployees, contractLong } from "./contracts";
+export { legalDecision } from "./legalDecision";
+export {
+  LEGAL,
+  legalLetterhead,
+  signaturePair,
+  urlQrFooter,
+} from "./legalShared";
+export { rentalCar, rentalHouse } from "./rentals";
+
+export { hospitalBill } from "./hospitalBill";
+export { ratesFines } from "./ratesFines";
+export { companyChart } from "./orgChart";
 
 export function letter(): Project {
   const headerBlocks = [
@@ -269,6 +281,7 @@ export function letter(): Project {
     ],
     {
       artboard: "letter",
+      outputs: outputsFor("preview", "pdf", "print"),
       ...northlineStyleExtras("en"),
       pageChrome: {
         header: {
@@ -287,7 +300,8 @@ export function letter(): Project {
   );
 }
 
-export function contract(): Project {
+/** @deprecated Retained as a reference for older saved demo layouts. */
+export function legacyContract(): Project {
   return shell(
     {
       name: "Service agreement",
@@ -531,7 +545,12 @@ export function contract(): Project {
         }),
       ]),
     ],
+    { outputs: outputsFor("preview", "pdf", "print") },
   );
+}
+
+export function contract(): Project {
+  return contractLong();
 }
 
 export function invoice(): Project {
@@ -1054,6 +1073,7 @@ export function invoice(): Project {
       ]),
     ],
     {
+      outputs: outputsFor("preview", "pdf", "print", "email"),
       primaryDatasetId: primaryId,
       datasets: [
         {
@@ -1409,19 +1429,7 @@ export function advancedInvoice(): Project {
       ]),
     ],
     {
-      conditions: [
-        {
-          id: id(),
-          name: "Status",
-          var: "status",
-          default: "open",
-          values: [
-            { label: "open", value: "open" },
-            { label: "past_due", value: "past_due" },
-            { label: "paid", value: "paid" },
-          ],
-        },
-      ],
+      outputs: outputsFor("preview", "pdf", "print"),
     },
   );
 }
@@ -1571,19 +1579,7 @@ export function decisionNotice(): Project {
       ]),
     ],
     {
-      conditions: [
-        {
-          id: id(),
-          name: "Decision",
-          var: "decision",
-          default: "pending",
-          values: [
-            { label: "approved", value: "approved" },
-            { label: "pending", value: "pending" },
-            { label: "revoked", value: "revoked" },
-          ],
-        },
-      ],
+      outputs: outputsFor("preview", "pdf", "print"),
     },
   );
 }
@@ -1881,23 +1877,12 @@ export function memo(): Project {
         }),
       ]),
     ],
+    { outputs: outputsFor("preview", "pdf", "email") },
   );
 }
 
 export function shippingLabel(): Project {
-  const print =
-    optionalOutputTemplates().find((o) => o.kind === "print") ??
-    ({
-      id: "out-print-label",
-      name: "Label 203dpi",
-      kind: "print" as const,
-      device: { id: "label-203dpi", label: "Label", media: "label", dpi: 203 },
-      enabled: true,
-    });
-  const outputs = [
-    ...defaultOutputs(),
-    { ...print, name: "Label 203dpi" },
-  ];
+  const outputs = outputsFor("preview", "pdf", "print");
   return shell(
     {
       name: "Shipping label",

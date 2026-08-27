@@ -10,10 +10,29 @@ describe("DEMO_LIBRARY", () => {
     expect(DEMO_LIBRARY.length).toBeGreaterThanOrEqual(8);
     expect(DEMO_LIBRARY.map((d) => d.id)).toContain("letter");
     expect(DEMO_LIBRARY.map((d) => d.id)).toContain("invoice");
-    expect(DEMO_LIBRARY.map((d) => d.id)).toContain("email");
+    expect(DEMO_LIBRARY.map((d) => d.id)).toContain("newsletter-product");
+    expect(DEMO_LIBRARY.map((d) => d.id)).not.toContain("email");
     expect(DEMO_LIBRARY.map((d) => d.id)).toContain("landscape-slide");
     expect(DEMO_LIBRARY.map((d) => d.id)).toContain("a5-handout");
     expect(DEMO_LIBRARY.map((d) => d.id)).toContain("wedding");
+    for (const id of [
+      "newsletter-digest",
+      "contract-employees",
+      "affidavit",
+      "rental-house",
+      "rental-car",
+      "legal-decision",
+      "hospital-bill",
+      "rates-fines",
+      "company-chart",
+      "handout-workshop",
+      "handout-promo",
+      "ticket-concert",
+      "ticket-trip",
+      "ticket-gift",
+    ]) {
+      expect(DEMO_LIBRARY.map((d) => d.id)).toContain(id);
+    }
   });
 
   it("assigns every demo a catalog bucket", () => {
@@ -26,7 +45,13 @@ describe("DEMO_LIBRARY", () => {
   });
 
   it("seeds Northline styles on branded samples", () => {
-    for (const id of ["letter", "email", "welcome", "wedding", "advertisement"]) {
+    for (const id of [
+      "letter",
+      "newsletter-product",
+      "welcome",
+      "wedding",
+      "advertisement",
+    ]) {
       const project = getDemo(id)!.build();
       expect(project.textStyles?.some((s) => s.id === "nl-h1")).toBe(true);
       expect(project.documentStyles?.length).toBeGreaterThan(0);
@@ -59,6 +84,35 @@ describe("DEMO_LIBRARY", () => {
     expect(getDemo("contract")?.title).toMatch(/agreement/i);
   });
 
+  it("ships French rows for multilingual catalog samples", () => {
+    for (const id of ["newsletter-product", "hospital-bill"]) {
+      const rows = parseDataInput(getDemo(id)!.sampleCsv);
+      expect(rows.some((row) => row.language === "fr")).toBe(true);
+      expect(rows.some((row) => row.language === "en")).toBe(true);
+    }
+  });
+
+  it("keeps literal multiplication demos visible", () => {
+    for (const id of ["hospital-bill", "rates-fines"]) {
+      const text = getDemo(id)!
+        .build()
+        .pages.flatMap((page) => page.blocks)
+        .map((block) => String(block.content.text ?? ""))
+        .join("\n");
+      expect(text).toContain("|mul:");
+    }
+  });
+
+  it("ships signatures in full legal samples", () => {
+    for (const id of ["contract", "affidavit", "legal-decision"]) {
+      const signatures = getDemo(id)!
+        .build()
+        .pages.flatMap((page) => page.blocks)
+        .filter((block) => block.type === "signature");
+      expect(signatures.length).toBeGreaterThan(0);
+    }
+  });
+
   it("ships multi-page career and transform samples", () => {
     expect(getDemo("resume-sidebar")!.build().pages.map((p) => p.name)).toEqual([
       "Resume",
@@ -70,6 +124,47 @@ describe("DEMO_LIBRARY", () => {
     ]);
     expect(getDemo("transforms")!.build().pages).toHaveLength(3);
     expect(getDemo("letter")!.build().pages).toHaveLength(2);
+  });
+
+  it("assigns explicit output channels without demo condition axes", () => {
+    for (const id of [
+      "resume",
+      "resume-engineering",
+      "resume-sidebar",
+      "resume-creative",
+    ]) {
+      expect(getDemo(id)!.build().outputs?.map((output) => output.kind)).not.toContain(
+        "email",
+      );
+    }
+
+    expect(
+      getDemo("newsletter-product")!
+        .build()
+        .outputs?.map((output) => output.kind),
+    ).toContain("email");
+
+    for (const id of [
+      "resume-engineering",
+      "hospital-bill",
+      "newsletter-product",
+    ]) {
+      expect(getDemo(id)!.build().conditions?.length ?? 0).toBe(0);
+    }
+  });
+
+  it("ships ticket demos with PDF email attachments", () => {
+    for (const id of ["ticket-concert", "ticket-trip", "ticket-gift"]) {
+      const project = getDemo(id)!.build();
+      const email = project.outputs?.find((output) => output.kind === "email");
+      expect(project.outputs?.some((output) => output.kind === "pdf")).toBe(true);
+      expect(email?.email?.attachPdf).toBe(true);
+      expect(project.conditions?.length ?? 0).toBe(0);
+      const rows = parseDataInput(getDemo(id)!.sampleCsv);
+      expect(rows).toHaveLength(4);
+      expect(rows.some((row) => row.language === "en")).toBe(true);
+      expect(rows.some((row) => row.language === "fr")).toBe(true);
+    }
   });
 
   it("invoice binds line tables to line_items and ships a bank dataset", () => {

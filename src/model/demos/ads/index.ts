@@ -1,7 +1,7 @@
 import type { Project } from "../../document";
 import { createId } from "../../document";
 import { DEMO_IMG } from "../assets";
-import { b, page, shell } from "../helpers";
+import { b, outputsFor, page, shell } from "../helpers";
 import { northlineStyleExtras, nlText } from "../brand/northlineStyles";
 
 export function advertisement(): Project {
@@ -409,6 +409,7 @@ export function advertisement(): Project {
 
     ],
     {
+      outputs: outputsFor("preview", "pdf", "image", "print"),
       primaryDatasetId: primaryId,
       datasets: [
         { id: primaryId, name: "primary", rows: [] },

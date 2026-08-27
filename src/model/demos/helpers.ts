@@ -4,11 +4,23 @@ import {
   defaultOutputs,
   defaultScripts,
   defaultWorkflow,
+  optionalOutputTemplates,
 } from "../workflow";
+import type { OutputKind, OutputProfile } from "../workflow";
 import { spreadDemoBlocks } from "./spread";
 
 export function id(): string {
   return createId();
+}
+
+export function outputsFor(...kinds: OutputKind[]): OutputProfile[] {
+  const pool = [...defaultOutputs(), ...optionalOutputTemplates()];
+  const out: OutputProfile[] = [];
+  for (const kind of kinds) {
+    const hit = pool.find((o) => o.kind === kind);
+    if (hit) out.push({ ...hit, id: hit.id, enabled: true });
+  }
+  return out;
 }
 
 export function b(
@@ -66,6 +78,7 @@ export function shell(
       | "textStyles"
       | "documentStyles"
       | "language"
+      | "email"
       | "conditions"
       | "pageChrome"
       | "customObjects"
@@ -93,6 +106,7 @@ export function shell(
     textStyles: extras?.textStyles,
     documentStyles: extras?.documentStyles,
     language: extras?.language,
+    email: extras?.email,
     conditions: extras?.conditions,
     pageChrome: extras?.pageChrome,
     customObjects: extras?.customObjects,

@@ -1,11 +1,7 @@
 import type { Project } from "../../document";
 import { createId } from "../../document";
-import {
-  defaultOutputs,
-  optionalOutputTemplates,
-} from "../../workflow";
 import { DEMO_IMG } from "../assets";
-import { b, page, shell } from "../helpers";
+import { b, outputsFor, page, shell } from "../helpers";
 import { northlineStyleExtras } from "../brand/northlineStyles";
 import {
   mergeSkillChipSlot,
@@ -13,7 +9,6 @@ import {
   paletteSectionHeading,
   paletteVariants,
   resumePalette,
-  resumePaletteCondition,
 } from "./resumeShared";
 
 export { RESUME_PROFILES_CSV, RESUME_ENGINEERING_SAMPLE } from "./resumeData";
@@ -31,9 +26,6 @@ export function welcome(): Project {
   const NL = "vars.language == 'nl'";
   const SMS = "output.kind == 'sms'";
   const EMAIL = "output.kind == 'email'";
-  const channelOutputs = optionalOutputTemplates().filter(
-    (o) => o.kind === "sms" || o.kind === "print",
-  );
   return shell(
     {
       name: "Welcome to texLooper",
@@ -1043,7 +1035,7 @@ export function welcome(): Project {
           createdAt: new Date().toISOString(),
         },
       ],
-      outputs: [...defaultOutputs(), ...channelOutputs],
+      outputs: outputsFor("preview", "pdf", "email", "image", "print", "sms"),
       ...northlineStyleExtras("en"),
     },
   );
@@ -1450,7 +1442,7 @@ export function resume(): Project {
         }),
       ]),
     ],
-    { conditions: [resumePaletteCondition()] },
+    { outputs: outputsFor("preview", "pdf", "image") },
   );
 }
 
