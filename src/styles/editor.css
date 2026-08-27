@@ -542,6 +542,10 @@
 }
 
 .editor-page--idle {
+  outline: none;
+}
+
+.editor-board--page-bounds .editor-page--idle {
   outline: 1px dashed color-mix(in srgb, var(--ink-muted) 35%, transparent);
   outline-offset: 2px;
 }
@@ -716,6 +720,11 @@
   pointer-events: none;
 }
 
+.editor-page--preview a.block-link--resolved {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 .editor-empty {
   position: absolute;
   inset: 0;
@@ -759,11 +768,19 @@
 .block-frame {
   position: absolute;
   overflow: visible;
-  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  border: 1px solid transparent;
   background: transparent;
   box-shadow: none;
   touch-action: none;
   user-select: none;
+}
+
+.editor-board--block-outlines-all .block-frame:not(.block-frame--preview) {
+  border-color: color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+.block-frame:not(.block-frame--preview):is(:hover, .block-frame--selected) {
+  border-color: color-mix(in srgb, var(--ink) 12%, transparent);
 }
 
 .block-frame--movable {
@@ -780,7 +797,6 @@
     0 0 0 1px var(--accent),
     0 2px 8px var(--selection-glow);
   animation: none;
-  z-index: 2;
 }
 
 .block-frame--preview {
@@ -830,6 +846,86 @@
   line-height: inherit;
   text-align: inherit;
   cursor: text;
+}
+
+.rich-text-field {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+}
+
+.rich-text-field textarea {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  min-height: 2.5em;
+  resize: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  padding: 0;
+}
+
+.rich-text-field--preview {
+  overflow: hidden;
+  cursor: text;
+}
+
+.inline-format-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 1px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--chrome-elevated);
+}
+
+.inline-format-toolbar__btn {
+  display: grid;
+  place-items: center;
+  width: 1.45rem;
+  height: 1.45rem;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--radius-sm) - 1px);
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.inline-format-toolbar__btn:hover,
+.inline-format-toolbar__btn--on {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+.inline-format-toolbar__glyph {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-decoration: line-through;
+  line-height: 1;
+}
+
+.rich-text__u {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.rich-text strong {
+  font-weight: 700;
+}
+
+.rich-text em {
+  font-style: italic;
+}
+
+.rich-text del {
+  opacity: 0.72;
 }
 
 .merge-aware-text__plain {
@@ -2071,6 +2167,7 @@
 }
 
 .block-pin-badge {
+  display: none;
   position: absolute;
   top: 0.2rem;
   left: 0.2rem;
@@ -2084,12 +2181,65 @@
   pointer-events: none;
 }
 
+.editor-board--pin-indicators .block-pin-badge {
+  display: block;
+}
+
 .block-frame--locked {
+  outline: none;
+}
+
+.editor-board--pin-indicators .block-frame--locked {
   outline: 1px dashed var(--border-strong);
 }
 
 .block-frame--pinned {
+  outline: none;
+}
+
+.editor-board--pin-indicators .block-frame--pinned:not(.block-frame--selected) {
   outline: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+.block-frame--backdrop {
+  pointer-events: none;
+}
+
+.block-frame--backdrop.block-frame--selected {
+  pointer-events: auto;
+}
+
+.block-stack-toolbar {
+  position: absolute;
+  top: -1.65rem;
+  right: 0;
+  z-index: 6;
+  display: inline-flex;
+  align-items: center;
+  gap: 1px;
+  padding: 1px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--chrome-elevated);
+  box-shadow: var(--shadow-page);
+}
+
+.block-stack-toolbar__btn {
+  display: grid;
+  place-items: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: 0;
+  border-radius: calc(var(--radius-sm) - 1px);
+  background: transparent;
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.block-stack-toolbar__btn:hover {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
 }
 
 .editor-sheet {
@@ -2802,22 +2952,41 @@
 .block-link {
   padding: 0.1rem 0.45rem;
   border-radius: var(--radius-sm, 4px);
-  background: color-mix(in srgb, #2563eb 12%, transparent);
-  color: #2563eb;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  color: inherit;
   font-family: var(--font-ui, "Sora", sans-serif);
   font-weight: 600;
   font-size: inherit;
   line-height: 1.35;
-  text-decoration: underline;
+  text-decoration: none;
   text-underline-offset: 2px;
 }
 
+.block-link--edit {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  font: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  white-space: inherit;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .block-link--resolved {
-  color: #2563eb;
-  text-decoration: underline;
+  color: inherit;
+  text-decoration: inherit;
   background: transparent;
   padding: 0;
   font-weight: inherit;
+}
+
+.block-link--resolved:hover {
+  text-decoration: underline;
 }
 
 .block-link--missing {
@@ -2830,7 +2999,7 @@
   min-width: 6rem;
   border: none;
   background: transparent;
-  color: #2563eb;
+  color: inherit;
   font: inherit;
   font-weight: 600;
   padding: 0;

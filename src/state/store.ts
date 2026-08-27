@@ -138,7 +138,7 @@ function migrateOverlay(saved: Partial<AppStateSnapshot> | null): UiOverlay {
 
 function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
   const base: EditorPrefs = saved?.prefs ?? {
-    showGrid: true,
+    showGrid: false,
     snap: true,
     density: "compact",
     theme: "nova",
@@ -159,7 +159,11 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
     gridSize: 16,
     gridLock: false,
     gridStyle: "lines",
-    showMarginGuides: true,
+    showMarginGuides: false,
+    showBlockOutlines: false,
+    showPinIndicators: false,
+    showPageChrome: false,
+    showPageBounds: false,
     rulerUnit: "px",
     locale: "en",
     canvasZoomMode: "fit",
@@ -180,6 +184,18 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
   }
   if (saved?.prefs && saved.prefs.pageViewMode == null) {
     next = { ...next, pageViewMode: "continuous" };
+  }
+  if (saved?.prefs && saved.prefs.showBlockOutlines == null) {
+    next = { ...next, showBlockOutlines: false };
+  }
+  if (saved?.prefs && saved.prefs.showPinIndicators == null) {
+    next = { ...next, showPinIndicators: false };
+  }
+  if (saved?.prefs && saved.prefs.showPageChrome == null) {
+    next = { ...next, showPageChrome: false };
+  }
+  if (saved?.prefs && saved.prefs.showPageBounds == null) {
+    next = { ...next, showPageBounds: false };
   }
   const artboard = saved?.project?.artboard;
   if (artboard && next.canvasPreset !== artboard) {
@@ -851,7 +867,7 @@ export function updatePage(
   patch: Partial<
     Pick<
       Page,
-      "name" | "background" | "rotate" | "mirrorX" | "mirrorY" | "condition"
+      "name" | "background" | "rotate" | "mirrorX" | "mirrorY" | "condition" | "pinRespectsMargins"
     >
   > & {
     margins?: Partial<PageMargins>;

@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "preact/hooks";
+import { useCallback, useContext, useEffect, useRef, useState } from "preact/hooks";
 import type { DataRow } from "../../model/bindings";
 import type { RuntimeContext } from "../../model/expr";
 import {
@@ -6,6 +6,7 @@ import {
   segmentPreviewValue,
 } from "../../model/mergeSegments";
 import { assertMergeTemplate } from "../../model/templateFilters";
+import { RichText } from "../../model/richText";
 import { dataRows } from "../../state/store";
 import {
   clearMergeAssertIssues,
@@ -14,6 +15,10 @@ import {
 import { BindingPreview } from "./BindingPreview";
 import { BlockEditContext } from "./BlockEditContext";
 import { onTextExpansionKeyDown } from "./textExpansionField";
+import {
+  clearTextEditSession,
+  registerTextEditSession,
+} from "./textEditSession";
 
 function runMergeAsserts(
   text: string,
@@ -47,6 +52,9 @@ export function MergeAwareText({
   selected,
   onChangeContent,
   onChipContextMenu,
+  onEnter,
+  focusItemKey,
+  itemKey,
 }: {
   text: string;
   blockId: string;
@@ -56,8 +64,14 @@ export function MergeAwareText({
   selected?: boolean;
   onChangeContent?: (id: string, content: Record<string, unknown>) => void;
   onChipContextMenu?: (mergePath: string, e: MouseEvent) => void;
+  /** Return true when Enter should create a new list row instead of a newline. */
+  onEnter?: (text: string, cursor: number) => boolean;
+  /** Focus and open edit mode when this key matches (list item continuity). */
+  focusItemKey?: string | null;
+  itemKey?: string;
 }) {
   const frameEdit = useContext(BlockEditContext);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [editing, setEditing] = useState(false);
   const [warnTokens, setWarnTokens] = useState<Set<string>>(() => new Set());
   const firstRow = dataRows.value[0];
@@ -67,44 +81,113 @@ export function MergeAwareText({
   const hasMerge = segments.some((s) => s.kind === "merge");
   const active = editing || Boolean(frameEdit?.editing);
 
+  const applyFormattedText = useCallback(
+    (next: string, start: number, end: number) => {
+      onChangeContent?.(blockId, { text: next });
+      queueMicrotask(() => {
+        const el = textareaRef.current;
+        if (!el) return;
+        el.setSelectionRange(start, end);
+      });
+    },
+    [blockId, onChangeContent],
+  );
+
   useEffect(() => {
     if (!selected) {
       setEditing(false);
       frameEdit?.endEdit();
+      clearTextEditSession(blockId);
     }
-  }, [selected]);
+  }, [selected, blockId, frameEdit]);
 
   useEffect(() => {
     if (frameEdit?.editing) setEditing(true);
   }, [frameEdit?.editing]);
 
+  useEffect(() => {
+    if (!focusItemKey || !itemKey || focusItemKey !== itemKey) return;
+    setEditing(true);
+    frameEdit?.requestEdit();
+    queueMicrotask(() => textareaRef.current?.focus());
+  }, [focusItemKey, itemKey, frameEdit]);
+
+  useEffect(() => {
+    if (!active) {
+      clearTextEditSession(blockId);
+      return;
+    }
+    registerTextEditSession({
+      blockId,
+      textareaRef,
+      value: text,
+      onApply: applyFormattedText,
+      tick: 0,
+    });
+    return () => clearTextEditSession(blockId);
+  }, [active, blockId, text, applyFormattedText]);
+
+  const enterEdit = () => {
+    setEditing(true);
+    frameEdit?.requestEdit();
+    queueMicrotask(() => textareaRef.current?.focus());
+  };
+
   const exitEdit = () => {
     setEditing(false);
     frameEdit?.endEdit();
+    clearTextEditSession(blockId);
     if (hasMerge) {
       setWarnTokens(runMergeAsserts(text, blockId, sampleRow, runtime));
     }
   };
 
-  if (active || !hasMerge) {
+  if (active) {
     return (
-      <textarea
-        value={text}
-        onInput={(e) =>
-          onChangeContent?.(blockId, { text: e.currentTarget.value })
-        }
-        onBlur={exitEdit}
-        onKeyDown={(e) =>
-          onTextExpansionKeyDown(e, (next, cursor) => {
-            onChangeContent?.(blockId, { text: next });
-            queueMicrotask(() => {
-              e.currentTarget.setSelectionRange(cursor, cursor);
+      <div class="rich-text-field">
+        <textarea
+          ref={textareaRef}
+          value={text}
+          onInput={(e) =>
+            onChangeContent?.(blockId, { text: e.currentTarget.value })
+          }
+          onBlur={exitEdit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey && onEnter) {
+              const el = e.currentTarget;
+              const start = el.selectionStart ?? 0;
+              const end = el.selectionEnd ?? start;
+              if (start === end && onEnter(el.value, start)) {
+                e.preventDefault();
+                return;
+              }
+            }
+            onTextExpansionKeyDown(e, (next, cursor) => {
+              onChangeContent?.(blockId, { text: next });
+              queueMicrotask(() => {
+                e.currentTarget.setSelectionRange(cursor, cursor);
+              });
             });
-          })
-        }
-        aria-label={`${blockName} text`}
-        autoFocus={active && hasMerge}
-      />
+          }}
+          aria-label={`${blockName} text`}
+          autoFocus
+        />
+      </div>
+    );
+  }
+
+  if (!hasMerge) {
+    return (
+      <div
+        class="rich-text-field rich-text-field--preview merge-aware-text"
+        onDblClick={(e) => {
+          e.stopPropagation();
+          enterEdit();
+        }}
+        title="Double-click to edit · use the ribbon for Bold/Italic/Underline"
+      >
+        <RichText text={text} />
+      </div>
     );
   }
 
@@ -113,15 +196,14 @@ export function MergeAwareText({
       class="merge-aware-text"
       onDblClick={(e) => {
         e.stopPropagation();
-        setEditing(true);
-        frameEdit?.requestEdit();
+        enterEdit();
       }}
     >
       {segments.map((seg, i) => {
         if (seg.kind === "text") {
           return (
             <span key={i} class="merge-aware-text__plain">
-              {seg.text}
+              <RichText text={seg.text} />
             </span>
           );
         }
@@ -143,10 +225,7 @@ export function MergeAwareText({
               .join(" ")}
             label={seg.label}
             previewValue={segmentPreviewValue(seg, previewRow, runtime)}
-            onActivate={() => {
-              setEditing(true);
-              frameEdit?.requestEdit();
-            }}
+            onActivate={enterEdit}
             onChipContextMenu={(e) => onChipContextMenu?.(seg.path, e)}
             ariaLabel={seg.raw}
           />

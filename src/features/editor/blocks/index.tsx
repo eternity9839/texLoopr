@@ -29,6 +29,7 @@ import {
 } from "../../../model/tableData";
 import {
   resolveListItems,
+  splitListItemAt,
   type ListItemNode,
 } from "../../../model/listData";
 import { parseMergeSegments } from "../../../model/mergeSegments";
@@ -56,7 +57,6 @@ import {
   linkEditLabel,
   parseLinkHook,
   resolveLinkTarget,
-  LINK_HOOK_LABEL,
 } from "../../../model/linkHook";
 import { BindingPreview } from "../BindingPreview";
 import { MergeAwareText } from "../MergeAwareText";
@@ -69,6 +69,7 @@ import {
   selection,
   setGroupIsolation,
   updateBlock,
+  nudgeZOrder,
 } from "../../../state/store";
 import {
   ensureReadableInk,
@@ -79,6 +80,12 @@ import {
 } from "../../../model/contrast";
 import { findBlockAncestors } from "../../../model/outlineTree";
 import { canvasSizeForSession } from "../../../model/canvasView";
+import {
+  blocksAtPoint,
+  isBackdropBlock,
+} from "../../../model/hitTest";
+import { pageCoordsFromEvent } from "../pageCoords";
+import { Icon } from "../../../ui/icons";
 
 export interface BlockViewProps {
   block: Block;
@@ -321,6 +328,21 @@ export function BlockFrame(
     return null;
   }
 
+  const page = activePage.value;
+  const sessionSize = canvasSizeForSession(project.value, prefs.value);
+  const layout = resolvePinnedRect(
+    block,
+    page?.margins,
+    sessionSize.w,
+    sessionSize.h,
+    { pinRespectsMargins: page?.pinRespectsMargins === true },
+  );
+  const pinned = pinIsActive(block.pin);
+  const isBackdrop =
+    !preview &&
+    !selected &&
+    isBackdropBlock(block, layout, sessionSize.w, sessionSize.h);
+
   const beginDrag = (e: PointerEvent) => {
     if (preview) return;
     e.stopPropagation();
@@ -331,6 +353,29 @@ export function BlockFrame(
       return;
     }
     if (block.locked || !onMoveResize) return;
+    const pageEl = frameRef.current?.closest(".editor-page") as
+      | HTMLElement
+      | null;
+    if (pageEl && e.altKey) {
+      const at = pageCoordsFromEvent(pageEl, e, snapStep ?? null, scale);
+      const hits = blocksAtPoint(
+        page?.blocks ?? [],
+        at.x,
+        at.y,
+        sessionSize.w,
+        sessionSize.h,
+        page?.margins,
+        page?.pinRespectsMargins === true,
+      );
+      if (hits.length > 1) {
+        e.preventDefault();
+        e.stopPropagation();
+        const ids = hits.map((b) => b.id);
+        const idx = Math.max(0, ids.indexOf(block.id));
+        onSelect(ids[(idx + 1) % ids.length]!);
+        return;
+      }
+    }
     // Edge-pinned blocks stay glued — unpin in Design to drag freely
     if (pinIsActive(block.pin)) return;
     if ((e.target as HTMLElement).closest(".resize-handle")) return;
@@ -389,21 +434,13 @@ export function BlockFrame(
     editing ? "block-frame--editing" : "",
     !preview && !block.locked && !ghostInactive ? "block-frame--movable" : "",
     ghostInactive ? "block-frame--inactive" : "",
+    isBackdrop ? "block-frame--backdrop" : "",
   ]
     .filter(Boolean)
     .join(" ");
 
   const commentCount = props.commentCount ?? 0;
   const frameTransform = cssTransformFromStyle(block.style);
-  const page = activePage.value;
-  const sessionSize = canvasSizeForSession(project.value, prefs.value);
-  const layout = resolvePinnedRect(
-    block,
-    page?.margins,
-    sessionSize.w,
-    sessionSize.h,
-  );
-  const pinned = pinIsActive(block.pin);
   const contrastAssist =
     !preview && prefs.value.editContrastAssist !== false;
   const backdrop = contrastAssist
@@ -440,7 +477,10 @@ export function BlockFrame(
           width: `${px(layout.w)}px`,
           height: `${px(layout.h)}px`,
           margin: block.style.margin ? `${block.style.margin}px` : undefined,
-          zIndex: effectiveZ(block),
+          zIndex:
+            selected && !preview
+              ? 100000 + effectiveZ(block)
+              : effectiveZ(block),
           transform: frameTransform || undefined,
           transformOrigin: "center center",
         }}
@@ -491,6 +531,51 @@ export function BlockFrame(
           <span class="block-pin-badge" title="Pinned to surface edge">
             Pin
           </span>
+        )}
+        {selected && !preview && !block.locked && (
+          <div
+            class="block-stack-toolbar"
+            role="toolbar"
+            aria-label="Layer order"
+            onPointerDown={(ev) => ev.stopPropagation()}
+          >
+            <button
+              type="button"
+              class="block-stack-toolbar__btn"
+              title="Bring forward"
+              aria-label="Bring forward"
+              onClick={() => nudgeZOrder("forward")}
+            >
+              <Icon name="chevronUp" size={12} />
+            </button>
+            <button
+              type="button"
+              class="block-stack-toolbar__btn"
+              title="Send backward"
+              aria-label="Send backward"
+              onClick={() => nudgeZOrder("backward")}
+            >
+              <Icon name="chevronDown" size={12} />
+            </button>
+            <button
+              type="button"
+              class="block-stack-toolbar__btn"
+              title="Bring to front"
+              aria-label="Bring to front"
+              onClick={() => nudgeZOrder("front")}
+            >
+              <Icon name="bringToFront" size={12} />
+            </button>
+            <button
+              type="button"
+              class="block-stack-toolbar__btn"
+              title="Send to back"
+              aria-label="Send to back"
+              onClick={() => nudgeZOrder("back")}
+            >
+              <Icon name="sendToBack" size={12} />
+            </button>
+          </div>
         )}
         <div
           class={[
@@ -672,10 +757,16 @@ export function LinkBlock(props: BlockViewProps) {
       missingAsEmpty: true,
       ctx: runtime,
     });
+    const external = hook === "url";
     return (
       <BlockFrame {...props}>
         {href ? (
-          <a class="block-link block-link--resolved" href={href}>
+          <a
+            class="block-link block-link--resolved"
+            href={href}
+            target={external ? "_blank" : undefined}
+            rel={external ? "noopener noreferrer" : undefined}
+          >
             {text || href}
           </a>
         ) : (
@@ -685,41 +776,46 @@ export function LinkBlock(props: BlockViewProps) {
     );
   }
 
+  const bound = hasMergeBinding(target) || hasMergeBinding(customLabel);
+
   return (
     <BlockFrame {...props}>
-      <BindingPreview
-        class="block-link-wrap binding-preview--link"
-        chipClass="block-link"
-        label={`${LINK_HOOK_LABEL[hook]} · ${editLabel}`}
-        previewValue={previewText}
-        editing={selected && (editing || Boolean(frameEdit?.editing))}
-        ariaLabel={`${block.name} link target`}
-        onActivate={() => {
-          setEditing(true);
-          frameEdit?.requestEdit();
-        }}
-        editSlot={
-          <input
-            class="block-link__input"
-            value={target}
-            aria-label={`${block.name} link target`}
-            onInput={(e) =>
-              onChangeContent?.(block.id, { target: e.currentTarget.value })
-            }
-            onBlur={() => {
+      {selected && (editing || frameEdit?.editing) ? (
+        <input
+          class="block-link__input"
+          value={target}
+          aria-label={`${block.name} link target`}
+          onInput={(e) =>
+            onChangeContent?.(block.id, { target: e.currentTarget.value })
+          }
+          onBlur={() => {
+            setEditing(false);
+            frameEdit?.endEdit();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === "Escape") {
               setEditing(false);
               frameEdit?.endEdit();
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === "Escape") {
-                setEditing(false);
-                frameEdit?.endEdit();
-                (e.target as HTMLInputElement).blur();
-              }
-            }}
-          />
-        }
-      />
+              (e.target as HTMLInputElement).blur();
+            }
+          }}
+        />
+      ) : bound ? (
+        <BindingPreview
+          class="block-link-wrap binding-preview--link"
+          chipClass="block-link"
+          label={editLabel}
+          previewValue={previewText}
+          editing={false}
+          ariaLabel={`${block.name} link`}
+          onActivate={() => {
+            setEditing(true);
+            frameEdit?.requestEdit();
+          }}
+        />
+      ) : (
+        <span class="block-link block-link--edit">{editLabel}</span>
+      )}
     </BlockFrame>
   );
 }
@@ -727,6 +823,17 @@ export function LinkBlock(props: BlockViewProps) {
 export function ListBlock(props: BlockViewProps) {
   const { block, preview, row, runtime, selected, onChangeContent, onChipContextMenu } = props;
   const nodes = resolveListItems(block.content, row, runtime);
+  const [focusItemKey, setFocusItemKey] = useState<string | null>(null);
+  const isStatic =
+    !String(block.content.datasetName ?? "").trim() &&
+    !String(block.content.sourcePath ?? "").trim();
+
+  useEffect(() => {
+    if (!focusItemKey) return;
+    const t = window.setTimeout(() => setFocusItemKey(null), 0);
+    return () => clearTimeout(t);
+  }, [focusItemKey]);
+
   const style = ORDERED.includes(
     (block.style.listStyle ?? "disc") as ListStyle,
   )
@@ -745,6 +852,15 @@ export function ListBlock(props: BlockViewProps) {
     >
       {items.map((item, i) => {
         const key = [...path, i].join(".");
+        const handleEnter =
+          isStatic && onChangeContent
+            ? (text: string, cursor: number) => {
+                const next = splitListItemAt(nodes, path, i, cursor, text);
+                onChangeContent(block.id, { items: next });
+                setFocusItemKey([...path, i + 1].join("."));
+                return true;
+              }
+            : undefined;
         return (
           <li key={key}>
             {preview ? (
@@ -762,6 +878,9 @@ export function ListBlock(props: BlockViewProps) {
                 row={row}
                 runtime={runtime}
                 selected={selected}
+                itemKey={key}
+                focusItemKey={focusItemKey}
+                onEnter={handleEnter}
                 onChangeContent={(_id, content) => {
                   const next = structuredClone(nodes) as ListItemNode[];
                   let cursor: ListItemNode[] = next;

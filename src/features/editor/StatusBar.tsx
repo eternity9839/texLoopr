@@ -172,7 +172,7 @@ export function StatusBar() {
               <label class="status-bar__row status-bar__row--check">
                 <input
                   type="checkbox"
-                  checked={p.showMarginGuides !== false}
+                  checked={p.showMarginGuides === true}
                   onChange={(e) =>
                     updatePrefs({
                       showMarginGuides: e.currentTarget.checked,
@@ -238,7 +238,7 @@ export function StatusBar() {
             {Math.round(block.x)}, {Math.round(block.y)})
           </span>
         ) : (
-          <span class="muted">{t("noSelection")}</span>
+          <span class="muted">{t("selectCycleHint")}</span>
         )}
       </div>
     </div>

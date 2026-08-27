@@ -330,6 +330,8 @@ export interface Page {
   height?: number;
   /** Print margins shown as guides; used by margin-aligned inserts */
   margins?: PageMargins;
+  /** When true, edge-pinned blocks inset by margins; default false (full bleed). */
+  pinRespectsMargins?: boolean;
   /** Page backdrop behind all blocks (subtle tint or brand paper) */
   background?: string;
   /** Draft/confidential watermark rendered under blocks */
@@ -495,6 +497,14 @@ export interface EditorPrefs {
   gridStyle?: "lines" | "dots";
   /** Show dashed margin guides from surface margins */
   showMarginGuides?: boolean;
+  /** Block frame borders in edit mode (off = selected/hovered only) */
+  showBlockOutlines?: boolean;
+  /** Pin badges and dashed pin outlines on blocks */
+  showPinIndicators?: boolean;
+  /** Header/footer chrome band overlays in edit mode */
+  showPageChrome?: boolean;
+  /** Dashed bounds on inactive pages in multi-page view */
+  showPageBounds?: boolean;
   /** Ruler hover / margin flags display unit (geometry stays CSS px) */
   rulerUnit?: "px" | "mm" | "cm" | "in";
   /** UI language */

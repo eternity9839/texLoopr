@@ -20,6 +20,8 @@ import {
   addComment,
   inspectorTab,
 } from "../../state/store";
+import { InlineFormatToolbar } from "./InlineFormatToolbar";
+import { textEditSession } from "./textEditSession";
 
 function IconBtn({
   icon,
@@ -66,8 +68,9 @@ export function EditRibbon() {
   const multi = selectedIds.value.length;
   const canGroup = multi >= 1 || hasBlock;
   const isGroup = block?.type === "group" || block?.type === "repeat";
+  const textEditing = Boolean(textEditSession.value);
 
-  if (!hasBlock && !hasClip) return null;
+  if (!hasBlock && !hasClip && !textEditing) return null;
 
   return (
     <div
@@ -84,6 +87,12 @@ export function EditRibbon() {
         <IconBtn icon="undo" label="Undo (Ctrl+Z)" disabled={!canUndo()} onClick={undoEdit} />
         <IconBtn icon="redo" label="Redo (Ctrl+Shift+Z)" disabled={!canRedo()} onClick={redoEdit} />
       </div>
+      {textEditing && (
+        <>
+          <Sep />
+          <InlineFormatToolbar />
+        </>
+      )}
       {hasBlock && (
         <>
           <Sep />

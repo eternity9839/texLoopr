@@ -76,6 +76,7 @@ import {
   resolveCanvasScale,
   type CanvasZoomMode,
 } from "./canvasScale";
+import { pageCoordsFromEvent } from "./pageCoords";
 
 interface EditorCanvasProps {
   preview?: boolean;
@@ -89,23 +90,6 @@ type CanvasMenu = {
   mergePath?: string;
   blockId?: string;
 };
-
-function pageCoordsFromEvent(
-  pageEl: Element,
-  e: MouseEvent,
-  step: number | null,
-  scale: number,
-): { x: number; y: number } {
-  const rect = pageEl.getBoundingClientRect();
-  const k = scale || 1;
-  let x = Math.max(0, (e.clientX - rect.left) / k);
-  let y = Math.max(0, (e.clientY - rect.top) / k);
-  if (step != null && step > 1) {
-    x = Math.round(x / step) * step;
-    y = Math.round(y / step) * step;
-  }
-  return { x, y };
-}
 
 export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   beginIssuePass();
@@ -426,13 +410,13 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
         {
           id: "guides",
           label:
-            prefs.value.showMarginGuides === false
-              ? "Show margin guides"
-              : "Hide margin guides",
+            prefs.value.showMarginGuides === true
+              ? "Hide margin guides"
+              : "Show margin guides",
           icon: "ruler",
           action: () =>
             updatePrefs({
-              showMarginGuides: prefs.value.showMarginGuides === false,
+              showMarginGuides: prefs.value.showMarginGuides !== true,
             }),
         },
         { id: "s-view", type: "sep" },
@@ -658,6 +642,13 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
     showGrid && prefs.value.gridStyle === "dots"
       ? "editor-board--grid-dots"
       : "",
+    prefs.value.showBlockOutlines === true
+      ? "editor-board--block-outlines-all"
+      : "",
+    prefs.value.showPinIndicators === true
+      ? "editor-board--pin-indicators"
+      : "",
+    prefs.value.showPageBounds === true ? "editor-board--page-bounds" : "",
   ]
     .filter(Boolean)
     .join(" ");
@@ -895,7 +886,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               pageH={pageH}
             />
           ) : null}
-          {!preview && prefs.value.showMarginGuides !== false ? (
+          {!preview && prefs.value.showMarginGuides === true ? (
             <>
               <div
                 class="page-margin-guide page-margin-guide--top"
@@ -943,7 +934,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
               },
             ];
             return bands
-              .filter((b) => b.enabled)
+              .filter((b) => b.enabled && prefs.value.showPageChrome === true)
               .map((b) => (
                 <div
                   key={`chrome-${b.slot}`}

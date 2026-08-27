@@ -248,7 +248,7 @@ export function SettingsMode() {
           />
           <ToggleRow
             label={t("margins")}
-            checked={p.showMarginGuides !== false}
+            checked={p.showMarginGuides === true}
             onChange={(v) => updatePrefs({ showMarginGuides: v })}
           />
           <ToggleRow

@@ -135,12 +135,18 @@ export function resizeFromHandle(
   return { x: px(x), y: px(y), w: px(w), h: px(h) };
 }
 
+export interface ResolvePinnedOptions {
+  /** When true, pinned edges inset by page margins. Default false (full bleed). */
+  pinRespectsMargins?: boolean;
+}
+
 /** Apply edge pins so headers/footers/sidebars stay glued to the surface. */
 export function resolvePinnedRect(
   block: Pick<Block, "x" | "y" | "w" | "h" | "pin">,
   margins?: Partial<PageMargins> | null,
   pageW = PAGE_WIDTH,
   pageH = PAGE_HEIGHT,
+  opts?: ResolvePinnedOptions,
 ): Rect {
   const pin = block.pin;
   if (!pin || (!pin.top && !pin.bottom && !pin.left && !pin.right)) {
@@ -151,15 +157,20 @@ export function resolvePinnedRect(
       h: px(block.h),
     };
   }
-  const base = normalizeMargins(margins ?? undefined);
+  const respect = opts?.pinRespectsMargins === true;
+  const base = respect
+    ? normalizeMargins(margins ?? undefined)
+    : { top: 0, right: 0, bottom: 0, left: 0 };
   /** Origin/bottom chrome ignores content margins on the pinned edges. */
-  const m = {
-    top: pin.top && block.y <= 0 ? 0 : base.top,
-    right: pin.right && block.x <= 0 && pin.left ? 0 : base.right,
-    bottom:
-      pin.bottom && block.y + block.h >= pageH - 16 ? 0 : base.bottom,
-    left: pin.left && block.x <= 0 ? 0 : base.left,
-  };
+  const m = respect
+    ? {
+        top: pin.top && block.y <= 0 ? 0 : base.top,
+        right: pin.right && block.x <= 0 && pin.left ? 0 : base.right,
+        bottom:
+          pin.bottom && block.y + block.h >= pageH - 16 ? 0 : base.bottom,
+        left: pin.left && block.x <= 0 ? 0 : base.left,
+      }
+    : base;
   let { x, y, w, h } = {
     x: px(block.x),
     y: px(block.y),

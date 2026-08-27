@@ -4,6 +4,7 @@ import {
   listItemsToIndentedText,
   normalizeListItems,
   resolveListItems,
+  splitListItemAt,
 } from "./listData";
 
 describe("listData", () => {
@@ -30,6 +31,20 @@ describe("listData", () => {
       { text: "Two" },
     ]);
     expect(listItemsToIndentedText(nodes)).toBe(text);
+  });
+
+  it("splits a list item when pressing Enter while editing", () => {
+    const nodes = [{ text: "Alpha" }, { text: "Beta" }];
+    expect(splitListItemAt(nodes, [], 0, 3, "Alpha")).toEqual([
+      { text: "Alp" },
+      { text: "ha" },
+      { text: "Beta" },
+    ]);
+    expect(splitListItemAt(nodes, [], 1, 4, "Beta")).toEqual([
+      { text: "Alpha" },
+      { text: "Beta" },
+      { text: "" },
+    ]);
   });
 
   it("resolves hierarchy from sourcePath objects", () => {

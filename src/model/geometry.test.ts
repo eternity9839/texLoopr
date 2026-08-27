@@ -53,10 +53,24 @@ describe("resolvePinnedRect", () => {
     ).toEqual({ x: 40, y: 50, w: 100, h: 80 });
   });
 
-  it("pins a header across the content width", () => {
+  it("pins full bleed by default (ignores margins)", () => {
     const r = resolvePinnedRect(
       { x: 10, y: 200, w: 50, h: 48, pin: headerPin() },
       { top: 32, right: 40, bottom: 32, left: 40 },
+    );
+    expect(r.y).toBe(0);
+    expect(r.x).toBe(0);
+    expect(r.w).toBe(PAGE_WIDTH);
+    expect(r.h).toBe(48);
+  });
+
+  it("pins a header across the content width when margins apply", () => {
+    const r = resolvePinnedRect(
+      { x: 10, y: 200, w: 50, h: 48, pin: headerPin() },
+      { top: 32, right: 40, bottom: 32, left: 40 },
+      PAGE_WIDTH,
+      PAGE_HEIGHT,
+      { pinRespectsMargins: true },
     );
     expect(r.y).toBe(32);
     expect(r.x).toBe(40);
@@ -64,27 +78,31 @@ describe("resolvePinnedRect", () => {
     expect(r.h).toBe(48);
   });
 
-  it("pins a footer to the bottom margin", () => {
+  it("pins a footer to the bottom margin when margins apply", () => {
     const r = resolvePinnedRect(
       { x: 100, y: 10, w: 200, h: 40, pin: footerPin() },
       { top: 0, right: 40, bottom: 48, left: 40 },
+      PAGE_WIDTH,
+      PAGE_HEIGHT,
+      { pinRespectsMargins: true },
     );
     expect(r.y).toBe(PAGE_HEIGHT - 48 - 40);
     expect(r.x).toBe(40);
     expect(r.w).toBe(PAGE_WIDTH - 80);
   });
 
-  it("stretches origin header bars edge-to-edge", () => {
+  it("stretches origin header bars edge-to-edge when margins apply", () => {
     const r = resolvePinnedRect(
       { x: 0, y: 0, w: 960, h: 72, pin: headerPin() },
       { top: 64, right: 56, bottom: 72, left: 56 },
       960,
       540,
+      { pinRespectsMargins: true },
     );
     expect(r).toEqual({ x: 0, y: 0, w: 960, h: 72 });
   });
 
-  it("stretches a left rail full height", () => {
+  it("stretches a left rail full height when margins apply", () => {
     const r = resolvePinnedRect(
       {
         x: 0,
@@ -94,6 +112,9 @@ describe("resolvePinnedRect", () => {
         pin: { left: true, top: true, bottom: true },
       },
       { top: 0, right: 48, bottom: 40, left: 0 },
+      PAGE_WIDTH,
+      PAGE_HEIGHT,
+      { pinRespectsMargins: true },
     );
     expect(r.x).toBe(0);
     expect(r.y).toBe(0);

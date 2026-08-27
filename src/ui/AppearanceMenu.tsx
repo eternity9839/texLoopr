@@ -10,7 +10,11 @@ type ToggleKey =
   | "showGrid"
   | "showRulers"
   | "showComments"
-  | "showMarginGuides";
+  | "showMarginGuides"
+  | "showBlockOutlines"
+  | "showPinIndicators"
+  | "showPageChrome"
+  | "showPageBounds";
 
 const TOGGLES: {
   key: ToggleKey;
@@ -23,6 +27,26 @@ const TOGGLES: {
   { key: "showGrid", labelKey: "grid", hintKey: "gridHint" },
   { key: "showRulers", labelKey: "rulers", hintKey: "rulersHint" },
   { key: "showMarginGuides", labelKey: "margins", hintKey: "marginsHint" },
+  {
+    key: "showBlockOutlines",
+    labelKey: "blockOutlines",
+    hintKey: "blockOutlinesHint",
+  },
+  {
+    key: "showPinIndicators",
+    labelKey: "pinIndicators",
+    hintKey: "pinIndicatorsHint",
+  },
+  {
+    key: "showPageChrome",
+    labelKey: "pageChromeOverlay",
+    hintKey: "pageChromeOverlayHint",
+  },
+  {
+    key: "showPageBounds",
+    labelKey: "pageBounds",
+    hintKey: "pageBoundsHint",
+  },
   { key: "showComments", labelKey: "comments", hintKey: "commentsHint" },
 ];
 
@@ -42,7 +66,15 @@ function isOn(key: ToggleKey): boolean {
     case "showComments":
       return p.showComments !== false;
     case "showMarginGuides":
-      return p.showMarginGuides !== false;
+      return p.showMarginGuides === true;
+    case "showBlockOutlines":
+      return p.showBlockOutlines === true;
+    case "showPinIndicators":
+      return p.showPinIndicators === true;
+    case "showPageChrome":
+      return p.showPageChrome === true;
+    case "showPageBounds":
+      return p.showPageBounds === true;
   }
 }
 

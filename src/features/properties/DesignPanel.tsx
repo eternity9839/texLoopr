@@ -1708,6 +1708,15 @@ export function PageSetup() {
         <div class="prop-grid prop-grid--2">
           <MarginFields margins={margins} pageId={page.id} />
         </div>
+        <CheckRow
+          checked={page.pinRespectsMargins === true}
+          onChange={(v) =>
+            updatePage(page.id, { pinRespectsMargins: v || undefined })
+          }
+        >
+          {t("pinRespectsMargins")}
+        </CheckRow>
+        <p class="muted prop-hint">{t("pinRespectsMarginsHint")}</p>
         <ColorField
           id="page-bg"
           label="Surface background"

@@ -152,6 +152,42 @@ export function resolveListItems(
   return normalizeListItems(content.items);
 }
 
+/** Insert a sibling list item after `index` at `path` (empty path = root). */
+export function insertListItemAfter(
+  nodes: ListItemNode[],
+  path: number[],
+  index: number,
+  text = "",
+): ListItemNode[] {
+  const next = structuredClone(nodes) as ListItemNode[];
+  let cursor = next;
+  for (const p of path) {
+    cursor = cursor[p]!.children!;
+  }
+  cursor.splice(index + 1, 0, { text });
+  return next;
+}
+
+/** Split item text at `at` into two sibling items. */
+export function splitListItemAt(
+  nodes: ListItemNode[],
+  path: number[],
+  index: number,
+  at: number,
+  text: string,
+): ListItemNode[] {
+  const next = structuredClone(nodes) as ListItemNode[];
+  let cursor = next;
+  for (const p of path) {
+    cursor = cursor[p]!.children!;
+  }
+  const before = text.slice(0, at);
+  const after = text.slice(at);
+  cursor[index] = { ...cursor[index]!, text: before };
+  cursor.splice(index + 1, 0, { text: after });
+  return next;
+}
+
 /** Flat strings for simple editors (one line per leaf, indented with tabs). */
 export function listItemsToIndentedText(nodes: ListItemNode[], depth = 0): string {
   const lines: string[] = [];
