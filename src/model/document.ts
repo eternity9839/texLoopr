@@ -568,6 +568,11 @@ export interface EditorPrefs {
   showInactiveBranches?: boolean;
   /** Emmet-style text expansions in paragraph / text fields */
   textExpansionsEnabled?: boolean;
+  /**
+   * PDF export engine. `browser` matches the canvas preview (print → Save as PDF).
+   * `rust` uses the native printpdf backend (batch / CLI / API).
+   */
+  pdfEngine?: "browser" | "rust";
 }
 
 /** Logical page size used by align tools (matches CSS tokens) */

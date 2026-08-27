@@ -16,6 +16,7 @@ import {
   type OutlineRow,
   type OutlineSortMode,
 } from "../../model/outlineTree";
+import { findBlockDeep } from "../../model/groups";
 import {
   project,
   selection,
@@ -133,6 +134,27 @@ export function HierarchyPanel() {
       [expandKeyPage(currentPageId)]: true,
     }));
   }, [currentPageId]);
+
+  useEffect(() => {
+    if (sel?.kind !== "block") return;
+    const page = activePage.value;
+    if (!page) return;
+    const chain = findBlockAncestors(page.blocks, sel.id);
+    const selected = findBlockDeep(page.blocks, sel.id);
+    if (!chain.length && !selected) return;
+    setExpanded((prev) => {
+      const next = { ...prev };
+      for (const ancestor of chain) {
+        if (ancestor.type === "group" || ancestor.type === "repeat") {
+          next[expandKeyGroup(ancestor.id)] = true;
+        }
+      }
+      if (selected && (selected.type === "group" || selected.type === "repeat")) {
+        next[expandKeyGroup(selected.id)] = true;
+      }
+      return next;
+    });
+  }, [sel]);
 
   const rows = useMemo(() => {
     const output = activeOutputProfile() ?? proj.outputs?.[0];

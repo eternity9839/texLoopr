@@ -180,6 +180,7 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
     showInactiveBranches: false,
     pageViewMode: "continuous",
     bindingPreviewMode: "popup",
+    pdfEngine: "browser",
   };
   let next = base;
   if (saved?.prefs && saved.prefs.locale == null) {
@@ -196,6 +197,9 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
   }
   if (saved?.prefs && saved.prefs.bindingPreviewMode == null) {
     next = { ...next, bindingPreviewMode: "popup" };
+  }
+  if (saved?.prefs && saved.prefs.pdfEngine == null) {
+    next = { ...next, pdfEngine: "browser" };
   }
   if (saved?.prefs && saved.prefs.showBlockOutlines == null) {
     next = { ...next, showBlockOutlines: false };

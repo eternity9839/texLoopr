@@ -330,6 +330,19 @@ export function SettingsMode() {
             onChange={(v) => updatePrefs({ textExpansionsEnabled: v })}
           />
           <p class="muted settings-hint">{t("textExpansionsHint")}</p>
+          <SelectField
+            id="settings-pdf-engine"
+            label={t("pdfEngine")}
+            hint={t("pdfEngineHint")}
+            value={p.pdfEngine ?? "browser"}
+            options={[
+              { value: "browser", label: t("pdfEngineBrowser") },
+              { value: "rust", label: t("pdfEngineRust") },
+            ]}
+            onChange={(v) =>
+              updatePrefs({ pdfEngine: v as "browser" | "rust" })
+            }
+          />
         </Section>
       )}
     </div>

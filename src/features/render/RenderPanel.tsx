@@ -10,12 +10,22 @@ import { OUTPUT_KIND_LABEL } from "../../model/workflow";
 import {
   catalogProjectId,
   dataRows,
+  prefs,
+  previewConditionOverrides,
+  previewLanguageOverride,
   previewRowIndex,
   project,
 } from "../../state/store";
 import { SegmentedControl, SelectField } from "../../ui/controls";
 import { Icon } from "../../ui/icons";
 import { t } from "../../i18n";
+import { ErrorCodes } from "../../model/appErrors";
+import {
+  hideLoading,
+  reportAppError,
+  showLoading,
+} from "../../state/appFeedback";
+import { log } from "../../debug/logger";
 
 type RowScope = "current" | "all";
 
@@ -32,6 +42,7 @@ function renderableOutputs(outputs: OutputProfile[] | undefined): OutputProfile[
 export function RenderPanel() {
   const proj = ensureProjectAutomation(project.value);
   const rows = dataRows.value;
+  const pdfEngine = prefs.value.pdfEngine ?? "browser";
   const pdfOutputs = useMemo(
     () => renderableOutputs(proj.outputs),
     [proj.outputs],
@@ -43,6 +54,7 @@ export function RenderPanel() {
   const [includeZip, setIncludeZip] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
   const [savedPath, setSavedPath] = useState<string | null>(null);
   const [result, setResult] = useState<
     import("../../model/backend").RenderBatchResult | null
@@ -56,6 +68,9 @@ export function RenderPanel() {
   const renderOutput = pdfOutputs.find((o) => o.id === renderOutputId);
   const isStatic = rows.length === 0;
   const isBatch = rows.length > 1;
+  const useBrowserPdf =
+    pdfEngine === "browser" &&
+    (renderOutput?.kind === "pdf" || renderOutput?.kind === "print");
 
   const idx = Math.min(previewRowIndex.value, Math.max(rows.length - 1, 0));
   const selectedRows: DataRow[] = isStatic
@@ -66,15 +81,41 @@ export function RenderPanel() {
 
   const onGenerate = async () => {
     if (!renderOutput) {
+      reportAppError({
+        code: ErrorCodes.RENDER_NO_OUTPUT,
+        message: t("renderNoPdfOutput"),
+      });
       setError(t("renderNoPdfOutput"));
       return;
     }
 
     setBusy(true);
     setError(null);
+    setStatus(null);
     setSavedPath(null);
     setResult(null);
+    showLoading("render", t("renderRunning"));
+    log.info("render", "batch start", {
+      outputId: renderOutput.id,
+      kind: renderOutput.kind,
+      engine: useBrowserPdf ? "browser" : "rust",
+      rows: selectedRows.length,
+    });
     try {
+      if (useBrowserPdf) {
+        const { printBrowserPdf } = await import("./BrowserPdfPrint");
+        await printBrowserPdf({
+          project: proj,
+          rows: selectedRows,
+          output: renderOutput,
+          languageOverride: previewLanguageOverride.value,
+          conditionOverrides: previewConditionOverrides.value,
+        });
+        setStatus(t("renderBrowserDone"));
+        log.info("render", "browser print done");
+        return;
+      }
+
       const { renderBatchBackend } = await import("../../model/backend");
       const batch = await renderBatchBackend({
         project: proj,
@@ -85,25 +126,63 @@ export function RenderPanel() {
       });
       setResult(batch);
       if (batch.errors.length > 0 && batch.files.length === 0) {
-        setError(batch.errors.join("\n"));
+        const detail = batch.errors.join("\n");
+        setError(detail);
+        reportAppError({
+          code: ErrorCodes.RENDER_EMPTY,
+          message: t("renderFailed"),
+          detail,
+        });
+      } else {
+        log.info("render", "batch done", { files: batch.files.length });
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
+      const msg = e instanceof Error ? e.message : String(e);
+      setError(msg);
+      reportAppError({
+        code: ErrorCodes.RENDER_BATCH,
+        message: t("renderFailed"),
+        cause: e,
+      });
     } finally {
       setBusy(false);
+      hideLoading();
     }
   };
 
   const zipName = `${proj.name || "render"}-batch.zip`.replace(/[^\w.-]+/g, "_");
+
+  const saveFile = (base64: string, name: string, mime: string) => {
+    void downloadBase64(base64, name, mime)
+      .then((path) => {
+        if (path) setSavedPath(path);
+        log.info("save", "export saved", { name, path: path ?? "(browser)" });
+      })
+      .catch((e) => {
+        const msg = e instanceof Error ? e.message : String(e);
+        setError(msg);
+        reportAppError({
+          code: ErrorCodes.SAVE_DOWNLOAD,
+          message: t("saveFailed"),
+          cause: e,
+        });
+      });
+  };
 
   return (
     <div class="render-panel panel-pad">
       <p class="render-panel__lede muted">
         {renderOutput?.kind === "email"
           ? t("renderHintEmail")
-          : isBatch
-            ? t("renderHintBatch")
-            : t("renderHintStatic")}
+          : useBrowserPdf
+            ? t("renderBrowserHint")
+            : isBatch
+              ? t("renderHintBatch")
+              : t("renderHintStatic")}
+      </p>
+      <p class="muted prop-hint">
+        {t("pdfEngine")}:{" "}
+        {pdfEngine === "rust" ? t("pdfEngineRust") : t("pdfEngineBrowser")}
       </p>
 
       <div class="render-panel__card">
@@ -143,15 +222,17 @@ export function RenderPanel() {
             ]}
             onChange={setRowScope}
           />
-          <label class="render-panel__check">
-            <input
-              type="checkbox"
-              checked={includeZip}
-              onChange={(e) => setIncludeZip(e.currentTarget.checked)}
-              disabled={rowScope !== "all"}
-            />
-            {t("renderIncludeZip")}
-          </label>
+          {!useBrowserPdf && (
+            <label class="render-panel__check">
+              <input
+                type="checkbox"
+                checked={includeZip}
+                onChange={(e) => setIncludeZip(e.currentTarget.checked)}
+                disabled={rowScope !== "all"}
+              />
+              {t("renderIncludeZip")}
+            </label>
+          )}
         </div>
       )}
 
@@ -166,6 +247,12 @@ export function RenderPanel() {
           {busy ? t("renderRunning") : t("renderGenerate")}
         </button>
       </div>
+
+      {status && (
+        <p class="render-panel__saved muted" role="status">
+          {status}
+        </p>
+      )}
 
       {error && (
         <pre class="render-panel__log render-panel__log--error" role="alert">
@@ -182,17 +269,7 @@ export function RenderPanel() {
                 type="button"
                 class="btn btn--ghost btn--small"
                 onClick={() =>
-                  void downloadBase64(
-                    result.zipBase64!,
-                    zipName,
-                    "application/zip",
-                  )
-                    .then((path) => {
-                      if (path) setSavedPath(path);
-                    })
-                    .catch((e) =>
-                      setError(e instanceof Error ? e.message : String(e)),
-                    )
+                  saveFile(result.zipBase64!, zipName, "application/zip")
                 }
               >
                 <Icon name="files" size={14} />
@@ -217,17 +294,11 @@ export function RenderPanel() {
                   title={t("renderDownloadFile")}
                   aria-label={t("renderDownloadFile")}
                   onClick={() =>
-                    void downloadBase64(
+                    saveFile(
                       file.bytesBase64,
                       file.name,
                       mimeForOutputKind(renderOutput?.kind ?? "pdf"),
                     )
-                      .then((path) => {
-                        if (path) setSavedPath(path);
-                      })
-                      .catch((e) =>
-                        setError(e instanceof Error ? e.message : String(e)),
-                      )
                   }
                 >
                   <Icon name="save" size={14} />
