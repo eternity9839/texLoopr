@@ -7,7 +7,7 @@
     "dev": "vite",
     "dev:share": "vite --host",
     "build": "tsc && vite build",
-    "build:tauri": "npm run sync:render-assets && tsc && vite build",
+    "build:tauri": "npm run sync:render-assets && tsc && node scripts/vite-tauri-build.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
