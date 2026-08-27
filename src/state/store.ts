@@ -82,8 +82,16 @@ import {
   type TourStepId,
 } from "../model/tour";
 import { isEphemeral } from "../runtimeConfig";
+import {
+  canContinueFrom,
+  continueLabelTitle,
+  hasLocalDraftSnapshot,
+  pickContinueProjectId,
+} from "../model/startHub";
 
 const TEMP_KEY = "texlooper.temp.active.v1";
+
+export type AppPhase = "start" | "studio" | "docs";
 
 export interface AppStateSnapshot {
   catalogProjectId: string | null;
@@ -171,6 +179,7 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
     editContrastAssist: true,
     showInactiveBranches: false,
     pageViewMode: "continuous",
+    bindingPreviewMode: "popup",
   };
   let next = base;
   if (saved?.prefs && saved.prefs.locale == null) {
@@ -184,6 +193,9 @@ function migratePrefs(saved: Partial<AppStateSnapshot> | null): EditorPrefs {
   }
   if (saved?.prefs && saved.prefs.pageViewMode == null) {
     next = { ...next, pageViewMode: "continuous" };
+  }
+  if (saved?.prefs && saved.prefs.bindingPreviewMode == null) {
+    next = { ...next, bindingPreviewMode: "popup" };
   }
   if (saved?.prefs && saved.prefs.showBlockOutlines == null) {
     next = { ...next, showBlockOutlines: false };
@@ -241,11 +253,34 @@ export const previewRowIndex = signal<number>(saved?.previewRowIndex ?? 0);
 /**
  * Session override for document language in Edit/Preview.
  * `null` = resolve from row / project (default).
+ * Prefer project.conditions axes + previewConditionOverrides for new templates.
  */
 export const previewLanguageOverride = signal<string | null>(null);
 
 export function setPreviewLanguageOverride(next: string | null): void {
   previewLanguageOverride.value = next;
+}
+
+/**
+ * Preview overrides for Project.conditions axes (keyed by condition id or var).
+ * Missing / null entry = follow row (or project default).
+ */
+export const previewConditionOverrides = signal<Record<string, string | null>>(
+  {},
+);
+
+export function setPreviewConditionOverride(
+  axisKey: string,
+  next: string | null,
+): void {
+  const cur = { ...previewConditionOverrides.value };
+  if (next == null) delete cur[axisKey];
+  else cur[axisKey] = next;
+  previewConditionOverrides.value = cur;
+}
+
+export function clearPreviewConditionOverrides(): void {
+  previewConditionOverrides.value = {};
 }
 
 export const prefs = signal<EditorPrefs>(migratePrefs(saved));
@@ -285,6 +320,11 @@ export function closePrebuildPicker(): void {
 }
 export const catalogReady = signal(false);
 export const catalogBackend = signal<"tauri" | "web" | "http" | null>(null);
+
+/** Non-ephemeral cold starts on the hub; ephemeral goes straight to the studio. */
+export const appPhase = signal<AppPhase>(isEphemeral() ? "studio" : "start");
+/** Continue button: null when disabled. */
+export const continueOffer = signal<{ title: string } | null>(null);
 
 const editHistory = new EditHistory();
 if (saved?.editHistory && isEditHistorySnapshot(saved.editHistory)) {
@@ -517,7 +557,15 @@ export function selectBlocks(ids: string[]): void {
   selection.value = { kind: "block", id: unique[unique.length - 1]! };
 }
 
-/** Shift/Ctrl+click: toggle id in multi-selection. */
+/** Shift+click: add id to multi-selection (does not remove). */
+export function selectBlockAdd(id: string): void {
+  const set = new Set(selectedIds.value);
+  set.add(id);
+  selectedIds.value = [...set];
+  selection.value = { kind: "block", id };
+}
+
+/** Ctrl/⌘+click: toggle id in multi-selection. */
 export function selectBlockToggle(id: string): void {
   const set = new Set(selectedIds.value);
   if (set.has(id)) set.delete(id);
@@ -526,6 +574,48 @@ export function selectBlockToggle(id: string): void {
   selection.value = set.size
     ? { kind: "block", id: [...set][set.size - 1]! }
     : null;
+}
+
+/** Ask BlockFrame to enter text edit (Enter / F2). */
+export const editRequestId = signal<string | null>(null);
+
+export function requestEditSelectedBlock(): boolean {
+  const block = selectedBlock.value;
+  if (!block) return false;
+  const textLike = [
+    "paragraph",
+    "text",
+    "list",
+    "data",
+    "link",
+    "date",
+  ].includes(block.type);
+  if (!textLike || block.locked) return false;
+  editRequestId.value = block.id;
+  return true;
+}
+
+/**
+ * Create a reusable custom component from the current selection.
+ * Groups multiple blocks first when needed, then saves as a custom object.
+ */
+export function createComponentFromSelection(name?: string): string | null {
+  const blocks = selectedBlocks.value;
+  if (blocks.length < 1) return null;
+
+  const sole = blocks.length === 1 ? blocks[0]! : null;
+  if (!(sole && (sole.type === "group" || sole.type === "repeat"))) {
+    groupSelection();
+  }
+  const block = selectedBlock.value;
+  if (!block || (block.type !== "group" && block.type !== "repeat")) return null;
+  const label =
+    name?.trim() ||
+    (blocks.length > 1
+      ? `Component (${blocks.length})`
+      : `${block.name || "Component"}`);
+  saveSelectionAsCustomObject(label);
+  return block.id;
 }
 
 /** Select every unlocked top-level block on the active page. */
@@ -601,6 +691,7 @@ export function commitPlaceAt(at: { x: number; y: number }): string {
     name: opts.name,
     w: opts.w,
     h: opts.h,
+    lockAspectRatio: opts.lockAspectRatio,
   });
 }
 
@@ -733,6 +824,7 @@ export function updateProjectMeta(
       | "published"
       | "keywords"
       | "language"
+      | "conditions"
       | "version"
       | "category"
       | "tags"
@@ -822,6 +914,7 @@ export async function hydrateFromCatalog(): Promise<void> {
     }
   }
   catalogReady.value = true;
+  await refreshContinueOffer();
 }
 
 export async function openCatalogProject(id: string): Promise<void> {
@@ -896,6 +989,7 @@ export function insertBlock(
     name?: string;
     w?: number;
     h?: number;
+    lockAspectRatio?: boolean;
   },
 ): string {
   const cascade = placeCascade.value;
@@ -943,6 +1037,7 @@ export function insertBlock(
     content,
     style: { ...defaultStyle, ...(opts?.style ?? {}) },
     zIndex: cascade + 1,
+    ...(opts?.lockAspectRatio ? { lockAspectRatio: true } : {}),
   };
   updateProject((draft) => {
     const page = draft.pages.find((p) => p.id === draft.activePageId);
@@ -1068,6 +1163,8 @@ export function updateBlock(
         | "bindings"
         | "locked"
         | "zIndex"
+        | "lockAspectRatio"
+        | "variants"
       >
     >,
     never
@@ -1114,7 +1211,18 @@ function applyBlockPatch(
   } else if (patch.pin !== undefined) {
     next.pin = patch.pin;
   }
-  const { content: _c, style: _s, bindings: _b, pin: _p, ...rest } = patch;
+  if ("lockAspectRatio" in patch) {
+    if (patch.lockAspectRatio) next.lockAspectRatio = true;
+    else delete next.lockAspectRatio;
+  }
+  const {
+    content: _c,
+    style: _s,
+    bindings: _b,
+    pin: _p,
+    lockAspectRatio: _l,
+    ...rest
+  } = patch;
   if (!(next.locked && moving && patch.locked !== false)) {
     Object.assign(next, rest);
   } else {
@@ -1427,11 +1535,93 @@ function applyTourStep(index: number): void {
   if (step.view) setStudioView(step.view);
   if (typeof step.preview === "boolean") setPreviewMode(step.preview);
   if (step.overlay === null) setOverlay(null);
-  if (step.id === "comments") inspectorTab.value = "comments";
   if (step.id === "inspector") inspectorTab.value = "design";
 }
 
+export function enterStudio(): void {
+  appPhase.value = "studio";
+}
+
+export function showStartHub(): void {
+  if (isEphemeral()) return;
+  tourActive.value = false;
+  setOverlay(null);
+  setPreviewMode(false);
+  appPhase.value = "start";
+  void refreshContinueOffer();
+}
+
+export function showDocs(): void {
+  if (isEphemeral()) return;
+  tourActive.value = false;
+  setOverlay(null);
+  appPhase.value = "docs";
+}
+
+export function startBlankFromHub(): void {
+  createProject();
+  enterStudio();
+}
+
+export function startTourFromHub(): void {
+  enterStudio();
+  startTour();
+}
+
+export async function refreshContinueOffer(): Promise<void> {
+  if (isEphemeral()) {
+    continueOffer.value = null;
+    return;
+  }
+  const hasDraft = hasLocalDraftSnapshot();
+  try {
+    const { getCatalog } = await import("../storage/catalog");
+    const catalog = await getCatalog();
+    const projects = await catalog.listProjects();
+    if (!canContinueFrom(projects, hasDraft)) {
+      continueOffer.value = null;
+      return;
+    }
+    const title = continueLabelTitle(
+      projects,
+      catalogProjectId.value,
+      project.value.name,
+      hasDraft,
+    );
+    continueOffer.value = { title: title ?? project.value.name };
+  } catch {
+    continueOffer.value = hasDraft
+      ? { title: project.value.name }
+      : null;
+  }
+}
+
+export async function continueProject(): Promise<void> {
+  if (isEphemeral()) return;
+  const hasDraft = hasLocalDraftSnapshot();
+  try {
+    const { getCatalog } = await import("../storage/catalog");
+    const catalog = await getCatalog();
+    const projects = await catalog.listProjects();
+    const id = pickContinueProjectId(projects, catalogProjectId.value);
+    if (id) {
+      if (id !== catalogProjectId.value) {
+        await openCatalogProject(id);
+      }
+      enterStudio();
+      return;
+    }
+  } catch {
+    /* fall through to draft */
+  }
+  if (hasDraft || catalogProjectId.value) {
+    enterStudio();
+  }
+}
+
+/** Ephemeral (hosted demo) only — non-demo users start the tour from the hub. */
 export function maybeAutoStartTour(): void {
+  if (!isEphemeral()) return;
   if (!isTourCompleted()) startTour();
 }
 
@@ -1442,15 +1632,108 @@ export async function setDataFromText(raw: string): Promise<void> {
   updateProject((draft) => {
     if (!draft.datasets?.length) {
       const id = createId();
-      draft.datasets = [{ id, name: "primary", rows: [] }];
+      draft.datasets = [{ id, name: "primary", rows: [], source: { kind: "none" } }];
       draft.primaryDatasetId = id;
     }
     const primary =
       draft.datasets.find((d) => d.id === draft.primaryDatasetId) ??
       draft.datasets[0]!;
     primary.rows = [...dataRows.value] as Record<string, unknown>[];
+    primary.lastLoadedAt = new Date().toISOString();
+    primary.lastError = undefined;
     return draft;
   });
+}
+
+/** Update dataset source / refresh config (does not load rows). */
+export function updateDatasetSource(
+  datasetId: string,
+  patch: {
+    source?: import("../model/dataSources").DataSourceConfig;
+    refresh?: import("../model/dataSources").DataSourceRefresh;
+  },
+): void {
+  updateProject((draft) => {
+    const ds = draft.datasets?.find((d) => d.id === datasetId);
+    if (!ds) return draft;
+    if (patch.source !== undefined) ds.source = patch.source;
+    if (patch.refresh !== undefined) ds.refresh = patch.refresh;
+    return draft;
+  });
+}
+
+/**
+ * Load rows from the dataset's configured source into the materialized cache.
+ * Syncs session `dataRows` when refreshing the primary dataset.
+ */
+export async function refreshDataset(datasetId: string): Promise<void> {
+  const ds = project.value.datasets?.find((d) => d.id === datasetId);
+  if (!ds) throw new Error("Dataset not found");
+
+  const { loadDataSource } = await import("../model/dataSources");
+  const { runSqlQueryBackend, readDataFileBackend } = await import(
+    "../model/backend"
+  );
+
+  try {
+    const rows = await loadDataSource(ds.source ?? { kind: "none" }, {
+      existingRows: ds.rows as DataRow[],
+      readFile: (path) => readDataFileBackend(path),
+      runSql: (opts) => runSqlQueryBackend(opts),
+    });
+    const loadedAt = new Date().toISOString();
+    updateProject((draft) => {
+      const target = draft.datasets?.find((d) => d.id === datasetId);
+      if (!target) return draft;
+      target.rows = rows as Record<string, unknown>[];
+      target.lastLoadedAt = loadedAt;
+      target.lastError = undefined;
+      return draft;
+    });
+    if (
+      datasetId === project.value.primaryDatasetId ||
+      (!project.value.primaryDatasetId &&
+        project.value.datasets?.[0]?.id === datasetId)
+    ) {
+      dataRows.value = rows;
+      previewRowIndex.value = 0;
+    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    updateProject((draft) => {
+      const target = draft.datasets?.find((d) => d.id === datasetId);
+      if (!target) return draft;
+      target.lastError = message;
+      return draft;
+    });
+    throw err;
+  }
+}
+
+/**
+ * Replace dataset rows from an inbound ingest payload (parsed rows).
+ */
+export function ingestDatasetRows(
+  datasetId: string,
+  rows: DataRow[],
+): void {
+  const loadedAt = new Date().toISOString();
+  updateProject((draft) => {
+    const target = draft.datasets?.find((d) => d.id === datasetId);
+    if (!target) return draft;
+    target.rows = rows as Record<string, unknown>[];
+    target.lastLoadedAt = loadedAt;
+    target.lastError = undefined;
+    return draft;
+  });
+  if (
+    datasetId === project.value.primaryDatasetId ||
+    (!project.value.primaryDatasetId &&
+      project.value.datasets?.[0]?.id === datasetId)
+  ) {
+    dataRows.value = rows;
+    previewRowIndex.value = 0;
+  }
 }
 
 export function setPreviewRowIndex(index: number): void {

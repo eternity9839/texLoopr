@@ -3,7 +3,11 @@ import {
   assertAttachmentSize,
   buildPlaceDraft,
   MAX_ATTACHMENT_BYTES,
+  MEDIA_SHEET_TOOLS,
   resizeTableCells,
+  SHAPE_SHEET_TOOLS,
+  TEXT_SHEET_TOOLS,
+  TOOL_GROUPS,
 } from "./placeTools";
 
 describe("resizeTableCells", () => {
@@ -62,7 +66,38 @@ describe("buildPlaceDraft", () => {
   it("defaults signature and qrcode drafts", () => {
     const sig = buildPlaceDraft("signature", null, { x: 10, y: 10 });
     expect(sig.content.showLine).toBe(true);
+    expect(sig.content.mode).toBe("open");
+    expect(sig.content.caption).toContain("{{name}}");
     const qr = buildPlaceDraft("qrcode", null, { x: 10, y: 10 });
     expect(qr.content.value).toContain("tracking");
+  });
+
+  it("locks aspect for circle shape presets", () => {
+    const d = buildPlaceDraft("shape", "circle", { x: 0, y: 0 });
+    expect(d.lockAspectRatio).toBe(true);
+    expect(d.w).toBe(d.h);
+  });
+});
+
+describe("toolbox sheet membership", () => {
+  it("groups text / shape / media sheets and keeps structure flat", () => {
+    expect(TEXT_SHEET_TOOLS.map((t) => t.type)).toEqual([
+      "paragraph",
+      "text",
+      "list",
+      "data",
+    ]);
+    expect(SHAPE_SHEET_TOOLS.every((t) => t.type === "shape")).toBe(true);
+    expect(SHAPE_SHEET_TOOLS.some((t) => t.preset === "circle")).toBe(true);
+    expect(MEDIA_SHEET_TOOLS.map((t) => t.type)).toEqual(["picture", "files"]);
+    expect(TOOL_GROUPS).toEqual([
+      {
+        id: "structure",
+        tools: expect.arrayContaining([
+          expect.objectContaining({ type: "table" }),
+          expect.objectContaining({ type: "group" }),
+        ]),
+      },
+    ]);
   });
 });

@@ -36,6 +36,18 @@
         openssh
         curl
       ];
+      tauriRuntime = with pkgs; [
+        webkitgtk_4_1
+        gtk3
+        libsoup_3
+        libayatana-appindicator
+        librsvg
+        gdk-pixbuf
+        pango
+        cairo
+        atk
+        glib
+      ];
     in
     {
       apps.${system} = {
@@ -69,6 +81,34 @@
               exec cargo run --release --bin texlooper-cli -- serve --bind "$BIND"
             '';
           }}/bin/texlooper-serve";
+        };
+        texlooper = {
+          type = "app";
+          program = "${pkgs.writeShellApplication {
+            name = "texlooper";
+            runtimeInputs = tauriRuntime;
+            text = ''
+              set -euo pipefail
+              # Prefer the checkout you built in (nix run copies source to the store).
+              if [ -x "./src-tauri/target/release/texlooper" ]; then
+                ROOT="$(pwd)"
+              elif [ -x "${self}/src-tauri/target/release/texlooper" ]; then
+                ROOT="${self}"
+              else
+                echo "Desktop binary missing. From the repo root, build once:" >&2
+                echo "  nix develop -c npm run tauri:build" >&2
+                exit 1
+              fi
+              BIN="$ROOT/src-tauri/target/release/texlooper"
+              export TEXLOOPER_ASSETS="''${TEXLOOPER_ASSETS:-$ROOT/assets}"
+              export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath tauriRuntime}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+              # WebKitGTK+Wayland: corrupt dpr / blank UI — default to X11.
+              export GDK_BACKEND="''${TEXLOOPER_GDK_BACKEND:-''${GDK_BACKEND:-x11}}"
+              export GDK_SCALE="''${GDK_SCALE:-1}"
+              export GDK_DPI_SCALE="''${GDK_DPI_SCALE:-1}"
+              exec "$BIN" "$@"
+            '';
+          }}/bin/texlooper";
         };
       };
 
@@ -111,6 +151,9 @@
         shellHook = ''
           export RUST_BACKTRACE=1
           export PKG_CONFIG_PATH="${pkgs.openssl.dev}/lib/pkgconfig''${PKG_CONFIG_PATH:+:$PKG_CONFIG_PATH}"
+          export LD_LIBRARY_PATH="${pkgs.lib.makeLibraryPath (with pkgs; [
+            webkitgtk_4_1 gtk3 libsoup_3 librsvg gdk-pixbuf pango cairo atk glib
+          ])}''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
           echo "texLooper shell: node $(node -v), rustc $(rustc --version | cut -d' ' -f2)"
         '';
         };

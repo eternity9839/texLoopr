@@ -8,6 +8,11 @@ import { createProject, prefs, updatePrefs } from "../state/store";
 type MqlListener = (e: { matches: boolean }) => void;
 let mqlListeners: MqlListener[] = [];
 
+function setInnerSize(w: number, h = 800) {
+  Object.defineProperty(window, "innerWidth", { value: w, configurable: true });
+  Object.defineProperty(window, "innerHeight", { value: h, configurable: true });
+}
+
 function stubMatchMedia(matches: boolean) {
   mqlListeners = [];
   (window as unknown as { matchMedia: unknown }).matchMedia = (
@@ -33,7 +38,9 @@ function stubMatchMedia(matches: boolean) {
 }
 
 function resizeViewport(matches: boolean) {
+  setInnerSize(matches ? 700 : 1280);
   for (const cb of [...mqlListeners]) cb({ matches });
+  window.dispatchEvent(new Event("resize"));
 }
 
 const editUi = {
@@ -54,11 +61,16 @@ beforeEach(() => {
     navCollapsed: false,
     inspectorCollapsed: false,
   });
+  delete window.__TEXLOOPER__;
 });
 
 describe("StudioLayout — desktop edit grid", () => {
-  it("renders tools + inspector columns when the viewport is wide", () => {
+  beforeEach(() => {
+    setInnerSize(1280);
     stubMatchMedia(false);
+  });
+
+  it("renders tools + inspector columns when the viewport is wide", () => {
     const { container } = render(
       <StudioLayout {...editUi} variant="edit" />,
     );
@@ -69,7 +81,6 @@ describe("StudioLayout — desktop edit grid", () => {
   });
 
   it("collapse toggles mark the inspector via data state", () => {
-    stubMatchMedia(false);
     updatePrefs({ inspectorCollapsed: true });
     const { getByLabelText, container } = render(
       <StudioLayout {...editUi} variant="edit" />,
@@ -82,7 +93,6 @@ describe("StudioLayout — desktop edit grid", () => {
   });
 
   it("keeps rail controls inside the panel flow, not floating", () => {
-    stubMatchMedia(false);
     const { container } = render(
       <StudioLayout {...editUi} variant="edit" />,
     );
@@ -100,7 +110,6 @@ describe("StudioLayout — desktop edit grid", () => {
   });
 
   it("reacts to viewport changes without remount", () => {
-    stubMatchMedia(false);
     const { container } = render(<StudioLayout {...editUi} variant="edit" />);
     expect(container.querySelector(".studio-tools")).toBeTruthy();
     const layout = container.querySelector(".studio-layout") as HTMLElement;
@@ -115,6 +124,7 @@ describe("StudioLayout — desktop edit grid", () => {
 
 describe("StudioLayout — aux navigator", () => {
   it("renders outline navigator without tools or inspector", () => {
+    setInnerSize(1280);
     stubMatchMedia(false);
     const { container } = render(
       <StudioLayout {...auxUi} variant="aux" />,
@@ -126,7 +136,10 @@ describe("StudioLayout — aux navigator", () => {
 });
 
 describe("StudioLayout — narrow stacked flow", () => {
-  beforeEach(() => stubMatchMedia(true));
+  beforeEach(() => {
+    setInnerSize(700);
+    stubMatchMedia(true);
+  });
 
   it("keeps sections in the flow; no drawers or scrims", () => {
     const { container } = render(<StudioLayout {...editUi} variant="edit" />);

@@ -4,16 +4,19 @@ import {
   contract,
   invoice,
   advancedInvoice,
+  decisionNotice,
   memo,
   shippingLabel,
 } from "./business";
 import {
   email,
   paper,
+  newspaper,
   landscapeSlide,
   a5Handout,
 } from "./mass-publication";
 import { welcome, resume } from "./personal";
+import { buildYassinResume } from "../../projects/yassinResume";
 import {
   resumeCreative,
   resumeSidebar,
@@ -36,16 +39,16 @@ export const DEMO_LIBRARY: DemoEntry[] = [
     bucket: "personal",
     blurb:
       "EN/FR/NL × Screen/PDF/Email/SMS/Push/Print — switch Preview row + output kind.",
-    sampleCsv: `name,company,role,language
-Ada Lovelace,Analytical Engines,Mathematician,en
-Alan Turing,Bletchley Park,Cryptanalyst,en
-Grace Hopper,US Navy,Rear Admiral,en
-Camille Moreau,Banque du Canal,Analyste,fr
-Léa Martin,Fjord Analytics,Chercheuse,fr
-Omar Haddad,Dispatchly,Engineer,en
-Sanne de Vries,Kanaal Bank,Analist,nl
-Pieter Bakker,Wolke Systems,Ontwikkelaar,nl
-Edsger Dijkstra,Texas Instruments,Computer Scientist,en`,
+    sampleCsv: `name,company,role,language,event_date,qty,price
+Ada Lovelace,Analytical Engines,Mathematician,en,2026-09-15,12,49.5
+Alan Turing,Bletchley Park,Cryptanalyst,en,2026-10-01,3,120
+Grace Hopper,US Navy,Rear Admiral,en,2026-08-20,8,75
+Camille Moreau,Banque du Canal,Analyste,fr,2026-11-05,5,99
+Léa Martin,Fjord Analytics,Chercheuse,fr,2026-07-18,2,210
+Omar Haddad,Dispatchly,Engineer,en,2026-12-01,20,35
+Sanne de Vries,Kanaal Bank,Analist,nl,2026-09-30,7,88
+Pieter Bakker,Wolke Systems,Ontwikkelaar,nl,2026-06-12,1,450
+Edsger Dijkstra,Texas Instruments,Computer Scientist,en,2026-05-01,4,60`,
     build: welcome,
   },
   {
@@ -55,15 +58,15 @@ Edsger Dijkstra,Texas Instruments,Computer Scientist,en`,
     bucket: "business",
     blurb: "Two-page US Letter with Northline styles and EN/FR body.",
     artboard: "letter",
-    sampleCsv: `date,title,name,company,address,subject,topic,signer,ref,language
-21 Aug 2026,Ms,Marcus Chen,Harbor Mutual,"12 Quay St, Rotterdam",Renewal of coverage,cyber liability,Jordan Hale,NL-4482,en
-21 Aug 2026,Mr,Tom Ikeda,Brightline Co,"88 Market Ave, Lisbon",Onboarding pack,API access,Jordan Hale,NL-4483,en
-22 Aug 2026,Dr,Priya Nair,Kanaal Bank,"5 Stationsplein, Rotterdam",Audit follow-up,data residency,Rowan Ellis,NL-4484,en
-25 Aug 2026,Mx,Sam Duval,Estudio Norte,"17 Rua Nova, Porto",Workshop invitation,design systems,Jordan Hale,NL-4485,en
-28 Aug 2026,Mme,Camille Moreau,Banque du Canal,"12 Quai des Charbonnages, Brussels",Renouvellement de couverture,responsabilité cyber,Jordan Hale,NL-4490,fr
-01 Sep 2026,M,Omar Haddad,Dispatchly,"22 Quai des Charbonnages, Brussels",Statement of account,freight billing,Petra Vos,NL-4487,en
-03 Sep 2026,Dr,Aiko Tanaka,Clara Health,"8 Kalverstraat, Amsterdam",Partnership draft,patient portal API,Petra Vos,NL-4488,en
-08 Sep 2026,Mme,Léa Martin,Fjord Analytics,"3 Bryggen, Bergen",Dossier d'intégration,entrepôt,Jordan Hale,NL-4491,fr`,
+    sampleCsv: `date,title,name,company,address,subject,topic,signer,role,ref,language
+21 Aug 2026,Ms,Marcus Chen,Harbor Mutual,"12 Quay St, Rotterdam",Renewal of coverage,cyber liability,Jordan Hale,Account Executive,NL-4482,en
+21 Aug 2026,Mr,Tom Ikeda,Brightline Co,"88 Market Ave, Lisbon",Onboarding pack,API access,Jordan Hale,Account Executive,NL-4483,en
+22 Aug 2026,Dr,Priya Nair,Kanaal Bank,"5 Stationsplein, Rotterdam",Audit follow-up,data residency,Rowan Ellis,Client Success,NL-4484,en
+25 Aug 2026,Mx,Sam Duval,Estudio Norte,"17 Rua Nova, Porto",Workshop invitation,design systems,Jordan Hale,Account Executive,NL-4485,en
+28 Aug 2026,Mme,Camille Moreau,Banque du Canal,"12 Quai des Charbonnages, Brussels",Renouvellement de couverture,responsabilité cyber,Jordan Hale,Account Executive,NL-4490,fr
+01 Sep 2026,M,Omar Haddad,Dispatchly,"22 Quai des Charbonnages, Brussels",Statement of account,freight billing,Petra Vos,Finance Lead,NL-4487,en
+03 Sep 2026,Dr,Aiko Tanaka,Clara Health,"8 Kalverstraat, Amsterdam",Partnership draft,patient portal API,Petra Vos,Partnerships,NL-4488,en
+08 Sep 2026,Mme,Léa Martin,Fjord Analytics,"3 Bryggen, Bergen",Dossier d'intégration,entrepôt,Jordan Hale,Account Executive,NL-4491,fr`,
     build: letter,
   },
   {
@@ -75,6 +78,16 @@ Edsger Dijkstra,Texas Instruments,Computer Scientist,en`,
       "Two-page CV + cover letter; every field merges from Data. Flip the preview row to switch candidates.",
     sampleCsv: RESUME_PROFILES_CSV,
     build: resume,
+  },
+  {
+    id: "yassin-bousaadi-resume",
+    title: "Yassin Bousâadi — Resume",
+    category: "Career",
+    bucket: "personal",
+    blurb: "Two-page static CV — no data rows required. Export as PDF from Render.",
+    artboard: "a4",
+    sampleCsv: "[{}]",
+    build: buildYassinResume,
   },
   {
     id: "resume-sidebar",
@@ -109,13 +122,13 @@ Edsger Dijkstra,Texas Instruments,Computer Scientist,en`,
     category: "Legal",
     bucket: "business",
     blurb: "MSA clauses, fee schedule, signatures.",
-    sampleCsv: `contract_id,start_date,provider,client,net_days,term_years,jurisdiction,notice_days,approved,line1,qty1,unit1,amt1,line2,qty2,unit2,amt2,total
-MSA-2026-18,01 Sep 2026,Northline Systems BV,Acme Retail NV,30,3,Belgium,30,yes,Platform license,1,yr,"€24,000",Support hours,40,hr,"€6,000","€30,000"
-MSA-2026-19,15 Sep 2026,Northline Systems BV,Orbit Labs,45,2,Netherlands,60,no,Implementation,1,proj,"€12,500",Training seats,8,seat,"€3,200","€15,700"
-MSA-2026-20,01 Oct 2026,Northline Systems BV,Kanaal Bank,30,2,Belgium,45,pending,Data pipeline retainer,12,mo,"€9,600",On-call coverage,90,day,"€4,500","€14,100"
-MSA-2026-21,15 Oct 2026,Northline Systems BV,Fleetwise BV,60,3,Netherlands,30,yes,Telematics integration,1,proj,"€28,000",Managed hosting,12,mo,"€7,200","€35,200"
-MSA-2026-22,01 Nov 2026,Northline Systems BV,Clara Health,45,4,Belgium,60,pending,Compliance review,1,proj,"€16,000",Security audits,4,qtr,"€5,600","€21,600"
-MSA-2026-23,15 Nov 2026,Northline Systems BV,Wolke Systems,30,1,Belgium,30,yes,Migration assessment,1,proj,"€8,400",Enablement workshops,6,day,"€2,700","€11,100"`,
+    sampleCsv: `contract_id,start_date,provider,client,net_days,term_years,jurisdiction,notice_days,approved,signer_name,signer_role,signed_at,line1,qty1,unit1,amt1,line2,qty2,unit2,amt2,total
+MSA-2026-18,2026-09-01,Northline Systems BV,Acme Retail NV,30,3,Belgium,30,yes,Jordan Hale,Managing Director,2026-08-20,Platform license,1,yr,"€24,000",Support hours,40,hr,"€6,000","€30,000"
+MSA-2026-19,2026-09-15,Northline Systems BV,Orbit Labs,45,2,Netherlands,60,no,Jordan Hale,Managing Director,2026-08-22,Implementation,1,proj,"€12,500",Training seats,8,seat,"€3,200","€15,700"
+MSA-2026-20,2026-10-01,Northline Systems BV,Kanaal Bank,30,2,Belgium,45,pending,Rowan Ellis,Legal Counsel,2026-08-25,Data pipeline retainer,12,mo,"€9,600",On-call coverage,90,day,"€4,500","€14,100"
+MSA-2026-21,2026-10-15,Northline Systems BV,Fleetwise BV,60,3,Netherlands,30,yes,Jordan Hale,Managing Director,2026-09-01,Telematics integration,1,proj,"€28,000",Managed hosting,12,mo,"€7,200","€35,200"
+MSA-2026-22,2026-11-01,Northline Systems BV,Clara Health,45,4,Belgium,60,pending,Petra Vos,VP Partnerships,2026-09-05,Compliance review,1,proj,"€16,000",Security audits,4,qtr,"€5,600","€21,600"
+MSA-2026-23,2026-11-15,Northline Systems BV,Wolke Systems,30,1,Belgium,30,yes,Jordan Hale,Managing Director,2026-09-10,Migration assessment,1,proj,"€8,400",Enablement workshops,6,day,"€2,700","€11,100"`,
     build: contract,
   },
   {
@@ -238,6 +251,8 @@ Welcome week: getting started,Onboarding track for new workspaces,Amir,"Five sho
     "total": 3091.55,
     "terms": "Net 30",
     "status": "open",
+    "signer_name": "Jordan Hale",
+    "signer_role": "Accounts receivable",
     "pack_file_count": 9,
     "line_items": [
       {"sku": "PLT-ENT", "hs_code": "8523.49", "description": "Platform fee — Enterprise tier", "qty": 1, "rate": 2000, "amount": 2000, "file_count": 3, "files_label": "Master agreement · SLA · SOC 2 letter"},
@@ -360,10 +375,10 @@ Welcome week: getting started,Onboarding track for new workspaces,Amir,"Five sho
   },
   {
     id: "paper",
-    title: "Research paper cover",
+    title: "Research paper",
     category: "Publishing",
     bucket: "mass-publication",
-    blurb: "Title, abstract, figure caption.",
+    blurb: "Cover, multi-page article body, figures & references.",
     sampleCsv: `journal,volume,year,paper_title,authors,affiliation,abstract,keywords,figure_caption
 Journal of Applied Templates,14,2026,"Adaptive document composition under sparse data regimes","A. Ng · M. Costa · L. Berg",Northline Research Institute,"We study how conditional blocks and output-aware workflows improve bulk document fidelity when source rows are incomplete. Experiments on letter and invoice corpora show reduced manual correction with sandboxed expressions.","templating, conditional rendering, bulk PDF",Revenue trajectory under three merge strategies
 Journal of Applied Templates,13,2025,"Sandboxed expressions for print pipelines","R. Osei · T. Lindqvist",Nordic Doc Lab,"Print pipelines increasingly evaluate user-authored expressions at render time. We characterise the attack surface and propose a capability-based sandbox with measurable overhead under two milliseconds per page.","security, expressions, print pipeline",Overhead distribution across 10k synthetic pages
@@ -374,20 +389,33 @@ Bulletin of the NLP Society,31,2023,"Row-level evaluation for conditional text",
     build: paper,
   },
   {
+    id: "newspaper",
+    title: "City newspaper",
+    category: "Publishing",
+    bucket: "mass-publication",
+    blurb: "Landscape broadsheet: masthead, columns, EN/FR, email slim.",
+    artboard: "landscape",
+    sampleCsv: `edition,city,volume,headline,headline_fr,lede,lede_fr,byline,language,pull_quote,body_col1,body_col2
+Canal,Brussels,42,"City rolls out personalized municipal letters","La ville déploie des courriers municipaux personnalisés","Officials say merge templates will replace generic flyers for tax and permit notices starting next quarter.","Les autorités indiquent que les modèles de fusion remplaceront les flyers génériques dès le prochain trimestre.",Maya Chen,en,"One master page. Many languages.","City officials confirmed overnight that the new document pipeline will cut print turnaround for municipal notices. Residents will see personalized letters instead of generic flyers starting next quarter.","Editors praised the merge-field approach for keeping French and Dutch editions in sync without duplicating layouts. A slim email edition strips side columns for inbox reading."
+Harbor,Rotterdam,42,"Port authority digitizes boarding passes","L'autorité portuaire numérise les cartes d'embarquement","Crew manifests now drive same-day print runs with QR codes and language variants for inland crews.","Les manifests d'équipage alimentent désormais des tirages le jour même avec QR et variantes linguistiques.",Tom Ikeda,en,"Scan once. Board anywhere.","Harbor ops linked passenger rows to a landscape boarding layout with folio and byline chrome for crew briefings.","French crews receive the same page with headline and lede variants — no forked InDesign files."
+Meuse,Liège,41,"Schools pilot bilingual report cards","Les écoles testent des bulletins bilingues","Parents receive EN or FR from one template; email preview drops the pull-quote rail.","Les parents reçoivent EN ou FR depuis un seul modèle ; l'aperçu email retire la colonne citation.",Camille Moreau,fr,"Un modèle. Deux langues.","Les établissements du bassin de la Meuse testent des bulletins générés par fusion avec date d'édition automatique.","La variante email conserve le chapeau et le corps en une colonne pour la lecture sur téléphone."`,
+    build: newspaper,
+  },
+  {
     id: "label",
     title: "Shipping label",
     category: "Logistics",
     bucket: "business",
     blurb: "Thermal label, barcode, device hints.",
-    sampleCsv: `carrier,service,tracking,from_name,from_address,to_name,to_address,weight,dims,zone
-Northline Parcel,Express,NL9 4482 0199 3,Northline DC,"14 Harbor Lane",Marcus Chen,"12 Quay St, Rotterdam",2.4kg,30x20x10,B
-Northline Parcel,Standard,NL9 4482 0201 8,Northline DC,"14 Harbor Lane",Tom Ikeda,"88 Market Ave, Lisbon",1.1kg,20x15x8,C
-Northline Parcel,Express,NL9 4483 0117 5,Northline DC,"14 Harbor Lane",Priya Nair,"5 Stationsplein, Rotterdam",0.8kg,25x18x6,B
-Northline Freight,Pallet,NL9 5511 0088 2,Northline DC,"14 Harbor Lane",Wolke Systems,"Torstraße 84, Berlin",84kg,120x80x90,D
-Northline Parcel,Standard,NL9 4483 0121 9,Northline DC,"14 Harbor Lane",Sofia Reyes,"C/ Mallorca 21, Barcelona",1.6kg,30x20x10,E
-Northline Parcel,Express,NL9 4484 0004 1,Northline DC,"14 Harbor Lane",Omar Haddad,"22 Quai des Charbonnages, Brussels",3.2kg,40x30x15,B
-Northline Parcel,Economy,NL9 4484 0019 6,Northline DC,"14 Harbor Lane",Ivy Chen,"12 Rue Haute, Brussels",0.5kg,20x15x8,A
-Northline Freight,Pallet,NL9 5512 0340 7,Northline DC,"14 Harbor Lane",Kanaal Bank,"5 Stationsplein, Rotterdam",210kg,120x100x110,D`,
+    sampleCsv: `carrier,service,tracking,from_name,from_address,to_name,to_address,weight,dims,zone,ship_date
+Northline Parcel,Express,NL9 4482 0199 3,Northline DC,"14 Harbor Lane",Marcus Chen,"12 Quay St, Rotterdam",2.4kg,30x20x10,B,2026-08-21
+Northline Parcel,Standard,NL9 4482 0201 8,Northline DC,"14 Harbor Lane",Tom Ikeda,"88 Market Ave, Lisbon",1.1kg,20x15x8,C,2026-08-22
+Northline Parcel,Express,NL9 4483 0117 5,Northline DC,"14 Harbor Lane",Priya Nair,"5 Stationsplein, Rotterdam",0.8kg,25x18x6,B,2026-08-22
+Northline Freight,Pallet,NL9 5511 0088 2,Northline DC,"14 Harbor Lane",Wolke Systems,"Torstraße 84, Berlin",84kg,120x80x90,D,2026-08-23
+Northline Parcel,Standard,NL9 4483 0121 9,Northline DC,"14 Harbor Lane",Sofia Reyes,"C/ Mallorca 21, Barcelona",1.6kg,30x20x10,E,2026-08-24
+Northline Parcel,Express,NL9 4484 0004 1,Northline DC,"14 Harbor Lane",Omar Haddad,"22 Quai des Charbonnages, Brussels",3.2kg,40x30x15,B,2026-08-25
+Northline Parcel,Economy,NL9 4484 0019 6,Northline DC,"14 Harbor Lane",Ivy Chen,"12 Rue Haute, Brussels",0.5kg,20x15x8,A,2026-08-26
+Northline Freight,Pallet,NL9 5512 0340 7,Northline DC,"14 Harbor Lane",Kanaal Bank,"5 Stationsplein, Rotterdam",210kg,120x100x110,D,2026-08-27`,
     build: shippingLabel,
   },
   {
@@ -402,6 +430,8 @@ Northline Freight,Pallet,NL9 5512 0340 7,Northline DC,"14 Harbor Lane",Kanaal Ba
     "from": "PMO Office",
     "date": "2026-08-21",
     "subject": "Q3 planning checkpoint",
+    "subject_fr": "Point de planification T3",
+    "language": "en",
     "body": "Please review the agenda below ahead of Thursday's session. Bring capacity notes for your squads.",
     "action1": "Publish capacity sheet",
     "action2": "Confirm room booking",
@@ -417,6 +447,8 @@ Northline Freight,Pallet,NL9 5512 0340 7,Northline DC,"14 Harbor Lane",Kanaal Ba
     "from": "Platform Group",
     "date": "2026-08-28",
     "subject": "Migration wave 4 retro",
+    "subject_fr": "Rétro vague 4 de migration",
+    "language": "en",
     "body": "Retro pack is attached as pre-read. Come with one thing that worked and one to change.",
     "action1": "Fold learnings into wave 5 plan",
     "action2": "Nominate retro scribe",
@@ -432,6 +464,8 @@ Northline Freight,Pallet,NL9 5512 0340 7,Northline DC,"14 Harbor Lane",Kanaal Ba
     "from": "Operations",
     "date": "2026-09-02",
     "subject": "Holiday coverage & escalation",
+    "subject_fr": "Couverture congés et escalade",
+    "language": "fr",
     "body": "Draft rota attached; we will walk the escalation ladder end to end.",
     "action1": "Publish final rota",
     "action2": "Update on-call handbook",
@@ -450,7 +484,8 @@ Northline Freight,Pallet,NL9 5512 0340 7,Northline DC,"14 Harbor Lane",Kanaal Ba
     title: "Advanced invoice (repeat)",
     category: "Finance",
     bucket: "business",
-    blurb: "JSON line_items repeater, currency filters, conditional banner.",
+    blurb:
+      "Status condition axis + repeater — Preview chips flip overdue/open/paid on Page.",
     sampleCsv: `[
   {
     "invoice_no": "INV-2201",
@@ -529,11 +564,27 @@ Northline Freight,Pallet,NL9 5512 0340 7,Northline DC,"14 Harbor Lane",Kanaal Ba
     build: advancedInvoice,
   },
   {
+    id: "decision-notice",
+    title: "Decision notice",
+    category: "Legal",
+    bucket: "business",
+    blurb:
+      "Declare a decision axis; Preview chips flip approved/pending/revoked on the same Page.",
+    sampleCsv: `name,case_id,decision,decision_date,reason
+Marcus Chen,CASE-4412,approved,2026-08-20,Your access request for the Harbor Mutual workspace is approved.
+Priya Nair,CASE-4418,pending,2026-08-22,Compliance is reviewing the data residency addendum.
+Omar Haddad,CASE-4421,revoked,2026-08-25,Prior approval is withdrawn after the scope change on 24 Aug.
+Camille Moreau,CASE-4425,approved,2026-08-26,Partnership pilot for Banque du Canal is cleared to start.
+Léa Martin,CASE-4429,revoked,2026-08-27,Temporary credentials are invalidated; return badges to Security.
+`,
+    build: decisionNotice,
+  },
+  {
     id: "landscape-slide",
     title: "Landscape slide",
     category: "Presentation",
     bucket: "mass-publication",
-    blurb: "960×540 artboard with Screen / PDF / Email conditional blocks.",
+    blurb: "960×540 artboard with Screen / Page / Email conditional blocks.",
     artboard: "landscape",
     sampleCsv: `title,body,company
 Q3 roadmap,"Ship bulk merge, then landscape templates, then multi-dataset lookup.",Northline
@@ -562,10 +613,10 @@ Hire kit,"Welcome packet for {{company}} engineering onboarding.",Harbor Mutual
     blurb: "Bilingual Northline invite — EN/FR guest lines and invitation document style.",
     artboard: "a5",
     sampleCsv: `guest_name,partner_name,date,venue,city,rsvp_by,language
-Amélie Dupont,Thomas Renard,14 Jun 2027,Orangerie Harbor Lane,Antwerp,01 May 2027,fr
-Marcus Chen,Priya Nair,14 Jun 2027,Orangerie Harbor Lane,Antwerp,01 May 2027,en
-Sofia Reyes,,14 Jun 2027,Orangerie Harbor Lane,Antwerp,01 May 2027,en
-Léa Martin,Noah Berg,14 Jun 2027,Orangerie Harbor Lane,Antwerp,01 May 2027,fr`,
+Amélie Dupont,Thomas Renard,2027-06-14,Orangerie Harbor Lane,Antwerp,2027-05-01,fr
+Marcus Chen,Priya Nair,2027-06-14,Orangerie Harbor Lane,Antwerp,2027-05-01,en
+Sofia Reyes,,2027-06-14,Orangerie Harbor Lane,Antwerp,2027-05-01,en
+Léa Martin,Noah Berg,2027-06-14,Orangerie Harbor Lane,Antwerp,2027-05-01,fr`,
     build: weddingInvite,
   },
 

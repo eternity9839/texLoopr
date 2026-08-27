@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   activePage,
   addComment,
@@ -25,6 +25,7 @@ import {
   project,
   redoEdit,
   select,
+  selectBlockAdd,
   selectBlockToggle,
   selectBlocks,
   selection,
@@ -32,7 +33,15 @@ import {
   setInsertPlacement,
   undoEdit,
   updateBlock,
+  updateDatasetSource,
   updatePage,
+  refreshDataset,
+  appPhase,
+  tourActive,
+  maybeAutoStartTour,
+  enterStudio,
+  showStartHub,
+  showDocs,
 } from "../state/store";
 import { PREBUILD_RECIPES } from "../model/prebuild/library";
 import { normalizeMargins, PAGE_HEIGHT, PAGE_WIDTH } from "../model/document";
@@ -58,6 +67,8 @@ beforeEach(() => {
   createProject();
   prebuildPickerOpen.value = false;
   setInsertPlacement("cascade");
+  appPhase.value = "studio";
+  tourActive.value = false;
 });
 
 describe("feature: prebuild insert (soft-compat)", () => {
@@ -127,6 +138,18 @@ describe("feature: multi-select nudge", () => {
     expect(blockById(a)!.y).toBe(A.y - 6);
     expect(blockById(b)!.x).toBe(B.x + 10);
     expect(blockById(b)!.y).toBe(B.y - 6);
+  });
+
+  it("Shift-style add keeps ids; Ctrl-style toggle can remove", () => {
+    const a = insertText();
+    const b = insertText();
+    select({ kind: "block", id: a });
+    selectBlockAdd(b);
+    expect([...selectedIds.value].sort()).toEqual([a, b].sort());
+    selectBlockAdd(b);
+    expect([...selectedIds.value].sort()).toEqual([a, b].sort());
+    selectBlockToggle(b);
+    expect(selectedIds.value).toEqual([a]);
   });
 
   it("skips locked blocks while nudging the rest", () => {
@@ -349,5 +372,55 @@ describe("feature: page margins", () => {
       bottom: 0,
       left: 12,
     });
+  });
+});
+
+describe("feature: dataset source refresh", () => {
+  it("loads inline json into primary dataRows", async () => {
+    const id = addNamedDataset({ name: "api" });
+    updateDatasetSource(id, {
+      source: { kind: "json", inline: '[{"name":"Ada"}]' },
+      refresh: { mode: "manual" },
+    });
+    // Switch primary to the new dataset via updateProject
+    const { updateProject } = await import("../state/store");
+    updateProject((draft) => {
+      draft.primaryDatasetId = id;
+      return draft;
+    });
+    await refreshDataset(id);
+    expect(dataRows.value).toEqual([{ name: "Ada" }]);
+    const ds = project.value.datasets?.find((d) => d.id === id);
+    expect(ds?.rows).toEqual([{ name: "Ada" }]);
+    expect(ds?.lastLoadedAt).toBeTruthy();
+  });
+});
+
+describe("feature: start hub phase", () => {
+  it("enterStudio / showStartHub / showDocs switch appPhase", () => {
+    showStartHub();
+    expect(appPhase.value).toBe("start");
+    showDocs();
+    expect(appPhase.value).toBe("docs");
+    enterStudio();
+    expect(appPhase.value).toBe("studio");
+  });
+
+  it("maybeAutoStartTour is a no-op when not ephemeral", async () => {
+    const runtime = await import("../runtimeConfig");
+    const spy = vi.spyOn(runtime, "isEphemeral").mockReturnValue(false);
+    tourActive.value = false;
+    maybeAutoStartTour();
+    expect(tourActive.value).toBe(false);
+    spy.mockRestore();
+  });
+
+  it("maybeAutoStartTour starts the tour when ephemeral", async () => {
+    const runtime = await import("../runtimeConfig");
+    const spy = vi.spyOn(runtime, "isEphemeral").mockReturnValue(true);
+    tourActive.value = false;
+    maybeAutoStartTour();
+    expect(tourActive.value).toBe(true);
+    spy.mockRestore();
   });
 });

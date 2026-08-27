@@ -19,6 +19,7 @@ import {
   clearTextEditSession,
   registerTextEditSession,
 } from "./textEditSession";
+import { mergeChipClassName } from "../../model/mergeChipKind";
 
 function runMergeAsserts(
   text: string,
@@ -217,12 +218,7 @@ export function MergeAwareText({
             ]
               .filter(Boolean)
               .join(" ")}
-            chipClass={[
-              "block-data",
-              warn ? "merge-aware-text__chip--warn" : "",
-            ]
-              .filter(Boolean)
-              .join(" ")}
+            chipClass={mergeChipClassName(seg.path, seg.filters, warn)}
             label={seg.label}
             previewValue={segmentPreviewValue(seg, previewRow, runtime)}
             onActivate={enterEdit}

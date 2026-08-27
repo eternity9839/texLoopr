@@ -17,17 +17,10 @@ import {
 } from "./runtime";
 import type { RuntimeContext } from "./expr";
 import { getApiBaseUrl, getApiKey, resolveBackendTransport } from "../runtimeConfig";
+import { invoke, listen, isTauriShell } from "@texlooper/platform";
 
 function isTauri(): boolean {
-  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
-}
-
-async function invoke<T>(
-  cmd: string,
-  args?: Record<string, unknown>,
-): Promise<T> {
-  const { invoke: tauriInvoke } = await import("@tauri-apps/api/core");
-  return tauriInvoke<T>(cmd, args);
+  return isTauriShell();
 }
 
 async function httpJson<T>(
@@ -176,11 +169,7 @@ export async function runWorkflowBackend(
   return runWorkflowJs(opts);
 }
 
-export async function getRuntimeInfo(): Promise<{
-  version: string;
-  backbone: string;
-  engines: string[];
-} | null> {
+export async function getRuntimeInfo(): Promise<RuntimeInfo | null> {
   const transport = resolveBackendTransport();
   if (transport === "tauri-local") {
     try {
@@ -197,11 +186,24 @@ export async function getRuntimeInfo(): Promise<{
     }
   }
   return {
-    version: "0.1.0",
+    version: __APP_VERSION__,
+    channel: __APP_CHANNEL__,
     backbone: "javascript",
     engines: ["bindings", "expr", "runtime"],
   };
 }
+
+export type RuntimeInfo = {
+  version: string;
+  backbone: string;
+  engines: string[];
+  channel?: string;
+  gitCommit?: string;
+  gitTag?: string;
+  builtAtUnix?: number;
+  profile?: string;
+  target?: string;
+};
 
 export type PdfImportProgress = {
   phase: string;
@@ -224,9 +226,8 @@ export async function importPdfStructureBackend(
     let unlisten: (() => void) | undefined;
     try {
       if (onProgress) {
-        const { listen } = await import("@tauri-apps/api/event");
-        unlisten = await listen<PdfImportProgress>("pdf-import-progress", (e) => {
-          onProgress(e.payload);
+        unlisten = await listen<PdfImportProgress>("pdf-import-progress", (payload) => {
+          onProgress(payload);
         });
       }
       return await invoke<PdfImportResult>("pdf_import_structure", {
@@ -251,11 +252,17 @@ export async function renderProjectPdfBackend(
   project: import("./document").Project,
   row: DataRow,
   output?: unknown,
+  opts?: { projectId?: string | null },
 ): Promise<Uint8Array> {
+  const { attachEmitTrace } = await import("./emitIdentity");
+  const stamped = attachEmitTrace(
+    project as unknown as Record<string, unknown>,
+    { projectId: opts?.projectId },
+  );
   const transport = resolveBackendTransport();
   if (transport === "tauri-local") {
     const bytes = await invoke<number[]>("render_project_pdf_cmd", {
-      project,
+      project: stamped,
       row,
       output: output ?? null,
     });
@@ -264,7 +271,7 @@ export async function renderProjectPdfBackend(
   if (transport === "http-remote") {
     const buf = await httpJson<ArrayBuffer>("/v1/render", {
       method: "POST",
-      body: JSON.stringify({ project, row, output: output ?? null }),
+      body: JSON.stringify({ project: stamped, row, output: output ?? null }),
       raw: true,
     });
     return new Uint8Array(buf);
@@ -290,11 +297,21 @@ export async function renderBatchBackend(opts: {
   rows: DataRow[];
   output?: unknown;
   includeZip?: boolean;
+  projectId?: string | null;
 }): Promise<RenderBatchResult> {
+  const output = opts.output as { kind?: string } | null | undefined;
+  if (output?.kind === "email") {
+    return renderEmailBatchBackend(opts);
+  }
+  const { attachEmitTrace } = await import("./emitIdentity");
+  const stamped = attachEmitTrace(
+    opts.project as unknown as Record<string, unknown>,
+    { projectId: opts.projectId },
+  );
   const transport = resolveBackendTransport();
   if (transport === "tauri-local") {
     return invoke<RenderBatchResult>("render_batch_cmd", {
-      project: opts.project,
+      project: stamped,
       rows: opts.rows,
       output: opts.output ?? null,
       includeZip: opts.includeZip ?? true,
@@ -304,7 +321,7 @@ export async function renderBatchBackend(opts: {
     return httpJson<RenderBatchResult>("/v1/render-batch", {
       method: "POST",
       body: JSON.stringify({
-        project: opts.project,
+        project: stamped,
         rows: opts.rows,
         output: opts.output ?? null,
         includeZip: opts.includeZip ?? true,
@@ -312,6 +329,96 @@ export async function renderBatchBackend(opts: {
     });
   }
   throw new Error("Rendering requires the Rust backend (Tauri or apiBaseUrl).");
+}
+
+/** Multipart .eml batch (TS). Available without Rust. */
+export async function renderEmailBatchBackend(opts: {
+  project: import("./document").Project;
+  rows: DataRow[];
+  output?: unknown;
+  includeZip?: boolean;
+  projectId?: string | null;
+}): Promise<RenderBatchResult> {
+  const { buildEmailArtifacts } = await import("./email");
+  const output = opts.output as import("./workflow").OutputProfile;
+  const files: RenderBatchFile[] = [];
+  const errors: string[] = [];
+  for (let i = 0; i < opts.rows.length; i += 1) {
+    const row = opts.rows[i] ?? {};
+    try {
+      const art = buildEmailArtifacts({
+        project: opts.project,
+        row,
+        output,
+        projectId: opts.projectId,
+      });
+      const safe = art.subject.replace(/[^\w.-]+/g, "_").slice(0, 40) || "message";
+      const bytes = new TextEncoder().encode(art.eml);
+      let binary = "";
+      for (let j = 0; j < bytes.length; j += 1) {
+        binary += String.fromCharCode(bytes[j]!);
+      }
+      files.push({
+        rowIndex: i,
+        name: `${safe}-${i + 1}.eml`,
+        bytesBase64: btoa(binary),
+      });
+    } catch (err) {
+      errors.push(
+        `Row ${i + 1}: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
+  }
+  return { files, zipBase64: null, errors };
+}
+
+/** Run a SQLite SELECT and return object rows (desktop / API). */
+export async function runSqlQueryBackend(opts: {
+  driver: "sqlite" | "postgres";
+  connection: string;
+  query: string;
+}): Promise<Record<string, unknown>[]> {
+  if (opts.driver === "postgres") {
+    throw new Error("Postgres data sources are not implemented yet");
+  }
+  const transport = resolveBackendTransport();
+  if (transport === "tauri-local") {
+    return invoke<Record<string, unknown>[]>("dataset_sql_query", {
+      connection: opts.connection,
+      query: opts.query,
+    });
+  }
+  if (transport === "http-remote") {
+    const result = await httpJson<{ rows: Record<string, unknown>[] }>(
+      "/v1/data/sql",
+      {
+        method: "POST",
+        body: JSON.stringify({
+          driver: opts.driver,
+          connection: opts.connection,
+          query: opts.query,
+        }),
+      },
+    );
+    return result.rows;
+  }
+  throw new Error("SQL queries require the desktop app or API server");
+}
+
+/** Read a local data file (path) via desktop/API. */
+export async function readDataFileBackend(path: string): Promise<string> {
+  const transport = resolveBackendTransport();
+  if (transport === "tauri-local") {
+    return invoke<string>("dataset_read_file", { path });
+  }
+  if (transport === "http-remote") {
+    const result = await httpJson<{ text: string }>("/v1/data/read-file", {
+      method: "POST",
+      body: JSON.stringify({ path }),
+    });
+    return result.text;
+  }
+  throw new Error("File data sources require the desktop app or API server");
 }
 
 export { isTauri, resolveBackendTransport };

@@ -23,6 +23,7 @@ export function b(
     style?: BlockStyle;
     condition?: string;
     pin?: Block["pin"];
+    variants?: Block["variants"];
   },
 ): Block {
   return {
@@ -39,6 +40,7 @@ export function b(
     locked: partial.locked,
     zIndex: partial.zIndex,
     pin: partial.pin,
+    variants: partial.variants,
   };
 }
 
@@ -57,13 +59,16 @@ export function shell(
       | "scripts"
       | "workflow"
       | "outputs"
+      | "activeOutputId"
       | "artboard"
       | "datasets"
       | "primaryDatasetId"
       | "textStyles"
       | "documentStyles"
       | "language"
+      | "conditions"
       | "pageChrome"
+      | "customObjects"
     >
   >,
 ): Project {
@@ -78,7 +83,7 @@ export function shell(
     activePageId: pages[0]!.id,
     pages,
     outputs,
-    activeOutputId: outputs[0]?.id,
+    activeOutputId: extras?.activeOutputId ?? outputs[0]?.id,
     workflow: extras?.workflow ?? defaultWorkflow(),
     scripts: extras?.scripts ?? defaultScripts(),
     comments: extras?.comments ?? [],
@@ -88,7 +93,9 @@ export function shell(
     textStyles: extras?.textStyles,
     documentStyles: extras?.documentStyles,
     language: extras?.language,
+    conditions: extras?.conditions,
     pageChrome: extras?.pageChrome,
+    customObjects: extras?.customObjects,
   };
 }
 
@@ -105,6 +112,7 @@ export function page(
       | "rotate"
       | "mirrorX"
       | "mirrorY"
+      | "condition"
     >
   > & { spread?: boolean },
 ) {

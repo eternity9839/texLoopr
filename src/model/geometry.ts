@@ -104,10 +104,18 @@ export function resizeFromHandle(
   handle: ResizeHandle,
   dw: number,
   dh: number,
+  opts?: { lockAspect?: boolean; ratio?: number },
 ): Rect {
   const right = start.x + start.w;
   const bottom = start.y + start.h;
   let { x, y, w, h } = start;
+  const ratio =
+    opts?.ratio && opts.ratio > 0
+      ? opts.ratio
+      : start.h > 0
+        ? start.w / start.h
+        : 1;
+  const lock = Boolean(opts?.lockAspect);
 
   if (handle.includes("e")) {
     w = Math.max(MIN_BLOCK_W, px(start.w + dw));
@@ -129,6 +137,40 @@ export function resizeFromHandle(
     if (y < 0) {
       h = px(bottom);
       y = 0;
+    }
+  }
+
+  if (lock && ratio > 0) {
+    const corner =
+      (handle.includes("n") || handle.includes("s")) &&
+      (handle.includes("e") || handle.includes("w"));
+    if (corner) {
+      // Dominant delta picks the driving axis.
+      if (Math.abs(dw) >= Math.abs(dh)) {
+        h = Math.max(MIN_BLOCK_H, px(w / ratio));
+      } else {
+        w = Math.max(MIN_BLOCK_W, px(h * ratio));
+      }
+      if (handle.includes("w")) x = px(right - w);
+      if (handle.includes("n")) y = px(bottom - h);
+      if (x < 0) {
+        w = px(right);
+        x = 0;
+        h = Math.max(MIN_BLOCK_H, px(w / ratio));
+        if (handle.includes("n")) y = px(bottom - h);
+      }
+      if (y < 0) {
+        h = px(bottom);
+        y = 0;
+        w = Math.max(MIN_BLOCK_W, px(h * ratio));
+        if (handle.includes("w")) x = px(right - w);
+      }
+    } else if (handle.includes("e") || handle.includes("w")) {
+      h = Math.max(MIN_BLOCK_H, px(w / ratio));
+      if (handle.includes("n")) y = px(bottom - h);
+    } else if (handle.includes("n") || handle.includes("s")) {
+      w = Math.max(MIN_BLOCK_W, px(h * ratio));
+      if (handle.includes("w")) x = px(right - w);
     }
   }
 

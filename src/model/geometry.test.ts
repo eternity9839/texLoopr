@@ -6,6 +6,7 @@ import {
   headerPin,
   px,
   rectsIntersect,
+  resizeFromHandle,
   resolvePinnedRect,
   snapPx,
 } from "./geometry";
@@ -43,6 +44,26 @@ describe("geometry", () => {
       w: 24,
       h: 24,
     });
+  });
+});
+
+describe("resizeFromHandle aspect lock", () => {
+  it("keeps ratio on corner drag when lockAspect is set", () => {
+    const start = { x: 10, y: 20, w: 100, h: 50 };
+    const next = resizeFromHandle(start, "se", 40, 10, {
+      lockAspect: true,
+      ratio: 2,
+    });
+    expect(next.w / next.h).toBeCloseTo(2, 1);
+    expect(next.x).toBe(10);
+    expect(next.y).toBe(20);
+  });
+
+  it("does not lock when lockAspect is false", () => {
+    const start = { x: 0, y: 0, w: 100, h: 50 };
+    const next = resizeFromHandle(start, "se", 50, 0, { lockAspect: false });
+    expect(next.w).toBe(150);
+    expect(next.h).toBe(50);
   });
 });
 

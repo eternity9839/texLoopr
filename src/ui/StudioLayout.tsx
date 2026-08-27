@@ -1,26 +1,10 @@
 import type { ComponentChildren } from "preact";
-import { useEffect, useRef, useState } from "preact/hooks";
-import { prefs, updatePrefs } from "../state/store";
+import { useCallback, useEffect, useRef, useState } from "preact/hooks";
+import { prefs, project, updatePrefs } from "../state/store";
 import { Icon, type IconName } from "./icons";
+import { useLayoutDevice } from "./layoutDevice";
 
-const NARROW_QUERY = "(max-width: 880px)";
 const TOOLS_W = 48;
-
-function useNarrow(): boolean {
-  const [narrow, setNarrow] = useState(
-    () =>
-      typeof window !== "undefined" &&
-      (window.matchMedia?.(NARROW_QUERY).matches ?? false),
-  );
-  useEffect(() => {
-    const mq = window.matchMedia?.(NARROW_QUERY);
-    if (!mq) return;
-    const onChange = (e: MediaQueryListEvent) => setNarrow(e.matches);
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-  return narrow;
-}
 
 interface StudioLayoutProps {
   variant?: "edit" | "aux";
@@ -56,7 +40,20 @@ export function StudioLayout({
   const showNav = aux && navigator != null;
   const showInspector = !aux && inspector != null;
   const previewChrome = !aux && !showInspector && !showTools;
-  const narrow = useNarrow();
+  const getOpts = useCallback(
+    () => ({
+      prefs: {
+        density: p.density,
+        rulerUnit: p.rulerUnit,
+        canvasPreset: p.canvasPreset,
+      },
+      artboard: project.value.artboard ?? p.canvasPreset,
+    }),
+    [p.density, p.rulerUnit, p.canvasPreset, project.value.artboard],
+  );
+  const layout = useLayoutDevice(getOpts);
+  const narrow = layout.layoutMode === "stack";
+  const shellW = layout.viewport.w;
 
   const [openPane, setOpenPane] = useState<PaneId | null>(null);
 
@@ -156,11 +153,23 @@ export function StudioLayout({
 
   const columns = (() => {
     if (narrow) return undefined;
-    if (aux) return `${navW}px minmax(0, 1fr)`;
-    if (previewChrome) return `minmax(0, 1fr)`;
+    // Prefer fixed px tracks — WebKitGTK resolves 1fr to 0px when the
+    // containing block width is corrupt/zero.
+    const mid = (side: number) =>
+      `${Math.max(120, shellW - side)}px`;
+    if (aux) {
+      const nav = navW;
+      return `${nav}px ${mid(nav)}`;
+    }
+    if (previewChrome) return `${Math.max(120, shellW)}px`;
     const parts: string[] = [];
-    if (showTools) parts.push(`${toolsW}px`);
-    parts.push("minmax(0, 1fr)");
+    let used = 0;
+    if (showTools) {
+      parts.push(`${toolsW}px`);
+      used += toolsW;
+    }
+    if (showInspector) used += inspW;
+    parts.push(`${Math.max(120, shellW - used)}px`);
     if (showInspector) parts.push(`${inspW}px`);
     return parts.join(" ");
   })();

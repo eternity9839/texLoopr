@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-catalog-upsert-filesystem"
+description = "Enables the catalog_upsert_filesystem command without any pre-configured scope."
+commands.allow = ["catalog_upsert_filesystem"]
+
+[[permission]]
+identifier = "deny-catalog-upsert-filesystem"
+description = "Denies the catalog_upsert_filesystem command without any pre-configured scope."
+commands.deny = ["catalog_upsert_filesystem"]

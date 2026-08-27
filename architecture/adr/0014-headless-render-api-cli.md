@@ -24,4 +24,5 @@ Automation needs “template + data → PDF” without opening the studio. ADR 0
 
 - Positive: one engine for desktop, CLI, and API; batch-friendly.
 - Trade-offs: PDF layout is an approximation of the canvas; tables/images are simplified.
-- Follow-ups: image/email emit; Chromium parity if required; auth for non-localhost serve.
+- Follow-ups: image emit; Chromium parity if required; auth for non-localhost serve.
+  Email/EML emit: see [ADR 0017](0017-block-variants-email-emit.md).

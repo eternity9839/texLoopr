@@ -12,6 +12,10 @@
  */
 import { execSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
+import {
+  parseCoreSemver,
+  withReleaseSuffix,
+} from "./version-channel.mjs";
 
 function sh(cmd) {
   try {
@@ -108,15 +112,16 @@ for (const s of subjects) {
   }
   if (/^feat(\([^)]*\))?:/.test(s)) minor = true;
 }
-const bump = major ? "major" : minor ? "minor" : "patch";
+const bump = major ? "major" : minor : "patch";
 
-const [maj, min, pat] = pkg.version.split(".").map(Number);
-const next =
+const { maj, min, pat } = parseCoreSemver(pkg.version);
+const nextCore =
   bump === "major"
     ? `${maj + 1}.0.0`
     : bump === "minor"
       ? `${maj}.${min + 1}.0`
       : `${maj}.${min}.${pat + 1}`;
+const next = withReleaseSuffix(nextCore);
 
 pkg.version = next;
 writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + "\n");

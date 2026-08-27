@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-dataset-sql-query"
+description = "Enables the dataset_sql_query command without any pre-configured scope."
+commands.allow = ["dataset_sql_query"]
+
+[[permission]]
+identifier = "deny-dataset-sql-query"
+description = "Denies the dataset_sql_query command without any pre-configured scope."
+commands.deny = ["dataset_sql_query"]

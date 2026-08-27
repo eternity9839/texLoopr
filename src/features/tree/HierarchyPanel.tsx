@@ -33,6 +33,7 @@ import {
   setGroupIsolation,
   previewRow,
   previewLanguageOverride,
+  previewConditionOverrides,
   activeOutputProfile,
 } from "../../state/store";
 import { BlockAssociations } from "../properties/BlockAssociations";
@@ -142,6 +143,7 @@ export function HierarchyPanel() {
           output,
           {},
           previewLanguageOverride.value,
+          previewConditionOverrides.value,
         )
       : undefined;
     return buildOutlineRows({
@@ -160,6 +162,7 @@ export function HierarchyPanel() {
     showFormats,
     previewRow.value,
     previewLanguageOverride.value,
+    previewConditionOverrides.value,
     proj.activeOutputId,
   ]);
 

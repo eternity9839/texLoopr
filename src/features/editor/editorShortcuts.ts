@@ -1,6 +1,7 @@
 import type { BlockType } from "../../model/document";
 import type { InspectorTabId } from "../studio/inspectorTabs";
 import type { PlacePresetId } from "../../model/placeTools";
+import { openToolboxSheet } from "./Toolbox";
 import {
   armPlaceTool,
   armSelectTool,
@@ -17,6 +18,7 @@ import {
   pasteClipboard,
   prefs,
   redoEdit,
+  requestEditSelectedBlock,
   select,
   selectAllOnPage,
   selectedBlock,
@@ -55,8 +57,8 @@ export const SHORTCUT_SECTIONS: {
     titleKey: "shortcutSectionTools",
     rows: [
       { keys: "V", actionKey: "shortcutToolSelect" },
-      { keys: "P · T · D · K", actionKey: "shortcutToolTextGroup" },
-      { keys: "I · S · A · G · E", actionKey: "shortcutToolMediaGroup" },
+      { keys: "T · S · I", actionKey: "shortcutToolTextGroup" },
+      { keys: "P · D · K · A · G · E", actionKey: "shortcutToolMediaGroup" },
       { keys: "Ctrl/⌘ + A", actionKey: "shortcutSelectAll" },
       { keys: "Shift / Ctrl+click", actionKey: "shortcutMultiSelect" },
       { keys: "Drag on page", actionKey: "shortcutMarqueeSelect" },
@@ -66,6 +68,7 @@ export const SHORTCUT_SECTIONS: {
   {
     titleKey: "shortcutSectionEdit",
     rows: [
+      { keys: "Enter · F2", actionKey: "shortcutEditText" },
       { keys: "Ctrl/⌘ + Z / Shift+Z", actionKey: "shortcutUndo" },
       { keys: "Ctrl/⌘ + X C V D", actionKey: "shortcutClipboard" },
       { keys: "Ctrl/⌘ + G · Shift+G", actionKey: "shortcutGroup" },
@@ -105,13 +108,11 @@ export const SHORTCUT_SECTIONS: {
   },
 ];
 
+/** Direct place arms (sheet openers T/S/I handled separately). */
 const TOOL_KEYS: Record<string, { type: BlockType; preset?: PlacePresetId }> = {
   p: { type: "paragraph" },
-  t: { type: "text" },
   d: { type: "data" },
   k: { type: "link" },
-  i: { type: "picture" },
-  s: { type: "shape" },
   a: { type: "table" },
   g: { type: "group" },
   e: { type: "files" },
@@ -134,6 +135,7 @@ function mod(e: KeyboardEvent): boolean {
 }
 
 export function isTypingTarget(t: EventTarget | null): boolean {
+  if (t == null || typeof HTMLElement === "undefined") return false;
   if (!(t instanceof HTMLElement)) return false;
   return (
     t.tagName === "INPUT" ||
@@ -230,6 +232,25 @@ export function handleEditorShortcut(
     return true;
   }
 
+  if (!m && !e.altKey && !e.shiftKey && key === "t") {
+    e.preventDefault();
+    openToolboxSheet("text");
+    armPlaceTool("paragraph");
+    return true;
+  }
+  if (!m && !e.altKey && !e.shiftKey && key === "s") {
+    e.preventDefault();
+    openToolboxSheet("shape");
+    armPlaceTool("shape", "rect");
+    return true;
+  }
+  if (!m && !e.altKey && !e.shiftKey && key === "i") {
+    e.preventDefault();
+    openToolboxSheet("media");
+    armPlaceTool("picture");
+    return true;
+  }
+
   const tool = TOOL_KEYS[key];
   if (!m && !e.altKey && !e.shiftKey && tool) {
     e.preventDefault();
@@ -303,6 +324,13 @@ export function handleCanvasShortcut(e: KeyboardEvent, preview: boolean): boolea
     else groupSelection();
     return true;
   }
+  if (!m && (e.key === "Enter" || e.key === "F2")) {
+    if (selectedIds.value.length === 1 && requestEditSelectedBlock()) {
+      e.preventDefault();
+      return true;
+    }
+  }
+
   if (e.key === "Delete" || e.key === "Backspace") {
     if (selectedBlock.value == null && selectedIds.value.length === 0) {
       return false;

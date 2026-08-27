@@ -2,6 +2,7 @@ import type { JSX } from "preact";
 import { useEffect, useRef, useState } from "preact/hooks";
 import type { PageMargins } from "../../model/document";
 import { px } from "../../model/geometry";
+import { observeResizeMany } from "../../ui/observeResize";
 import {
   formatRulerHover,
   type RulerUnit,
@@ -80,17 +81,14 @@ export function EditorRulers({
 
     sync();
     scroll.addEventListener("scroll", sync, { passive: true });
-    const ro = new ResizeObserver(sync);
-    ro.observe(scroll);
     const fit = scroll.querySelector(".editor-fit");
-    if (fit) ro.observe(fit);
     const page = scroll.querySelector(".editor-page--active, .editor-page");
-    if (page) ro.observe(page);
+    const stopResize = observeResizeMany([scroll, fit, page], sync);
     window.addEventListener("resize", sync);
 
     return () => {
       scroll.removeEventListener("scroll", sync);
-      ro.disconnect();
+      stopResize();
       window.removeEventListener("resize", sync);
     };
   }, [scrollRef, pageW, pageH, scale, margins]);

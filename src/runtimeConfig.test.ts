@@ -2,6 +2,7 @@
 import { describe, expect, it, afterEach } from "vitest";
 import {
   getApiBaseUrl,
+  isDesktopShell,
   isEphemeral,
   resolveBackendTransport,
 } from "./runtimeConfig";
@@ -40,5 +41,14 @@ describe("runtimeConfig", () => {
   it("resolveBackendTransport defaults to js-fallback without Tauri or API", () => {
     delete window.__TEXLOOPER__;
     expect(resolveBackendTransport()).toBe("js-fallback");
+  });
+
+  it("isDesktopShell reads profile and Tauri internals", () => {
+    delete window.__TEXLOOPER__;
+    expect(isDesktopShell()).toBe(false);
+    window.__TEXLOOPER__ = { profile: "desktop" };
+    expect(isDesktopShell()).toBe(true);
+    window.__TEXLOOPER__ = { profile: "official" };
+    expect(isDesktopShell()).toBe(false);
   });
 });

@@ -15,7 +15,7 @@ export function AppShell({ children }: AppShellProps) {
       data-theme={p.theme ?? "nova"}
     >
       <ContextBar />
-      {children}
+      <div class="app-shell__body">{children}</div>
     </div>
   );
 }

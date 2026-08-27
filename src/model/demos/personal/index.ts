@@ -5,7 +5,7 @@ import {
   optionalOutputTemplates,
 } from "../../workflow";
 import { DEMO_IMG } from "../assets";
-import { b, page, shell } from "../helpers";
+import { b, page, shell, id } from "../helpers";
 import { northlineStyleExtras } from "../brand/northlineStyles";
 
 const ACCENT = "#0f6b63";
@@ -308,36 +308,33 @@ export function welcome(): Project {
             condition: FULL,
           }),
 
-          /* ── Email-only strip × language (right of role) ── */
+          /* ── Email-only strip (language via variants) ── */
           b("text", {
-            name: "Email strip EN",
+            name: "Email strip",
             x: 360,
             y: 140,
             w: 320,
             h: 20,
             content: { text: "Email channel only" },
             style: { fontFamily: "ui", fontSize: 10, fontWeight: 600, color: "#0f6b63", textAlign: "right" },
-            condition: `${EMAIL} && ${EN}`,
-          }),
-          b("text", {
-            name: "Email strip FR",
-            x: 360,
-            y: 140,
-            w: 320,
-            h: 20,
-            content: { text: "Canal e-mail uniquement" },
-            style: { fontFamily: "ui", fontSize: 10, fontWeight: 600, color: "#0f6b63", textAlign: "right" },
-            condition: `${EMAIL} && ${FR}`,
-          }),
-          b("text", {
-            name: "Email strip NL",
-            x: 360,
-            y: 140,
-            w: 320,
-            h: 20,
-            content: { text: "Alleen e-mailkanaal" },
-            style: { fontFamily: "ui", fontSize: 10, fontWeight: 600, color: "#0f6b63", textAlign: "right" },
-            condition: `${EMAIL} && ${NL}`,
+            condition: EMAIL,
+            variants: [
+              {
+                id: id(),
+                language: "fr",
+                content: { text: "Canal e-mail uniquement" },
+              },
+              {
+                id: id(),
+                language: "nl",
+                content: { text: "Alleen e-mailkanaal" },
+              },
+              {
+                id: id(),
+                output: "email",
+                w: 280,
+              },
+            ],
           }),
 
           /* ── Merge fields & filters ── */
@@ -827,18 +824,30 @@ export function welcome(): Project {
             x: 40,
             y: 340,
             w: 640,
-            h: 32,
-            content: { text: "|lower filter: {{name|lower}} — converts text to lowercase." },
+            h: 24,
+            content: { text: "|lower: {{name|lower}} · |capitalize: {{name|capitalize}} · |title: {{role|title}}" },
             style: { fontSize: 12, color: "#1c2430" },
             condition: FULL,
           }),
           b("text", {
             name: "Upper filter",
             x: 40,
-            y: 384,
+            y: 368,
             w: 640,
-            h: 32,
-            content: { text: "|upper filter: {{name|upper}} — converts text to UPPERCASE." },
+            h: 24,
+            content: { text: "|upper: {{name|upper}} · |number: {{qty|number:0}} · |currency: {{price|currency:EUR}}" },
+            style: { fontSize: 12, color: "#1c2430" },
+            condition: FULL,
+          }),
+          b("text", {
+            name: "Date filters",
+            x: 40,
+            y: 396,
+            w: 640,
+            h: 24,
+            content: {
+              text: "|date:short {{event_date|date:short}} · |date:long {{event_date|date:long}} · today {{env.today|date:short}}",
+            },
             style: { fontSize: 12, color: "#1c2430" },
             condition: FULL,
           }),
@@ -847,7 +856,7 @@ export function welcome(): Project {
           b("text", {
             name: "Heading styles",
             x: 40,
-            y: 440,
+            y: 448,
             w: 400,
             h: 16,
             content: { text: "STYLE GALLERY" },

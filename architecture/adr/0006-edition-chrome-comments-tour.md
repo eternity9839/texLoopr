@@ -17,9 +17,9 @@ Page editing was powerful but opaque: mixed text/icon chrome, no Word-style revi
 4. **Inspector tabs** — Layers · Design · Data · Comments · Meta. Design owns appearance + geometry + typography; Data owns merge fields and conditions.
 5. **Status strip + Appearance menu** — thin bottom bar for grid/snap/rulers; header Appearance (sliders) toggles tools/inspector/status/grid/rulers/comments/margins.
 6. **Comments** — first-class on the project (`comments[]` anchored to a block). Markers on the surface; list in the inspector.
-7. **Preview kinds** — all output kinds listed; only kinds present on `project.outputs` are enabled.
+7. **Preview kinds** — only **configured channel modalities** on `project.outputs` appear in the Preview toolbar (Screen, Page, Print, Email, SMS, Push, Image). Missing kinds are hidden, not greyed. **API is not an output** (data ingress via HTTP sources). The `pdf` kind is labeled **Page** in chrome.
 8. **Edition tour** — skippable coach marks covering palette → place → contextual bar → inspector → data → preview → automation. Completion in `localStorage` (`texlooper.tour.done.v1`).
-9. **Terminology** — user-facing chrome says **surface** (print page, email, SMS, push); model may still use `Page`.
+9. **Terminology** — user-facing chrome says **surface** (print page, email, SMS, push); model may still use `Page`. Condition axes (`Project.conditions`) drive Preview scenario chips like language (ADR 0018).
 
 ## Consequences
 

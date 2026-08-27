@@ -62,7 +62,7 @@ describe("attachProjectDatasets", () => {
 });
 
 describe("defaultOutputs", () => {
-  it("includes Screen, PDF, Email, Image — not SMS/push by default", () => {
+  it("includes Screen, Page, Email, Image — not SMS/push/API by default", () => {
     const kinds = defaultOutputs().map((o) => o.kind);
     expect(kinds).toContain("preview");
     expect(kinds).toContain("pdf");
@@ -70,5 +70,7 @@ describe("defaultOutputs", () => {
     expect(kinds).toContain("email");
     expect(kinds).not.toContain("sms");
     expect(kinds).not.toContain("mobile");
+    expect(kinds).not.toContain("api");
+    expect(defaultOutputs().find((o) => o.kind === "pdf")?.name).toBe("Page A4");
   });
 });

@@ -14,12 +14,14 @@ import {
 } from "../../../model/bindings";
 import type { RuntimeContext } from "../../../model/expr";
 import { resolveDateBlockText } from "../../../model/dateBlock";
+import { resolveSignatureMode } from "../../../model/signatureMode";
 import { parseQrEcc, qrDataUrl } from "../../../model/qrCode";
 import {
   dataFieldLabel,
   normalizeDataFieldPath,
   resolveDataField,
 } from "../../../model/dataField";
+import { mergeChipClassName, mergeChipKind } from "../../../model/mergeChipKind";
 import {
   fieldKeyFromHeader,
   isLiteralColumnTemplate,
@@ -64,6 +66,7 @@ import { RichText } from "../../../model/richText";
 import {
   activePage,
   dataRows,
+  editRequestId,
   prefs,
   project,
   selection,
@@ -97,7 +100,10 @@ export interface BlockViewProps {
   snapStep?: number | null;
   /** Canvas zoom factor — pointer deltas arrive in screen px */
   scale?: number;
-  onSelect: (id: string, opts?: { toggle?: boolean }) => void;
+  onSelect: (
+    id: string,
+    opts?: { toggle?: boolean; additive?: boolean },
+  ) => void;
   onContextMenu?: (id: string, e: MouseEvent) => void;
   onChipContextMenu?: (id: string, mergePath: string, e: MouseEvent) => void;
   onChangeContent?: (id: string, content: Record<string, unknown>) => void;
@@ -233,12 +239,27 @@ export function BlockFrame(
     h: number;
     handle?: ResizeHandle;
     moved: boolean;
+    lockAspect: boolean;
   } | null>(null);
   const frameRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!selected) setEditing(false);
   }, [selected]);
+
+  const pendingEdit = editRequestId.value === block.id;
+  useEffect(() => {
+    if (!pendingEdit) return;
+    setEditing(true);
+    editRequestId.value = null;
+    queueMicrotask(() => {
+      frameRef.current
+        ?.querySelector<HTMLTextAreaElement | HTMLInputElement>(
+          "textarea, input",
+        )
+        ?.focus();
+    });
+  }, [pendingEdit]);
 
   useEffect(() => {
     const onMove = (e: PointerEvent) => {
@@ -256,11 +277,16 @@ export function BlockFrame(
       e.preventDefault();
 
       if (g.mode === "resize" && g.handle) {
+        const lockAspect = g.lockAspect || e.shiftKey;
         let next = resizeFromHandle(
           { x: g.x, y: g.y, w: g.w, h: g.h },
           g.handle,
           dx,
           dy,
+          {
+            lockAspect,
+            ratio: g.w > 0 && g.h > 0 ? g.w / g.h : 1,
+          },
         );
         if (snapStep != null && snapStep > 1) {
           next = snapRect(next, snapStep);
@@ -281,29 +307,12 @@ export function BlockFrame(
     const onUp = (e: PointerEvent) => {
       const g = gestureRef.current;
       if (!g || e.pointerId !== g.pointerId) return;
-      const wasClick = g.mode === "drag" && !g.moved;
       gestureRef.current = null;
       setLiveSize(null);
       try {
         frameRef.current?.releasePointerCapture(e.pointerId);
       } catch {
         /* ignore */
-      }
-      // Second click (or after merge chips mount a field) opens editing
-      if (wasClick && selected && frameRef.current) {
-        const editable = frameRef.current.querySelector(
-          "textarea, input, .merge-aware-text, .binding-preview",
-        );
-        if (editable) {
-          setEditing(true);
-          queueMicrotask(() => {
-            frameRef.current
-              ?.querySelector<HTMLTextAreaElement | HTMLInputElement>(
-                "textarea, input",
-              )
-              ?.focus();
-          });
-        }
       }
     };
 
@@ -348,7 +357,8 @@ export function BlockFrame(
     e.stopPropagation();
     if (ghostInactive) {
       onSelect(block.id, {
-        toggle: e.shiftKey || e.ctrlKey || e.metaKey,
+        additive: e.shiftKey && !(e.ctrlKey || e.metaKey),
+        toggle: e.ctrlKey || e.metaKey,
       });
       return;
     }
@@ -385,7 +395,8 @@ export function BlockFrame(
     }
     // Do not preventDefault here — it cancels the dblclick sequence.
     onSelect(block.id, {
-      toggle: e.shiftKey || e.ctrlKey || e.metaKey,
+      additive: e.shiftKey && !(e.ctrlKey || e.metaKey),
+      toggle: e.ctrlKey || e.metaKey,
     });
     props.onGestureStart?.();
     gestureRef.current = {
@@ -398,6 +409,7 @@ export function BlockFrame(
       w: block.w,
       h: block.h,
       moved: false,
+      lockAspect: Boolean(block.lockAspectRatio),
     };
     frameRef.current?.setPointerCapture(e.pointerId);
   };
@@ -407,7 +419,8 @@ export function BlockFrame(
     e.preventDefault();
     e.stopPropagation();
     onSelect(block.id, {
-      toggle: e.shiftKey || e.ctrlKey || e.metaKey,
+      additive: e.shiftKey && !(e.ctrlKey || e.metaKey),
+      toggle: e.ctrlKey || e.metaKey,
     });
     props.onGestureStart?.();
     gestureRef.current = {
@@ -421,6 +434,7 @@ export function BlockFrame(
       h: block.h,
       handle,
       moved: true,
+      lockAspect: Boolean(block.lockAspectRatio) || e.shiftKey,
     };
     setLiveSize({ w: block.w, h: block.h });
     frameRef.current?.setPointerCapture(e.pointerId);
@@ -675,9 +689,10 @@ export function DataBlock(props: BlockViewProps) {
 
   if (preview) {
     const value = resolveDataField(path, row, runtime);
+    const chip = mergeChipKind(path) === "runtime" ? "block-runtime" : "block-data";
     return (
       <BlockFrame {...props}>
-        <span class="block-data block-data--resolved">{value || label}</span>
+        <span class={`${chip} block-data--resolved`}>{value || label}</span>
       </BlockFrame>
     );
   }
@@ -686,7 +701,7 @@ export function DataBlock(props: BlockViewProps) {
     <BlockFrame {...props}>
       <BindingPreview
         class="block-data-wrap binding-preview--data"
-        chipClass="block-data"
+        chipClass={mergeChipClassName(path)}
         label={label}
         previewValue={
           previewValue ??
@@ -841,9 +856,17 @@ export function ListBlock(props: BlockViewProps) {
     : "ul";
   const Tag = style as "ol" | "ul";
 
+  const listIndent = Number(block.content.listIndent ?? 19);
+  const nestGap = Number(block.content.nestGap ?? 4);
+
   const renderNodes = (items: ListItemNode[], path: number[] = []) => (
     <Tag
       class="block-list"
+      style={{
+        paddingLeft: path.length === 0 ? `${listIndent}px` : `${listIndent}px`,
+        marginTop: path.length > 0 ? `${nestGap}px` : undefined,
+        marginBottom: path.length > 0 ? `${Math.max(2, nestGap - 2)}px` : undefined,
+      }}
       start={
         Tag === "ol" && path.length === 0
           ? Number(block.content.start ?? 1)
@@ -1159,12 +1182,16 @@ export function TableBlock(props: BlockViewProps) {
       merge && merge.kind === "merge"
         ? merge.label
         : fieldKeyFromHeader(tpl) || tpl || "field";
+    const chipClass =
+      merge && merge.kind === "merge"
+        ? mergeChipClassName(merge.path, merge.filters)
+        : "block-data";
     // Show resolved value as the chip so multi-row tables stay readable;
     // hover/popup reveals the binding (sku, color, …).
     return (
       <BindingPreview
         class="block-data-wrap"
-        chipClass="block-data"
+        chipClass={chipClass}
         label={value || "(empty)"}
         previewValue={fieldLabel}
         ariaLabel={`${fieldLabel}: ${value}`}
@@ -1367,6 +1394,7 @@ export function DateBlock(props: BlockViewProps) {
 
 export function SignatureBlock(props: BlockViewProps) {
   const { block, preview, row, runtime } = props;
+  const mode = resolveSignatureMode(block.content);
   const rawSrc = String(block.content.src ?? "");
   const src = resolveTemplate(rawSrc, row, {
     missingAsEmpty: preview,
@@ -1381,15 +1409,23 @@ export function SignatureBlock(props: BlockViewProps) {
     missingAsEmpty: preview,
     ctx: runtime,
   });
+  const signedAt = resolveTemplate(String(block.content.signedAt ?? ""), row, {
+    missingAsEmpty: preview,
+    ctx: runtime,
+  });
   const showLine = block.content.showLine !== false;
   const firstRow = dataRows.value[0];
   const bindingEdit = !preview && hasMergeBinding(rawSrc);
+  const showInk = mode === "preset" && Boolean(src);
 
   if (bindingEdit) {
     const previewUrl = resolveBindingPreview(rawSrc, firstRow, runtime);
     return (
       <BlockFrame {...props}>
         <div class="block-signature block-signature--binding">
+          <span class="block-signature__mode" data-mode={mode}>
+            {mode === "preset" ? "Signed" : "Sign here"}
+          </span>
           <BindingPreview
             class="binding-preview--media"
             chipClass="block-signature__chip"
@@ -1409,8 +1445,16 @@ export function SignatureBlock(props: BlockViewProps) {
 
   return (
     <BlockFrame {...props}>
-      <div class="block-signature">
-        {src ? (
+      <div
+        class={[
+          "block-signature",
+          mode === "open" ? "block-signature--open" : "block-signature--preset",
+        ].join(" ")}
+      >
+        <span class="block-signature__mode" data-mode={mode}>
+          {mode === "preset" ? "Signed" : "Sign here"}
+        </span>
+        {showInk ? (
           <img class="block-signature__ink" src={src} alt={label} />
         ) : (
           <div class="block-signature__pad" aria-hidden="true" />
@@ -1424,6 +1468,9 @@ export function SignatureBlock(props: BlockViewProps) {
                 <div key={i}>{line}</div>
               ))}
             </div>
+          ) : null}
+          {signedAt ? (
+            <div class="block-signature__dated">{signedAt}</div>
           ) : null}
         </div>
       </div>

@@ -1,5 +1,6 @@
 import type { ComponentChildren } from "preact";
 import { useEffect, useLayoutEffect, useRef, useState } from "preact/hooks";
+import { observeResize } from "./observeResize";
 
 export interface VirtualListProps<T> {
   items: T[];
@@ -37,9 +38,7 @@ export function VirtualList<T>({
     if (!el) return;
     const update = () => setViewport(el.clientHeight || 240);
     update();
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
+    return observeResize(el, update);
   }, [height]);
 
   useEffect(() => {

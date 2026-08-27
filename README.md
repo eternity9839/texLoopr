@@ -28,7 +28,31 @@ npm run tauri:dev    # desktop app (SQLite catalog in app data dir)
 npm run typecheck
 npm run test
 npm run build
+npm run build:tauri   # production SPA bundle embedded in the desktop shell
 ```
+
+Build the desktop app (Linux `.deb` / `.rpm`; AppImage is CI-only — it often fails under NixOS):
+
+```fish
+nix develop -c npm run desktop          # deb + rpm
+# or full bundles (AppImage/dmg/msi — prefer GitHub Actions):
+nix develop -c npm run desktop:all
+```
+
+**CI:** [`.github/workflows/desktop-build.yml`](.github/workflows/desktop-build.yml) builds Linux, Windows, and macOS (arm64 + x64) on `v*` tags (attaches to the GitHub Release) and on **Actions → Desktop build → Run workflow** (artifacts only). Alpha/beta versions are marked prerelease automatically.
+
+**On NixOS, do not install the `.deb`** — it won't link GTK/WebKit correctly. Launch from the repo root (serves the UI on loopback HTTP, same as the browser):
+
+```fish
+nix develop -c npm run desktop   # once
+nix run .#texlooper
+# or:
+npm run desktop:run
+```
+
+Do **not** run `./src-tauri/target/release/texlooper` bare on NixOS — WebKit/GTK paths won't resolve.
+
+Set `TEXLOOPER_DEVTOOLS=1` to open WebKit inspector on startup. On Debian/Ubuntu you can install the `.deb` instead.
 
 ### Headless CLI / local API (ADR 0014)
 

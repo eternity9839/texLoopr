@@ -16,6 +16,8 @@ import {
 import { MIN_BLOCK_H, MIN_BLOCK_W, px } from "../../model/geometry";
 import { dataColumnNames } from "../../model/bindings";
 import { LIST_STYLES, FONT_OPTIONS, type Block, type BlockStyle, type PageNumber } from "../../model/document";
+import { resolveSignatureMode } from "../../model/signatureMode";
+import { createProjectCondition } from "../../model/documentConditions";
 import { resizeTableCells } from "../../model/placeTools";
 import { defaultRepeatChildren } from "../../model/repeat";
 import { Icon } from "../../ui/icons";
@@ -298,6 +300,97 @@ export function MetadataPanel() {
         </Grid2>
       </Section>
 
+      <Section title="Condition axes" defaultOpen={(proj.conditions?.length ?? 0) > 0}>
+        <p class="muted prop-hint">
+          Declare data axes for Preview scenario chips (like language). Each axis
+          injects <code>vars.&lt;name&gt;</code> from the row, an optional default,
+          or a Preview override.
+        </p>
+        {(proj.conditions ?? []).map((cond, i) => (
+          <div class="field-row" key={cond.id} style={{ flexWrap: "wrap", gap: "0.35rem" }}>
+            <input
+              aria-label="Condition name"
+              placeholder="Status"
+              value={cond.name}
+              style={{ width: "7rem" }}
+              onInput={(e) => {
+                const next = [...(proj.conditions ?? [])];
+                next[i] = { ...cond, name: e.currentTarget.value };
+                updateProjectMeta({ conditions: next });
+              }}
+            />
+            <input
+              aria-label="Var name"
+              placeholder="status"
+              value={cond.var}
+              style={{ width: "6rem" }}
+              onInput={(e) => {
+                const next = [...(proj.conditions ?? [])];
+                next[i] = { ...cond, var: e.currentTarget.value.trim() };
+                updateProjectMeta({ conditions: next });
+              }}
+            />
+            <input
+              aria-label="Default value"
+              placeholder="default"
+              value={cond.default ?? ""}
+              style={{ width: "6rem" }}
+              onInput={(e) => {
+                const next = [...(proj.conditions ?? [])];
+                next[i] = {
+                  ...cond,
+                  default: e.currentTarget.value || undefined,
+                };
+                updateProjectMeta({ conditions: next });
+              }}
+            />
+            <input
+              aria-label="Pinned values"
+              placeholder="open, past_due, paid"
+              value={(cond.values ?? []).map((v) => v.value).join(", ")}
+              style={{ flex: 1, minWidth: "8rem" }}
+              onInput={(e) => {
+                const parts = e.currentTarget.value
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean);
+                const next = [...(proj.conditions ?? [])];
+                next[i] = {
+                  ...cond,
+                  values: parts.map((value) => ({ label: value, value })),
+                };
+                updateProjectMeta({ conditions: next });
+              }}
+            />
+            <button
+              type="button"
+              class="btn btn--ghost btn--small"
+              onClick={() =>
+                updateProjectMeta({
+                  conditions: (proj.conditions ?? []).filter((_, j) => j !== i),
+                })
+              }
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        <button
+          type="button"
+          class="btn btn--ghost btn--small"
+          onClick={() => {
+            updateProjectMeta({
+              conditions: [
+                ...(proj.conditions ?? []),
+                createProjectCondition({ name: "Status", var: "status" }),
+              ],
+            });
+          }}
+        >
+          Add condition axis
+        </button>
+      </Section>
+
       <Section title="Description & custom">
         <Field label="Description" forId="meta-desc">
           <textarea
@@ -499,6 +592,18 @@ export function PropertiesPanel() {
           )}
           {block.type === "signature" && (
             <>
+              <SelectField
+                id="sig-mode"
+                label="Mode"
+                value={resolveSignatureMode(block.content)}
+                options={[
+                  { value: "open", label: "Open — blank sign-here pad" },
+                  { value: "preset", label: "Prefilled — ink + identity" },
+                ]}
+                onChange={(v) =>
+                  updateBlock(block.id, { content: { mode: v } })
+                }
+              />
               <Field label="Ink image URL" forId="sig-src">
                 <input
                   id="sig-src"
@@ -522,13 +627,25 @@ export function PropertiesPanel() {
                   }
                 />
               </Field>
-              <Field label="Caption" forId="sig-caption">
+              <Field label="Caption (identity)" forId="sig-caption">
                 <textarea
                   id="sig-caption"
                   value={String(block.content.caption ?? "")}
                   onInput={(e) =>
                     updateBlock(block.id, {
                       content: { caption: e.currentTarget.value },
+                    })
+                  }
+                />
+              </Field>
+              <Field label="Signed at" forId="sig-dated">
+                <input
+                  id="sig-dated"
+                  placeholder="{{env.today|date:short}} or {{signed_at|date:short}}"
+                  value={String(block.content.signedAt ?? "")}
+                  onInput={(e) =>
+                    updateBlock(block.id, {
+                      content: { signedAt: e.currentTarget.value },
                     })
                   }
                 />

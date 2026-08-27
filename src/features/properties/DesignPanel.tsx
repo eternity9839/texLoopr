@@ -16,6 +16,7 @@ import {
   updatePageChromeBand,
   clearPageChromeBand,
   promoteSelectionToChrome,
+  createComponentFromSelection,
 } from "../../state/store";
 import {
   LIST_STYLES,
@@ -63,12 +64,11 @@ import {
   DocumentStyleLibrary,
   TextStyleLibrary,
 } from "./StyleLibraryControls";
-import { LANGUAGE_CONDITION_PRESETS } from "../../model/documentLanguage";
 import {
   conditionHasClause,
   toggleConditionClause,
 } from "../../model/conditionCompose";
-import { OUTPUT_KINDS, OUTPUT_KIND_LABEL } from "../../model/workflow";
+import { dynamicConditionPresets } from "../../model/variantSuggestions";
 
 const TYPE_LABELS: Record<string, string> = {
   paragraph: "Paragraph",
@@ -85,7 +85,11 @@ const TYPE_LABELS: Record<string, string> = {
   repeat: "Repeat",
 };
 
-const TEXTISH = new Set(["paragraph", "text", "list"]);
+/** Types that share typography controls. */
+const TEXTISH = new Set(["paragraph", "text", "list", "data", "link"]);
+
+/** Types that support lock-aspect in the geometry inspector. */
+const ASPECT_LOCKABLE = new Set(["shape", "picture", "group"]);
 
 function applyStyle(patch: Partial<BlockStyle>, ids: string[]): void {
   for (const id of ids) updateBlock(id, { style: patch });
@@ -96,7 +100,8 @@ function applyStyle(patch: Partial<BlockStyle>, ids: string[]): void {
 export function ComponentProps() {
   const sel = selectedBlock.value;
   if (!sel) return null;
-  const ids = selectedBlocks.value.map((b) => b.id);
+  const multi = selectedBlocks.value;
+  const ids = multi.map((b) => b.id);
   const style = sel.style;
   const clamp0 = (v: number) => Math.max(0, v);
   const typoCtx: AppearanceCtx = {
@@ -107,7 +112,21 @@ export function ComponentProps() {
     },
   };
   const isContainer = sel.type === "group" || sel.type === "repeat";
-  const showTypo = TEXTISH.has(sel.type) || isContainer;
+  const allTextish = multi.every((b) => TEXTISH.has(b.type));
+  const showTypo =
+    allTextish ||
+    (ids.length === 1 && (TEXTISH.has(sel.type) || isContainer));
+  const sharedText = ids.length > 1 && allTextish;
+  const showShared = ids.length > 1;
+  const canCreateComponent =
+    ids.length >= 2 || sel.type === "group" || sel.type === "repeat";
+  const showAspectLock =
+    ASPECT_LOCKABLE.has(sel.type) ||
+    multi.every((b) => ASPECT_LOCKABLE.has(b.type));
+  const aspectLocked =
+    ids.length > 1
+      ? multi.every((b) => b.lockAspectRatio === true)
+      : Boolean(sel.lockAspectRatio);
   const rowDir = (style.direction ?? "column") === "row";
   const page = activePage.value;
   const stack =
@@ -115,6 +134,20 @@ export function ComponentProps() {
 
   return (
     <>
+      {canCreateComponent && (
+        <div
+          class="prop-row prop-row--actions"
+          style={{ marginBottom: "0.5rem" }}
+        >
+          <button
+            type="button"
+            class="btn btn--ghost btn--small"
+            onClick={() => createComponentFromSelection()}
+          >
+            {t("createComponent")}
+          </button>
+        </div>
+      )}
       <BlockAssociations compact />
       <Section title="Identity">
         <Field label="Name" forId="design-block-name" compact>
@@ -240,6 +273,18 @@ export function ComponentProps() {
             Mirror V
           </CheckRow>
         </div>
+        {showAspectLock && (
+          <CheckRow
+            checked={aspectLocked}
+            onChange={(v) => {
+              for (const id of ids) {
+                updateBlock(id, { lockAspectRatio: v });
+              }
+            }}
+          >
+            {t("lockAspectRatio")}
+          </CheckRow>
+        )}
       </Section>
 
       <Section title="Pin to surface">
@@ -342,7 +387,7 @@ export function ComponentProps() {
       </Section>
 
       {showTypo && (
-        <Section title="Typography">
+        <Section title={sharedText ? t("sharedText") : "Typography"}>
           <TextStyleLibrary />
           <div class="design-typo">
             <FontFamilySelect ctx={typoCtx} />
@@ -404,67 +449,132 @@ export function ComponentProps() {
         </Section>
       )}
 
-      <Section title="Fill">
-        <div class="prop-grid prop-grid--2">
-          <ColorField
-            id="prop-color"
-            label="Color"
-            compact
-            value={style.color}
-            fallback="#2a2622"
-            onValue={(v) => applyStyle({ color: v }, ids)}
-          />
-          <ColorField
-            id="prop-bg"
-            label="Background"
-            compact
-            value={style.background ?? "#ffffff"}
-            fallback="#ffffff"
-            onValue={(v) => applyStyle({ background: v }, ids)}
-          />
-        </div>
-      </Section>
+      {showShared && (
+        <Section title={t("sharedProps")}>
+          <div class="prop-grid prop-grid--2">
+            <ColorField
+              id="shared-bg"
+              label="Background"
+              compact
+              value={style.background ?? "#ffffff"}
+              fallback="#ffffff"
+              onValue={(v) => applyStyle({ background: v }, ids)}
+            />
+            <ColorField
+              id="shared-color"
+              label="Color"
+              compact
+              value={style.color}
+              fallback="#2a2622"
+              onValue={(v) => applyStyle({ color: v }, ids)}
+            />
+            <NumField
+              id="shared-border"
+              label="Stroke"
+              compact
+              value={style.borderWidth ?? 0}
+              min={0}
+              max={40}
+              onValue={(v) => applyStyle({ borderWidth: clamp0(v) }, ids)}
+            />
+            <ColorField
+              id="shared-border-color"
+              label="Stroke color"
+              compact
+              value={style.borderColor ?? "#000000"}
+              fallback="#000000"
+              onValue={(v) => applyStyle({ borderColor: v }, ids)}
+            />
+            <NumField
+              id="shared-opacity"
+              label="Opacity"
+              compact
+              value={style.opacity ?? 1}
+              min={0}
+              max={1}
+              step={0.05}
+              onValue={(v) =>
+                applyStyle({ opacity: Math.min(1, Math.max(0, v)) }, ids)
+              }
+            />
+            <NumField
+              id="shared-padding"
+              label="Padding"
+              compact
+              value={style.padding ?? 0}
+              min={0}
+              max={200}
+              onValue={(v) => applyStyle({ padding: clamp0(v) }, ids)}
+            />
+          </div>
+        </Section>
+      )}
 
-      <Section title="Stroke">
-        <div class="prop-grid prop-grid--2">
-          <NumField
-            id="prop-border"
-            label="Width"
-            compact
-            value={style.borderWidth ?? 0}
-            min={0}
-            max={40}
-            onValue={(v) => applyStyle({ borderWidth: clamp0(v) }, ids)}
-          />
-          <ColorField
-            id="prop-border-color"
-            label="Color"
-            compact
-            value={style.borderColor ?? "#000000"}
-            fallback="#000000"
-            onValue={(v) => applyStyle({ borderColor: v }, ids)}
-          />
-          <NumField
-            id="prop-radius"
-            label="Radius"
-            compact
-            value={style.borderRadius ?? 0}
-            min={0}
-            max={999}
-            onValue={(v) => applyStyle({ borderRadius: clamp0(v) }, ids)}
-          />
-        </div>
-        <p class="muted small">
-          On a square, raise Radius toward half the side (or pick Circle) to get
-          a full circle.
-        </p>
-        <CheckRow
-          checked={Boolean(style.shadow)}
-          onChange={(v) => applyStyle({ shadow: v || undefined }, ids)}
-        >
-          Drop shadow
-        </CheckRow>
-      </Section>
+      {!showShared && (
+        <Section title="Fill">
+          <div class="prop-grid prop-grid--2">
+            <ColorField
+              id="prop-color"
+              label="Color"
+              compact
+              value={style.color}
+              fallback="#2a2622"
+              onValue={(v) => applyStyle({ color: v }, ids)}
+            />
+            <ColorField
+              id="prop-bg"
+              label="Background"
+              compact
+              value={style.background ?? "#ffffff"}
+              fallback="#ffffff"
+              onValue={(v) => applyStyle({ background: v }, ids)}
+            />
+          </div>
+        </Section>
+      )}
+
+      {!showShared && (
+        <Section title="Stroke">
+          <div class="prop-grid prop-grid--2">
+            <NumField
+              id="prop-border"
+              label="Width"
+              compact
+              value={style.borderWidth ?? 0}
+              min={0}
+              max={40}
+              onValue={(v) => applyStyle({ borderWidth: clamp0(v) }, ids)}
+            />
+            <ColorField
+              id="prop-border-color"
+              label="Color"
+              compact
+              value={style.borderColor ?? "#000000"}
+              fallback="#000000"
+              onValue={(v) => applyStyle({ borderColor: v }, ids)}
+            />
+            <NumField
+              id="prop-radius"
+              label="Radius"
+              compact
+              value={style.borderRadius ?? 0}
+              min={0}
+              max={999}
+              onValue={(v) => applyStyle({ borderRadius: clamp0(v) }, ids)}
+            />
+          </div>
+          <p class="muted small">
+            On a square, raise Radius toward half the side (or pick Circle) to get
+            a full circle.
+          </p>
+          <CheckRow
+            checked={Boolean(style.shadow)}
+            onChange={(v) => applyStyle({ shadow: v || undefined }, ids)}
+          >
+            Drop shadow
+          </CheckRow>
+        </Section>
+      )}
 
       {sel.type === "shape" && (
         <Section title="Shape">
@@ -496,6 +606,8 @@ export function ComponentProps() {
                 patch.w = side;
                 patch.h = side;
                 patch.style = { borderRadius: Math.ceil(side / 2) };
+                updateBlock(sel.id, { ...patch, lockAspectRatio: true });
+                return;
               } else if (form === "rounded" && !(sel.style.borderRadius ?? 0)) {
                 patch.style = { borderRadius: 16 };
               } else if (form === "rect") {
@@ -535,6 +647,7 @@ export function ComponentProps() {
                 h: side,
                 content: { variant: "circle", shape: "circle" },
                 style: { borderRadius: Math.ceil(side / 2) },
+                lockAspectRatio: true,
               });
             }}
           >
@@ -704,128 +817,65 @@ export function ComponentProps() {
               updateBlock(sel.id, { style: { listStyle: v as ListStyle } })
             }
           />
-          <Field
-            label="Items from"
-            forId="prop-list-mode"
-            compact
-            hint="Static lines (indent with Tab for nesting), a JSON array on the row, or a named dataset."
-          >
-            <select
-              id="prop-list-mode"
-              value={
-                String(sel.content.datasetName ?? "").trim()
-                  ? "dataset"
-                  : String(sel.content.sourcePath ?? "").trim()
-                    ? "path"
-                    : "static"
+          <div class="prop-grid prop-grid--2">
+            <ColorField
+              id="prop-marker-color"
+              label="Marker color"
+              compact
+              value={String(sel.content.markerColor ?? "")}
+              fallback="#8a8577"
+              onValue={(v) =>
+                updateBlock(sel.id, { content: { markerColor: v } })
               }
-              onChange={(e) => {
-                const mode = e.currentTarget.value;
-                if (mode === "static") {
-                  updateBlock(sel.id, {
-                    content: { datasetName: "", sourcePath: "" },
-                  });
-                } else if (mode === "path") {
-                  updateBlock(sel.id, {
-                    content: {
-                      datasetName: "",
-                      sourcePath:
-                        String(sel.content.sourcePath ?? "").trim() ||
-                        "line_items",
-                    },
-                  });
-                } else {
-                  const first = project.value.datasets?.[0]?.name ?? "";
-                  updateBlock(sel.id, {
-                    content: {
-                      sourcePath: "",
-                      datasetName:
-                        String(sel.content.datasetName ?? "").trim() || first,
-                    },
-                  });
-                }
-              }}
-            >
-              <option value="static">Static items</option>
-              <option value="path">Field on row (JSON array)</option>
-              <option value="dataset">Named dataset</option>
-            </select>
-          </Field>
-          {String(sel.content.datasetName ?? "").trim() ? (
-            <SelectField
-              id="prop-list-dataset"
-              label="Dataset"
-              value={String(sel.content.datasetName ?? "")}
-              options={[
-                { value: "", label: "— choose —" },
-                ...(project.value.datasets ?? []).map((d) => ({
-                  value: d.name,
-                  label: d.keyField
-                    ? `${d.name} (key: ${d.keyField})`
-                    : d.name,
-                })),
-              ]}
-              onChange={(v) =>
+            />
+            <NumField
+              id="prop-list-indent"
+              label="Marker indent"
+              compact
+              value={Number(sel.content.listIndent ?? 19)}
+              min={0}
+              max={120}
+              onValue={(v) =>
                 updateBlock(sel.id, {
-                  content: { datasetName: v, sourcePath: "" },
+                  content: { listIndent: Math.max(0, Math.round(v)) },
                 })
               }
             />
-          ) : null}
-          {String(sel.content.sourcePath ?? "").trim() ? (
-            <Field label="Array path" forId="prop-list-path" compact>
-              <input
-                id="prop-list-path"
-                value={String(sel.content.sourcePath ?? "")}
-                placeholder="line_items"
-                onInput={(e) =>
+            {(["decimal", "upper-roman", "lower-alpha"] as ListStyle[]).includes(
+              (style.listStyle ?? "disc") as ListStyle,
+            ) ? (
+              <NumField
+                id="prop-list-start"
+                label="Start at"
+                compact
+                value={Number(sel.content.start ?? 1)}
+                min={1}
+                max={999}
+                onValue={(v) =>
                   updateBlock(sel.id, {
-                    content: {
-                      sourcePath: e.currentTarget.value,
-                      datasetName: "",
-                    },
+                    content: { start: Math.max(1, Math.round(v)) },
                   })
                 }
               />
-            </Field>
-          ) : null}
-          {(String(sel.content.datasetName ?? "").trim() ||
-            String(sel.content.sourcePath ?? "").trim()) && (
-            <>
-              <Field
-                label="Item text"
-                forId="prop-list-item-text"
-                compact
-                hint="Template per row, e.g. {{label}} or {{name}}"
-              >
-                <input
-                  id="prop-list-item-text"
-                  value={String(sel.content.itemText ?? "{{label}}")}
-                  onInput={(e) =>
-                    updateBlock(sel.id, {
-                      content: { itemText: e.currentTarget.value },
-                    })
-                  }
-                />
-              </Field>
-              <Field
-                label="Children field"
-                forId="prop-list-children"
-                compact
-                hint="Nested array field on each row (default: children)"
-              >
-                <input
-                  id="prop-list-children"
-                  value={String(sel.content.childrenPath ?? "children")}
-                  onInput={(e) =>
-                    updateBlock(sel.id, {
-                      content: { childrenPath: e.currentTarget.value },
-                    })
-                  }
-                />
-              </Field>
-            </>
-          )}
+            ) : null}
+            <NumField
+              id="prop-list-nest-gap"
+              label="Nested spacing"
+              compact
+              value={Number(sel.content.nestGap ?? 4)}
+              min={0}
+              max={48}
+              onValue={(v) =>
+                updateBlock(sel.id, {
+                  content: { nestGap: Math.max(0, Math.round(v)) },
+                })
+              }
+            />
+          </div>
+          <p class="muted prop-hint">
+            Typography (headings, size, leading, line returns) is under Design
+            → Typography. Item text and data binding are under Data → Merge.
+          </p>
         </Section>
       )}
 
@@ -1664,13 +1714,7 @@ export function PageSetup() {
           />
         </Field>
         <div class="condition-presets" role="group" aria-label={t("pageCondition")}>
-          {[
-            ...LANGUAGE_CONDITION_PRESETS,
-            ...OUTPUT_KINDS.map((kind) => ({
-              label: OUTPUT_KIND_LABEL[kind],
-              value: `output.kind == '${kind}'`,
-            })),
-          ].map((p) => {
+          {dynamicConditionPresets(project.value, dataRows.value).map((p) => {
             const on = conditionHasClause(page.condition, p.value);
             return (
               <button

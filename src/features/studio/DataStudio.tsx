@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "preact/hooks";
 import {
+  catalogProjectId,
   dataRows,
   dataStudioFocus,
   previewRowIndex,
@@ -31,6 +32,7 @@ import {
 } from "../../model/dataCell";
 import { StudioLayout } from "../../ui/StudioLayout";
 import { HierarchyPanel } from "../tree/HierarchyPanel";
+import { DatasetSourcePanel } from "./DatasetSourcePanel";
 
 function ensureDatasets(draft: {
   datasets?: ProjectDataset[];
@@ -453,6 +455,11 @@ export function DataStudio() {
                 </select>
               </label>
             </div>
+
+            <DatasetSourcePanel
+              dataset={activeDs}
+              catalogProjectId={catalogProjectId.value}
+            />
 
             <div class="data-studio__actions field-row">
               <button type="button" class="btn btn--small" onClick={addRow}>

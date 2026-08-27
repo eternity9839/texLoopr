@@ -2,15 +2,7 @@ import type { CatalogApi, ProjectRecord } from "./types";
 import { createWebCatalog } from "./webCatalog";
 import { createHttpCatalog } from "./httpCatalog";
 import { resolveBackendTransport } from "../runtimeConfig";
-
-function isTauri(): boolean {
-  return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window;
-}
-
-async function invoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
-  const { invoke: tauriInvoke } = await import("@tauri-apps/api/core");
-  return tauriInvoke<T>(cmd, args);
-}
+import { invoke, isTauriShell } from "@texlooper/platform";
 
 function createTauriCatalog(): CatalogApi {
   return {
@@ -73,7 +65,7 @@ export function getCatalog(): Promise<CatalogApi> {
     catalogPromise = Promise.resolve(
       (() => {
         const transport = resolveBackendTransport();
-        if (transport === "tauri-local" || isTauri()) return createTauriCatalog();
+        if (transport === "tauri-local" || isTauriShell()) return createTauriCatalog();
         if (transport === "http-remote") return createHttpCatalog();
         return createWebCatalog();
       })(),

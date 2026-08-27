@@ -17,6 +17,11 @@ on:
       - "deploy/orangepi/**"
       - ".github/workflows/deploy-orangepi.yml"
   workflow_dispatch:
+    inputs:
+      force_redeploy:
+        description: Force app + API recreate even if deploy stamps unchanged
+        type: boolean
+        default: false
 
 concurrency:
   group: deploy-orangepi
@@ -121,4 +126,9 @@ jobs:
         run: bash deploy/orangepi/ci-attic-push.sh
 
       - name: Deploy to Pi (Tailscale SSH)
+        env:
+          FORCE_APP: ${{ github.event_name == 'workflow_dispatch' && inputs.force_redeploy && '1' || '0' }}
+          FORCE_API: ${{ github.event_name == 'workflow_dispatch' && inputs.force_redeploy && '1' || '0' }}
+          TEXLOOPER_GIT_COMMIT: ${{ github.sha }}
+          TEXLOOPER_GIT_TAG: ${{ github.ref_name }}
         run: bash deploy/orangepi/ci-deploy-remote.sh

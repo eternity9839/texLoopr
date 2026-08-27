@@ -1,29 +1,27 @@
 import { useEffect, useState } from "preact/hooks";
-import { getRuntimeInfo } from "../../model/backend";
+import { getRuntimeInfo, type RuntimeInfo } from "../../model/backend";
 import { prefs } from "../../state/store";
 import { t } from "../../i18n";
 
-const FALLBACK_VERSION = "0.1.0";
+const FALLBACK_VERSION = __APP_VERSION__;
+
+function formatBuiltAt(unix: number | undefined, locale: string): string | null {
+  if (!unix) return null;
+  const localeTag = locale === "fr" ? "fr-FR" : "en-GB";
+  return new Date(unix * 1000).toLocaleString(localeTag, {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+}
 
 export function AboutMode() {
-  void prefs.value.locale;
-  const [version, setVersion] = useState(FALLBACK_VERSION);
-  const [runtime, setRuntime] = useState<{
-    version: string;
-    backbone: string;
-    engines: string[];
-  } | null>(null);
+  const locale = prefs.value.locale;
+  void locale;
+  const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      try {
-        const { invoke } = await import("@tauri-apps/api/core");
-        const v = await invoke<string>("get_app_version");
-        if (!cancelled && v) setVersion(v);
-      } catch {
-        // Web / non-Tauri runtime
-      }
       const info = await getRuntimeInfo();
       if (!cancelled && info) setRuntime(info);
     })();
@@ -32,11 +30,48 @@ export function AboutMode() {
     };
   }, []);
 
+  const version = runtime?.version ?? FALLBACK_VERSION;
+  const channel = runtime?.channel ?? __APP_CHANNEL__;
+  const builtAt = formatBuiltAt(runtime?.builtAtUnix, locale ?? "en");
+  const commit = runtime?.gitCommit;
+  const profile = runtime?.profile;
+  const target = runtime?.target;
+
   return (
-    <div>
+    <div class="about-panel">
+      <div class="about-panel__banner" role="status">
+        <span class="about-panel__channel">{channel}</span>
+        <span>{t("aboutAlphaNotice")}</span>
+      </div>
       <p>{t("aboutLead")}</p>
-      <p class="muted">{t("aboutVersion", { version })}</p>
-      <p class="muted">{t("aboutStudio")}</p>
+      <dl class="about-panel__meta">
+        <div class="about-panel__row">
+          <dt>{t("aboutVersionLabel")}</dt>
+          <dd>{version}</dd>
+        </div>
+        {commit && (
+          <div class="about-panel__row">
+            <dt>{t("aboutBuildLabel")}</dt>
+            <dd>
+              {runtime?.gitTag ? (
+                <>
+                  <code>{runtime.gitTag}</code>
+                  {" · "}
+                </>
+              ) : null}
+              <code>{commit}</code>
+              {profile ? ` · ${profile}` : ""}
+              {target ? ` · ${target}` : ""}
+            </dd>
+          </div>
+        )}
+        {builtAt && (
+          <div class="about-panel__row">
+            <dt>{t("aboutBuiltAtLabel")}</dt>
+            <dd>{builtAt}</dd>
+          </div>
+        )}
+      </dl>
       {runtime && (
         <p class="muted" style={{ fontSize: "0.75rem" }}>
           {t("aboutRuntime", { backbone: runtime.backbone })}

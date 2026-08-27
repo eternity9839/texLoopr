@@ -1,30 +1,44 @@
-import { useState } from "preact/hooks";
+import { useEffect, useMemo, useState } from "preact/hooks";
 import { ensureProjectAutomation } from "../../model/document";
+import type { DataRow } from "../../model/bindings";
+import type { OutputProfile } from "../../model/workflow";
 import {
   downloadBase64,
   mimeForOutputKind,
 } from "../../model/download";
 import { OUTPUT_KIND_LABEL } from "../../model/workflow";
 import {
-  activeOutputProfile,
+  catalogProjectId,
   dataRows,
   previewRowIndex,
   project,
-  setStudioView,
 } from "../../state/store";
+import { SegmentedControl, SelectField } from "../../ui/controls";
 import { Icon } from "../../ui/icons";
 import { t } from "../../i18n";
 
 type RowScope = "current" | "all";
 
-function isRustRenderable(kind: string | undefined): boolean {
-  return kind === "pdf" || kind === "print";
+const STATIC_ROW: DataRow[] = [{}];
+
+function isRenderableOutput(kind: string | undefined): boolean {
+  return kind === "pdf" || kind === "print" || kind === "email";
+}
+
+function renderableOutputs(outputs: OutputProfile[] | undefined): OutputProfile[] {
+  return (outputs ?? []).filter((o) => isRenderableOutput(o.kind));
 }
 
 export function RenderPanel() {
   const proj = ensureProjectAutomation(project.value);
   const rows = dataRows.value;
-  const activeOutput = activeOutputProfile();
+  const pdfOutputs = useMemo(
+    () => renderableOutputs(proj.outputs),
+    [proj.outputs],
+  );
+  const [renderOutputId, setRenderOutputId] = useState(
+    () => pdfOutputs[0]?.id ?? "",
+  );
   const [rowScope, setRowScope] = useState<RowScope>("current");
   const [includeZip, setIncludeZip] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -33,27 +47,25 @@ export function RenderPanel() {
     import("../../model/backend").RenderBatchResult | null
   >(null);
 
-  const renderable = isRustRenderable(activeOutput?.kind);
+  useEffect(() => {
+    if (pdfOutputs.some((o) => o.id === renderOutputId)) return;
+    setRenderOutputId(pdfOutputs[0]?.id ?? "");
+  }, [pdfOutputs, renderOutputId]);
+
+  const renderOutput = pdfOutputs.find((o) => o.id === renderOutputId);
+  const isStatic = rows.length === 0;
+  const isBatch = rows.length > 1;
 
   const idx = Math.min(previewRowIndex.value, Math.max(rows.length - 1, 0));
-  const selectedRows =
-    rows.length === 0
-      ? []
-      : rowScope === "all"
-        ? rows
-        : [rows[idx]!];
+  const selectedRows: DataRow[] = isStatic
+    ? STATIC_ROW
+    : rowScope === "all"
+      ? rows
+      : [rows[idx]!];
 
   const onGenerate = async () => {
-    if (!activeOutput) {
-      setError(t("renderNoOutput"));
-      return;
-    }
-    if (!renderable) {
-      setError(t("renderUnsupportedOutput"));
-      return;
-    }
-    if (selectedRows.length === 0) {
-      setError(t("renderNoRows"));
+    if (!renderOutput) {
+      setError(t("renderNoPdfOutput"));
       return;
     }
 
@@ -65,8 +77,9 @@ export function RenderPanel() {
       const batch = await renderBatchBackend({
         project: proj,
         rows: selectedRows,
-        output: activeOutput,
+        output: renderOutput,
         includeZip: includeZip && selectedRows.length > 1,
+        projectId: catalogProjectId.value,
       });
       setResult(batch);
       if (batch.errors.length > 0 && batch.files.length === 0) {
@@ -83,80 +96,68 @@ export function RenderPanel() {
 
   return (
     <div class="render-panel panel-pad">
-      <p class="muted" style={{ marginTop: 0 }}>
-        {t("renderHint")}
+      <p class="render-panel__lede muted">
+        {renderOutput?.kind === "email"
+          ? t("renderHintEmail")
+          : isBatch
+            ? t("renderHintBatch")
+            : t("renderHintStatic")}
       </p>
 
-      <div class="render-panel__grid">
-        <div class="field">
-          <span class="field__label">{t("renderOutput")}</span>
-          <div class="render-panel__output-active">
-            <span>
-              {activeOutput
-                ? `${activeOutput.name} (${OUTPUT_KIND_LABEL[activeOutput.kind] ?? activeOutput.kind})`
-                : t("renderNoOutput")}
-            </span>
-            <button
-              type="button"
-              class="btn btn--ghost btn--small"
-              onClick={() => setStudioView("data")}
-            >
-              {t("renderChangeOutput")}
-            </button>
-          </div>
-          <p class="muted prop-hint" style={{ margin: "0.35rem 0 0" }}>
-            {t("renderOutputFromData")}
-          </p>
-        </div>
-
-        {!renderable && activeOutput && (
+      <div class="render-panel__card">
+        {pdfOutputs.length === 0 ? (
           <p class="render-panel__warn" role="status">
-            {t("renderUnsupportedOutput")}
+            {t("renderNoPdfOutput")}
           </p>
-        )}
-
-        <fieldset class="field">
-          <legend class="field__label">{t("renderRows")}</legend>
-          <div class="render-panel__radio-row">
-            <label class="render-panel__radio">
-              <input
-                type="radio"
-                name="render-scope"
-                checked={rowScope === "current"}
-                onChange={() => setRowScope("current")}
-              />
-              {t("renderRowCurrent")} ({Math.min(previewRowIndex.value, Math.max(rows.length - 1, 0)) + 1}
-              /{Math.max(rows.length, 1)})
-            </label>
-            <label class="render-panel__radio">
-              <input
-                type="radio"
-                name="render-scope"
-                checked={rowScope === "all"}
-                onChange={() => setRowScope("all")}
-                disabled={rows.length <= 1}
-              />
-              {t("renderRowAll")} ({rows.length})
-            </label>
-          </div>
-        </fieldset>
-
-        <label class="render-panel__check">
-          <input
-            type="checkbox"
-            checked={includeZip}
-            onChange={(e) => setIncludeZip(e.currentTarget.checked)}
-            disabled={selectedRows.length <= 1}
+        ) : (
+          <SelectField
+            id="render-output-pick"
+            label={t("renderOutput")}
+            value={renderOutputId}
+            options={pdfOutputs.map((o) => ({
+              value: o.id,
+              label: `${o.name} (${OUTPUT_KIND_LABEL[o.kind] ?? o.kind})`,
+            }))}
+            onChange={setRenderOutputId}
           />
-          {t("renderIncludeZip")}
-        </label>
+        )}
       </div>
+
+      {isBatch && (
+        <div class="render-panel__batch">
+          <span class="render-panel__card-label">{t("renderRows")}</span>
+          <SegmentedControl<RowScope>
+            ariaLabel={t("renderRows")}
+            value={rowScope}
+            options={[
+              {
+                value: "current",
+                label: `${t("renderRowCurrent")} (${idx + 1}/${rows.length})`,
+              },
+              {
+                value: "all",
+                label: `${t("renderRowAll")} (${rows.length})`,
+              },
+            ]}
+            onChange={setRowScope}
+          />
+          <label class="render-panel__check">
+            <input
+              type="checkbox"
+              checked={includeZip}
+              onChange={(e) => setIncludeZip(e.currentTarget.checked)}
+              disabled={rowScope !== "all"}
+            />
+            {t("renderIncludeZip")}
+          </label>
+        </div>
+      )}
 
       <div class="render-panel__actions">
         <button
           type="button"
-          class="btn btn--small"
-          disabled={busy || !renderable || selectedRows.length === 0}
+          class="btn"
+          disabled={busy || !renderOutput}
           onClick={() => void onGenerate()}
         >
           <Icon name="play" size={14} />
@@ -207,7 +208,7 @@ export function RenderPanel() {
                     downloadBase64(
                       file.bytesBase64,
                       file.name,
-                      mimeForOutputKind(activeOutput?.kind ?? "pdf"),
+                      mimeForOutputKind(renderOutput?.kind ?? "pdf"),
                     )
                   }
                 >

@@ -68,6 +68,7 @@ fn file_name(
     output: Option<&Value>,
     row_index: usize,
     ext: &str,
+    single: bool,
 ) -> String {
     let project_name = project
         .get("name")
@@ -77,6 +78,14 @@ fn file_name(
         .and_then(|o| o.get("name"))
         .and_then(|n| n.as_str())
         .unwrap_or("output");
+    if single {
+        return format!(
+            "{}-{}.{}",
+            safe_segment(project_name),
+            safe_segment(output_name),
+            ext
+        );
+    }
     format!(
         "{}-{}-{:03}.{}",
         safe_segment(project_name),
@@ -111,19 +120,28 @@ fn zip_entries(files: &[RenderBatchFile]) -> Result<Vec<u8>, String> {
 }
 
 pub fn render_batch(req: &RenderBatchRequest) -> Result<RenderBatchResult, RenderError> {
-    if req.rows.is_empty() {
-        return Err(RenderError::Msg("no data rows to render".into()));
-    }
+    let rows: Vec<Value> = if req.rows.is_empty() {
+        vec![Value::Object(Default::default())]
+    } else {
+        req.rows.clone()
+    };
 
     let ext = output_ext(req.output.as_ref());
     let mut files = Vec::new();
     let mut errors = Vec::new();
+    let single = rows.len() == 1;
 
-    for (row_index, row) in req.rows.iter().enumerate() {
+    for (row_index, row) in rows.iter().enumerate() {
         match render_project_pdf(&req.project, row, req.output.as_ref()) {
             Ok(bytes) => {
                 files.push(RenderBatchFile {
-                    name: file_name(&req.project, req.output.as_ref(), row_index, ext),
+                    name: file_name(
+                        &req.project,
+                        req.output.as_ref(),
+                        row_index,
+                        ext,
+                        single,
+                    ),
                     bytes_base64: B64.encode(&bytes),
                     row_index,
                 });

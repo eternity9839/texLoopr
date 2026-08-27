@@ -49,12 +49,18 @@ export function resolveCanvasScale(args: {
   availH: number;
   pageW?: number;
   pageH?: number;
+  /** Override max fit scale (WebKitGTK CSS-px mode may need ~96). */
+  maxScale?: number;
 }): number {
   const pageW = args.pageW ?? PAGE_WIDTH;
   const pageH = args.pageH ?? PAGE_HEIGHT;
-  if (args.mode === "manual") return clampZoom(args.zoom);
+  const maxScale = args.maxScale ?? MAX_CANVAS_SCALE;
+  if (args.mode === "manual") {
+    if (!Number.isFinite(args.zoom) || args.zoom <= 0) return 1;
+    return Math.min(maxScale, Math.max(MIN_CANVAS_SCALE, args.zoom));
+  }
   return fitScale(args.availW, args.availH, pageW, pageH, {
-    maxScale: MAX_CANVAS_SCALE,
+    maxScale,
   });
 }
 

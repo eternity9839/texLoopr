@@ -10,6 +10,7 @@ import {
   setGroupIsolation,
   prefs,
   previewLanguageOverride,
+  previewConditionOverrides,
 } from "../../state/store";
 import {
   extractMergePaths,
@@ -51,6 +52,7 @@ export function BlockAssociations({ compact = false }: { compact?: boolean }) {
         activeOut,
         {},
         previewLanguageOverride.value,
+        previewConditionOverrides.value,
       )
     : undefined;
 

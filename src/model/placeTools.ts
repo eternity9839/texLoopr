@@ -1,5 +1,5 @@
-import type { BlockStyle, BlockType } from "./document";
-import { BLOCK_DEFAULTS } from "./document";
+import type { BlockStyle, BlockType, ShapeVariant } from "./document";
+import { BLOCK_DEFAULTS, SHAPE_VARIANTS } from "./document";
 import { DATA_FIELD_COLOR } from "./dataField";
 import {
   LINK_HOOK_DEFAULTS,
@@ -21,6 +21,13 @@ export type PlacePresetId =
   | "date-today"
   | "date-fixed"
   | "date-field"
+  | "rect"
+  | "rounded"
+  | "ellipse"
+  | "circle"
+  | "triangle"
+  | "diamond"
+  | "line"
   | LinkHook;
 
 export type PlaceToolDef = {
@@ -39,6 +46,8 @@ export type PlaceDraft = {
   h: number;
   content: Record<string, unknown>;
   style: BlockStyle;
+  /** When true, place with aspect ratio locked (e.g. circle). */
+  lockAspectRatio?: boolean;
 };
 
 export function formatBytes(n: number): string {
@@ -149,6 +158,40 @@ export function buildPlaceDraft(
       w = 400;
       h = 16;
       break;
+    case "rect":
+    case "rounded":
+    case "ellipse":
+    case "circle":
+    case "triangle":
+    case "diamond":
+    case "line": {
+      const variant = preset as ShapeVariant;
+      const label =
+        SHAPE_VARIANTS.find((s) => s.value === variant)?.label ?? variant;
+      name = label;
+      content.variant = variant;
+      content.shape = variant;
+      content.filled = false;
+      style = {
+        background: "transparent",
+        borderWidth: 1.5,
+        borderColor: "#2a2622",
+        opacity: 1,
+        color: "#2a2622",
+        ...(variant === "rounded" ? { borderRadius: 12 } : {}),
+      };
+      if (variant === "circle") {
+        w = 120;
+        h = 120;
+      } else if (variant === "line") {
+        w = 400;
+        h = 16;
+      } else {
+        w = 160;
+        h = 100;
+      }
+      break;
+    }
     case "textbox":
       name = "Text box";
       content.text = "Text box";
@@ -254,6 +297,12 @@ export function buildPlaceDraft(
   }
 
   if (type === "signature") {
+    content.mode = content.mode ?? "open";
+    content.showLine = content.showLine !== false;
+    content.label = content.label ?? "Signature";
+    content.caption =
+      content.caption ?? "{{name}}\n{{role}}";
+    content.signedAt = content.signedAt ?? "";
     style = {
       ...style,
       fontSize: 11,
@@ -290,6 +339,10 @@ export function buildPlaceDraft(
     content.filled = false;
   }
 
+  const lockAspect =
+    type === "shape" &&
+    (preset === "circle" || content.variant === "circle");
+
   return {
     type,
     preset: preset ?? null,
@@ -302,6 +355,7 @@ export function buildPlaceDraft(
     h,
     content,
     style,
+    ...(lockAspect ? { lockAspectRatio: true as const } : {}),
   };
 }
 
@@ -312,25 +366,42 @@ export const TEXT_TOOLS: PlaceToolDef[] = [
     hint: "Multi-line text with {{fields}}",
   },
   { type: "text", label: "Text", hint: "Single-line label or heading" },
+  { type: "list", label: "List", hint: "Bulleted or numbered list" },
   {
     type: "data",
     label: "Data field",
     hint: "Merge field chip — hover chip to preview row 1",
   },
-  { type: "list", label: "List", hint: "Bulleted or numbered list" },
 ];
 
-export const MEDIA_TOOLS: PlaceToolDef[] = [
+/** Flyout: paragraph, text, list, data under one Text rail button. */
+export const TEXT_SHEET_TOOLS: PlaceToolDef[] = TEXT_TOOLS;
+
+/** Flyout: each shape variant. */
+export const SHAPE_SHEET_TOOLS: PlaceToolDef[] = SHAPE_VARIANTS.map((s) => ({
+  type: "shape" as const,
+  preset: s.value,
+  label: s.label,
+  hint: `Place a ${s.label.toLowerCase()}`,
+}));
+
+/** Flyout: picture + attachment. */
+export const MEDIA_SHEET_TOOLS: PlaceToolDef[] = [
   { type: "picture", label: "Picture", hint: "Image or logo — click to place" },
-  {
-    type: "shape",
-    label: "Shape",
-    hint: "Empty frame — fill and opacity in params",
-  },
   {
     type: "files",
     label: "Attachment",
     hint: "Attach a file (max 2 MB)",
+  },
+];
+
+/** @deprecated flat media list — prefer MEDIA_SHEET_TOOLS + SHAPE_SHEET_TOOLS */
+export const MEDIA_TOOLS: PlaceToolDef[] = [
+  ...MEDIA_SHEET_TOOLS,
+  {
+    type: "shape",
+    label: "Shape",
+    hint: "Empty frame — fill and opacity in params",
   },
 ];
 
@@ -376,7 +447,7 @@ export const SIGNATURE_QR_TOOLS: PlaceToolDef[] = [
   {
     type: "signature",
     label: "Signature",
-    hint: "Sign-here field — upload ink or bind {{signature_url}}",
+    hint: "Open pad or preset ink + identity (set mode in Design)",
   },
   {
     type: "qrcode",
@@ -431,17 +502,17 @@ export const WORD_HELPER_TOOLS: PlaceToolDef[] = [
   },
 ];
 
+/** Structure tools remain flat on the rail. */
 export const TOOL_GROUPS: { id: string; tools: PlaceToolDef[] }[] = [
-  { id: "text", tools: TEXT_TOOLS },
-  { id: "media", tools: MEDIA_TOOLS },
   { id: "structure", tools: STRUCTURE_TOOLS },
 ];
 
 /** All placeable types for context menus / hierarchy add. */
 export const ALL_PLACE_TOOLS: PlaceToolDef[] = [
-  ...TEXT_TOOLS,
+  ...TEXT_SHEET_TOOLS,
   ...LINK_DATE_TOOLS.filter((t) => !t.preset),
-  ...MEDIA_TOOLS,
+  ...MEDIA_SHEET_TOOLS,
+  { type: "shape", label: "Shape", hint: "Shape frame" },
   ...SIGNATURE_QR_TOOLS,
   ...STRUCTURE_TOOLS,
 ];

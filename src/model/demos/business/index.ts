@@ -5,7 +5,7 @@ import {
   optionalOutputTemplates,
 } from "../../workflow";
 import { DEMO_IMG } from "../assets";
-import { b, page, shell } from "../helpers";
+import { b, page, shell, id } from "../helpers";
 import { northlineStyleExtras, nlText, NL } from "../brand/northlineStyles";
 
 export function letter(): Project {
@@ -75,13 +75,22 @@ export function letter(): Project {
     },
     [
       page("Letter", [
+        b("date", {
+          name: "Printed today",
+          x: 480,
+          y: 108,
+          w: 160,
+          h: 22,
+          content: { source: "today", format: "short", path: "date", fixed: "" },
+          style: { ...nlText("nl-body-tight"), textAlign: "right", color: "#5c6570" },
+        }),
         b("text", {
           name: "Date",
           x: 40,
           y: 108,
           w: 200,
           h: 22,
-          content: { text: "{{date|date:short}}" },
+          content: { text: "{{date|date:long}}" },
           style: { ...nlText("nl-body-tight") },
         }),
         b("paragraph", {
@@ -111,7 +120,7 @@ export function letter(): Project {
           w: 620,
           h: 280,
           content: {
-            text: "Dear {{title}} {{name}},\n\nThank you for your inquiry regarding {{topic}}. We are pleased to confirm availability for the engagement described in our proposal dated {{date}}.\n\nPlease find the enclosed schedule. We remain at your disposal for any clarification.\n\nShould you require an earlier kickoff, we can rearrange the first milestone without affecting the overall fee schedule. Our delivery lead will contact your team within two business days of countersignature.",
+            text: "Dear {{title}} {{name}},\n\nThank you for your inquiry regarding {{topic}}. We are pleased to confirm availability for the engagement described in our proposal dated {{date|date:long}}.\n\nPlease find the enclosed schedule. We remain at your disposal for any clarification.\n\nShould you require an earlier kickoff, we can rearrange the first milestone without affecting the overall fee schedule. Our delivery lead will contact your team within two business days of countersignature.\n\nPrinted {{env.today|date:short}}.",
           },
           style: { ...nlText("nl-body"), lineHeight: 1.55 },
           condition: "vars.language != 'fr'",
@@ -123,7 +132,7 @@ export function letter(): Project {
           w: 620,
           h: 280,
           content: {
-            text: "Madame, Monsieur {{name}},\n\nNous vous remercions de votre demande concernant {{topic}}. Nous confirmons notre disponibilité pour la mission décrite dans notre proposition datée du {{date}}.\n\nVeuillez trouver ci-joint le calendrier. Nous restons à votre disposition pour toute précision.\n\nSi un démarrage anticipé est nécessaire, nous pouvons réaménager le premier jalon sans modifier le barème. Notre responsable livraison contactera votre équipe sous deux jours ouvrés après contre-signature.",
+            text: "Madame, Monsieur {{name}},\n\nNous vous remercions de votre demande concernant {{topic}}. Nous confirmons notre disponibilité pour la mission décrite dans notre proposition datée du {{date|date:long}}.\n\nVeuillez trouver ci-joint le calendrier. Nous restons à votre disposition pour toute précision.\n\nSi un démarrage anticipé est nécessaire, nous pouvons réaménager le premier jalon sans modifier le barème. Notre responsable livraison contactera votre équipe sous deux jours ouvrés après contre-signature.\n\nImprimé le {{env.today|date:short}}.",
           },
           style: { ...nlText("nl-body"), lineHeight: 1.55 },
           condition: "vars.language == 'fr'",
@@ -148,13 +157,21 @@ export function letter(): Project {
           style: { ...nlText("nl-body") },
           condition: "vars.language == 'fr'",
         }),
-        b("picture", {
+        b("signature", {
           name: "Signature",
           x: 40,
-          y: 612,
-          w: 160,
-          h: 44,
-          content: { src: DEMO_IMG.signature, alt: "Signature" },
+          y: 600,
+          w: 220,
+          h: 96,
+          content: {
+            mode: "preset",
+            src: DEMO_IMG.signature,
+            label: "Authorized signature",
+            caption: "{{signer}}\n{{role|default:Account Executive}}",
+            signedAt: "{{env.today|date:short}}",
+            showLine: true,
+          },
+          style: { fontSize: 11, color: "#5c6570", fontFamily: "ui" },
         }),
       ], { margins: { top: 0, right: 40, bottom: 48, left: 40 } }),
       page("Continuation", [
@@ -310,7 +327,7 @@ export function contract(): Project {
             y: 88,
             w: 620,
             h: 18,
-            content: { text: "Agreement No. {{contract_id}} · Effective {{start_date}}" },
+            content: { text: "Agreement No. {{contract_id}} · Effective {{start_date|date:long}}" },
             style: { fontSize: 11, color: "#5c6570" },
           }),
           b("shape", {
@@ -469,31 +486,38 @@ export function contract(): Project {
           },
           style: { fontSize: 11, color: "#1c2430", lineHeight: 1.5 },
         }),
-        b("text", {
-          name: "Sign provider",
+        b("signature", {
+          name: "Provider signature",
           x: 40,
-          y: 560,
-          w: 260,
-          h: 64,
-          content: { text: "Provider\n{{provider}}\n________________" },
-          style: { fontSize: 11, color: "#1c2430" },
+          y: 540,
+          w: 280,
+          h: 120,
+          content: {
+            mode: "preset",
+            src: DEMO_IMG.signature,
+            label: "Provider",
+            caption:
+              "{{signer_name|default:Authorized signatory}}\n{{signer_role|default:Provider}}",
+            signedAt: "{{signed_at|date:short}}",
+            showLine: true,
+          },
+          style: { fontSize: 11, color: "#5c6570", fontFamily: "ui" },
         }),
-        b("text", {
-          name: "Sign client",
+        b("signature", {
+          name: "Client signature",
           x: 360,
-          y: 560,
-          w: 260,
-          h: 64,
-          content: { text: "Client\n{{client}}\n________________" },
-          style: { fontSize: 11, color: "#1c2430" },
-        }),
-        b("picture", {
-          name: "Sig",
-          x: 40,
-          y: 640,
-          w: 150,
-          h: 40,
-          content: { src: DEMO_IMG.signature, alt: "Signature" },
+          y: 540,
+          w: 280,
+          h: 120,
+          content: {
+            mode: "open",
+            src: "",
+            label: "Client — sign here",
+            caption: "{{client}}\nPrint name · Title",
+            signedAt: "",
+            showLine: true,
+          },
+          style: { fontSize: 11, color: "#5c6570", fontFamily: "ui" },
         }),
         b("text", {
           name: "Footer",
@@ -501,7 +525,7 @@ export function contract(): Project {
           y: 900,
           w: 640,
           h: 20,
-          content: { text: "Schedule A · {{contract_id}} · {{start_date}}" },
+          content: { text: "Schedule A · {{contract_id}} · {{start_date|date:short}}" },
           style: { fontSize: 9, color: "#5c6570", textAlign: "center" },
           pin: { bottom: true, left: true, right: true },
         }),
@@ -644,7 +668,7 @@ export function invoice(): Project {
           w: 320,
           h: 140,
           content: {
-            text: "Payment terms: {{terms}}\nBank: {{bank.bank_name}}\nIBAN: {{bank.iban}}\nBIC: {{bank.bic}}\nQuestions: billing@northline.example\n\nInclude {{invoice_no}} on the transfer memo.\n\nProduct pack ({{pack_file_count}} files) — page 3.",
+            text: "Payment terms: {{terms}}\nBank: {{bank.bank_name}}\nIBAN: {{bank.iban}}\nBIC: {{bank.bic}}\nAmount due: {{total|currency:EUR}} ({{currency}})\nQuestions: billing@northline.example\n\nInclude {{invoice_no}} on the transfer memo.\n\nProduct pack ({{pack_file_count}} files) — page 3.\nGenerated {{env.today|date:short}}.",
           },
           style: { fontSize: 10, color: "#5c6570", lineHeight: 1.5 },
         }),
@@ -700,7 +724,9 @@ export function invoice(): Project {
           y: 18,
           w: 500,
           h: 28,
-          content: { text: "Invoice {{invoice_no}} — notes & remittance" },
+          content: {
+            text: "Invoice {{invoice_no}} — remittance · {{env.today|date:short}}",
+          },
           style: { fontSize: 16, fontWeight: 700, color: "#1c2430" },
           zIndex: 1,
         }),
@@ -739,9 +765,18 @@ export function invoice(): Project {
           w: 360,
           h: 100,
           content: {
-            text: "{{bank.bank_name}}\nIBAN: {{bank.iban}}\nBIC: {{bank.bic}}\nReference: {{invoice_no}}",
+            text: "{{bank.bank_name}}\nIBAN: {{bank.iban}}\nBIC: {{bank.bic}}\nReference: {{invoice_no}}\nAmount: {{total|currency:EUR}}",
           },
           style: { fontSize: 11, lineHeight: 1.5, color: "#3d4a5c" },
+          variants: [
+            {
+              id: id(),
+              output: "email",
+              content: {
+                text: "Pay online with reference {{invoice_no}} — amount {{total|currency:EUR}}. Bank details omitted in email copy.",
+              },
+            },
+          ],
         }),
         b("shape", {
           name: "QR plate",
@@ -756,6 +791,7 @@ export function invoice(): Project {
             borderWidth: 1,
             borderColor: "#d4d9e0",
           },
+          condition: "output.kind != 'email'",
         }),
         b("text", {
           name: "QR hint",
@@ -766,11 +802,32 @@ export function invoice(): Project {
           content: { text: "Scan-to-pay placeholder" },
           style: { fontSize: 10, color: "#5c6570", textAlign: "center" },
           zIndex: 2,
+          condition: "output.kind != 'email'",
+        }),
+        b("text", {
+          name: "Pay online strip",
+          x: 460,
+          y: 268,
+          w: 200,
+          h: 72,
+          content: {
+            text: "Pay online\n{{pay_url|default:https://northline.example/pay}}",
+          },
+          style: {
+            fontSize: 12,
+            fontWeight: 600,
+            color: "#1c2430",
+            textAlign: "center",
+            background: "#e8f0ee",
+            borderRadius: 6,
+          },
+          condition: "output.kind == 'email'",
+          zIndex: 2,
         }),
         b("text", {
           name: "Line recap label",
           x: 40,
-          y: 396,
+          y: 380,
           w: 300,
           h: 20,
           content: { text: "What am I paying for?" },
@@ -779,9 +836,9 @@ export function invoice(): Project {
         b("table", {
           name: "Line recap",
           x: 40,
-          y: 424,
+          y: 408,
           w: 620,
-          h: 140,
+          h: 120,
           content: {
             header: true,
             zebra: true,
@@ -796,14 +853,47 @@ export function invoice(): Project {
           },
           style: { fontSize: 11.5, color: "#3d4a5c" },
         }),
+        b("signature", {
+          name: "Auth signature",
+          x: 40,
+          y: 560,
+          w: 280,
+          h: 120,
+          content: {
+            mode: "preset",
+            src: DEMO_IMG.signature,
+            label: "Authorized for Northline",
+            caption:
+              "{{signer_name|default:Billing Office}}\n{{signer_role|default:Accounts receivable}}",
+            signedAt: "{{invoice_date|date:short}}",
+            showLine: true,
+          },
+          style: { fontSize: 11, color: "#5c6570", fontFamily: "ui" },
+        }),
+        b("signature", {
+          name: "Customer ack",
+          x: 360,
+          y: 560,
+          w: 280,
+          h: 120,
+          content: {
+            mode: "open",
+            src: "",
+            label: "Customer acknowledgment",
+            caption: "{{bill_name}}\nSign · Date",
+            signedAt: "",
+            showLine: true,
+          },
+          style: { fontSize: 11, color: "#5c6570", fontFamily: "ui" },
+        }),
         b("paragraph", {
           name: "Late policy",
           x: 40,
-          y: 590,
+          y: 700,
           w: 620,
-          h: 100,
+          h: 80,
           content: {
-            text: "Late payments accrue interest at 1% per month above the ECB reference rate. Disputes must be raised in writing within 14 days of the invoice date.\n\nFor a PO match, tax certificate, or product specification, reply to billing@northline.example with {{invoice_no}} in the subject. Supporting files are listed on page three.",
+            text: "Late payments accrue interest at 1% per month above the ECB reference rate. Disputes must be raised in writing within 14 days of {{invoice_date|date:short}}. Cite {{invoice_no}} in all correspondence.",
           },
           style: { fontSize: 11, lineHeight: 1.55, color: "#5c6570" },
         }),
@@ -1031,7 +1121,7 @@ export function advancedInvoice(): Project {
       author: "Northline Billing",
       subject: "Repeater + filters + #if",
       description:
-        "JSON line_items repeater, currency filters, conditional overdue banner.",
+        "JSON line_items repeater; Status condition axis flips overdue / open / paid on the same Page output.",
     },
     [
       page("Invoice", [
@@ -1057,16 +1147,59 @@ export function advancedInvoice(): Project {
           zIndex: 1,
         }),
         b("text", {
-          name: "Overdue",
+          name: "Banner overdue",
           x: 40,
           y: 88,
           w: 620,
-          h: 28,
+          h: 36,
           content: {
-            text: "{{#if status == 'past_due'}}OVERDUE — pay immediately{{else}}Status: {{status|upper}}{{/if}}",
+            text: "OVERDUE — amount {{total|currency:EUR}} was due {{due_date|date:short}}. Pay immediately.",
           },
-          style: { fontSize: 12, color: "#9b2c2c" },
-          condition: "status",
+          style: {
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#ffffff",
+            background: "#9b2c2c",
+            textAlign: "center",
+            verticalAlign: "middle",
+          },
+          condition: "vars.status == 'past_due'",
+        }),
+        b("text", {
+          name: "Banner open",
+          x: 40,
+          y: 88,
+          w: 620,
+          h: 36,
+          content: {
+            text: "Amount due {{total|currency:EUR}} by {{due_date|date:short}}.",
+          },
+          style: {
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#1c2430",
+            background: "#e8f0ee",
+            textAlign: "center",
+            verticalAlign: "middle",
+          },
+          condition: "vars.status == 'open'",
+        }),
+        b("text", {
+          name: "Banner paid",
+          x: 40,
+          y: 88,
+          w: 620,
+          h: 36,
+          content: { text: "PAID — thank you. No further action on {{invoice_no}}." },
+          style: {
+            fontSize: 13,
+            fontWeight: 700,
+            color: "#0f6b63",
+            background: "#d8efe8",
+            textAlign: "center",
+            verticalAlign: "middle",
+          },
+          condition: "vars.status == 'paid'",
         }),
         b("text", {
           name: "Bill to",
@@ -1112,31 +1245,28 @@ export function advancedInvoice(): Project {
           style: { fontSize: 14, fontWeight: 700, textAlign: "right" },
         }),
         b("paragraph", {
-          name: "Notes",
+          name: "Notes open",
           x: 40,
           y: 580,
           w: 620,
-          h: 100,
+          h: 80,
           content: {
-            text: "Line items above expand from the JSON `line_items` array. Currency filters format amounts for {{bill_company}}. Remittance advice is on page two.",
+            text: "Please remit by {{due_date|date:short}}. Cite {{invoice_no}} on the transfer. Remittance advice is on page two.",
           },
           style: { fontSize: 11, color: "#5c6570", lineHeight: 1.55 },
+          condition: "vars.status != 'paid'",
         }),
-        b("text", {
-          name: "Paid badge",
+        b("paragraph", {
+          name: "Notes paid",
           x: 40,
-          y: 700,
-          w: 180,
-          h: 36,
-          content: { text: "PAID ✓ {{invoice_no}}" },
-          style: {
-            fontSize: 14,
-            fontWeight: 700,
-            color: "#0f6b63",
-            textAlign: "center",
-            verticalAlign: "middle",
+          y: 580,
+          w: 620,
+          h: 80,
+          content: {
+            text: "This invoice is settled. Keep this page for your records; remittance advice is archived on page two.",
           },
-          condition: "status == 'paid'",
+          style: { fontSize: 11, color: "#5c6570", lineHeight: 1.55 },
+          condition: "vars.status == 'paid'",
         }),
         b("text", {
           name: "Footer",
@@ -1167,7 +1297,9 @@ export function advancedInvoice(): Project {
           y: 16,
           w: 620,
           h: 28,
-          content: { text: "Remittance advice — {{invoice_no}}" },
+          content: {
+            text: "Remittance advice — {{invoice_no}} · {{env.today|date:short}}",
+          },
           style: { fontSize: 18, fontWeight: 700, color: "#1c2430" },
           zIndex: 1,
         }),
@@ -1200,32 +1332,58 @@ export function advancedInvoice(): Project {
           },
           style: { fontSize: 12 },
         }),
-        b("shape", {
-          name: "Slip wash",
+        b("paragraph", {
+          name: "Wire lines",
           x: 40,
-          y: 292,
+          y: 280,
           w: 620,
-          h: 180,
-          content: { variant: "rect" },
-          style: {
-            background: "#f2f4f7",
-            borderRadius: 8,
-            borderWidth: 1,
-            borderColor: "#d4d9e0",
-            shadow: true,
-          },
-        }),
-        b("text", {
-          name: "Slip lines",
-          x: 64,
-          y: 320,
-          w: 572,
-          h: 128,
+          h: 56,
           content: {
-            text: "Payee: Northline Billing\nAmount: {{total|currency:EUR}}   Reference: {{invoice_no}}\nSigned: ______________________   Date: ____________",
+            text: "Payee: Northline Billing · Amount: {{total|currency:EUR}} · Reference: {{invoice_no}}\nIBAN on file with Accounts — cite {{invoice_no}} on the transfer memo.",
           },
-          style: { fontSize: 12, lineHeight: 1.9, color: "#1c2430" },
-          zIndex: 1,
+          style: { fontSize: 12, lineHeight: 1.55, color: "#1c2430" },
+          variants: [
+            {
+              id: id(),
+              output: "email",
+              content: {
+                text: "Pay online: {{pay_url|default:https://northline.example/pay}} · Reference {{invoice_no}} · {{total|currency:EUR}}",
+              },
+            },
+          ],
+        }),
+        b("signature", {
+          name: "Auth signature",
+          x: 40,
+          y: 360,
+          w: 280,
+          h: 120,
+          content: {
+            mode: "preset",
+            src: DEMO_IMG.signature,
+            label: "Authorized for Northline",
+            caption:
+              "{{signer_name|default:Billing Office}}\n{{signer_role|default:Accounts receivable}}",
+            signedAt: "{{invoice_date|date:short}}",
+            showLine: true,
+          },
+          style: { fontSize: 11, color: "#5c6570", fontFamily: "ui" },
+        }),
+        b("signature", {
+          name: "Customer ack",
+          x: 360,
+          y: 360,
+          w: 280,
+          h: 120,
+          content: {
+            mode: "open",
+            src: "",
+            label: "Customer acknowledgment",
+            caption: "{{bill_name}}\nSign · Date",
+            signedAt: "",
+            showLine: true,
+          },
+          style: { fontSize: 11, color: "#5c6570", fontFamily: "ui" },
         }),
         b("paragraph", {
           name: "Remit note",
@@ -1250,6 +1408,183 @@ export function advancedInvoice(): Project {
         }),
       ]),
     ],
+    {
+      conditions: [
+        {
+          id: id(),
+          name: "Status",
+          var: "status",
+          default: "open",
+          values: [
+            { label: "open", value: "open" },
+            { label: "past_due", value: "past_due" },
+            { label: "paid", value: "paid" },
+          ],
+        },
+      ],
+    },
+  );
+}
+
+export function decisionNotice(): Project {
+  return shell(
+    {
+      name: "Decision notice",
+      author: "Northline Compliance",
+      subject: "Approval / pending / revoked branches",
+      description:
+        "Declare a decision condition axis; Preview chips flip the same Page output.",
+    },
+    [
+      page("Notice", [
+        b("shape", {
+          name: "Letterhead",
+          x: 0,
+          y: 0,
+          w: 720,
+          h: 56,
+          content: { shape: "rect", filled: true },
+          style: { background: "#f3f7f6" },
+          zIndex: 0,
+          pin: { top: true, left: true, right: true },
+        }),
+        b("text", {
+          name: "Title",
+          x: 40,
+          y: 16,
+          w: 640,
+          h: 28,
+          content: { text: "Decision notice — {{case_id}}" },
+          style: { fontSize: 18, fontWeight: 700, color: "#1c2430" },
+          zIndex: 1,
+        }),
+        b("text", {
+          name: "Approved banner",
+          x: 40,
+          y: 80,
+          w: 640,
+          h: 40,
+          content: { text: "APPROVED — proceed with next steps" },
+          style: {
+            fontSize: 14,
+            fontWeight: 700,
+            color: "#ffffff",
+            background: "#0f6b63",
+            textAlign: "center",
+            verticalAlign: "middle",
+          },
+          condition: "vars.decision == 'approved'",
+        }),
+        b("text", {
+          name: "Pending banner",
+          x: 40,
+          y: 80,
+          w: 640,
+          h: 40,
+          content: { text: "PENDING — under review" },
+          style: {
+            fontSize: 14,
+            fontWeight: 700,
+            color: "#1c2430",
+            background: "#e8e4dc",
+            textAlign: "center",
+            verticalAlign: "middle",
+          },
+          condition: "vars.decision == 'pending'",
+        }),
+        b("text", {
+          name: "Revoked banner",
+          x: 40,
+          y: 80,
+          w: 640,
+          h: 40,
+          content: { text: "REVOKED — stop work immediately" },
+          style: {
+            fontSize: 14,
+            fontWeight: 700,
+            color: "#ffffff",
+            background: "#9b2c2c",
+            textAlign: "center",
+            verticalAlign: "middle",
+          },
+          condition: "vars.decision == 'revoked'",
+        }),
+        b("paragraph", {
+          name: "Body",
+          x: 40,
+          y: 140,
+          w: 640,
+          h: 120,
+          content: {
+            text: "Dear {{name}},\n\nRegarding case {{case_id}} dated {{decision_date|date:long}}.\n\n{{reason}}",
+          },
+          style: { fontSize: 13, lineHeight: 1.55, color: "#1c2430" },
+        }),
+        b("paragraph", {
+          name: "Next approved",
+          x: 40,
+          y: 280,
+          w: 640,
+          h: 100,
+          content: {
+            text: "You may continue delivery against the agreed schedule. Countersign the enclosed schedule and return within five business days.",
+          },
+          style: { fontSize: 12, lineHeight: 1.5, color: "#3d4a5c" },
+          condition: "vars.decision == 'approved'",
+        }),
+        b("paragraph", {
+          name: "Next pending",
+          x: 40,
+          y: 280,
+          w: 640,
+          h: 100,
+          content: {
+            text: "No action is required until review completes. We will notify you when a decision is recorded.",
+          },
+          style: { fontSize: 12, lineHeight: 1.5, color: "#3d4a5c" },
+          condition: "vars.decision == 'pending'",
+        }),
+        b("paragraph", {
+          name: "Next revoked",
+          x: 40,
+          y: 280,
+          w: 640,
+          h: 100,
+          content: {
+            text: "Cease all work under this case. Return materials and revoke access tokens within 48 hours. Contact compliance@northline.example with questions.",
+          },
+          style: { fontSize: 12, lineHeight: 1.5, color: "#3d4a5c" },
+          condition: "vars.decision == 'revoked'",
+        }),
+        b("text", {
+          name: "Footer",
+          x: 40,
+          y: 900,
+          w: 640,
+          h: 18,
+          content: {
+            text: "Northline Compliance · {{case_id}} · {{env.today|date:short}}",
+          },
+          style: { fontSize: 9, color: "#5c6570", textAlign: "center" },
+          pin: { bottom: true, left: true, right: true },
+        }),
+      ]),
+    ],
+    {
+      conditions: [
+        {
+          id: id(),
+          name: "Decision",
+          var: "decision",
+          default: "pending",
+          values: [
+            { label: "approved", value: "approved" },
+            { label: "pending", value: "pending" },
+            { label: "revoked", value: "revoked" },
+          ],
+        },
+      ],
+    },
   );
 }
 
@@ -1285,29 +1620,59 @@ export function memo(): Project {
           style: { fontSize: 14, fontWeight: 700, color: "#0f6b63" },
           zIndex: 1,
         }),
+        b("date", {
+          name: "Memo date",
+          x: 480,
+          y: 20,
+          w: 200,
+          h: 24,
+          content: { source: "field", path: "date", format: "long" },
+          style: {
+            fontSize: 11,
+            color: "#5c6570",
+            textAlign: "right",
+            fontFamily: "ui",
+          },
+          zIndex: 1,
+        }),
         b("table", {
           name: "Header fields",
           x: 40,
           y: 84,
           w: 620,
-          h: 120,
+          h: 90,
           content: {
-            rows: 4,
+            rows: 3,
             cols: 2,
             cells: [
               ["To", "{{to}}"],
               ["From", "{{from}}"],
               ["Date", "{{date|date:short}}"],
-              ["Subject", "{{subject}}"],
             ],
             borderColor: "#d4d9e0",
           },
           style: { fontSize: 11 },
         }),
+        b("text", {
+          name: "Subject",
+          x: 40,
+          y: 188,
+          w: 620,
+          h: 28,
+          content: { text: "Subject: {{subject}}" },
+          style: { fontSize: 13, fontWeight: 700, color: "#1c2430" },
+          variants: [
+            {
+              id: id(),
+              language: "fr",
+              content: { text: "Objet : {{subject_fr}}" },
+            },
+          ],
+        }),
         b("paragraph", {
           name: "Body",
           x: 40,
-          y: 228,
+          y: 232,
           w: 620,
           h: 140,
           content: {
@@ -1572,6 +1937,18 @@ export function shippingLabel(): Project {
           h: 24,
           content: { text: "{{tracking}}" },
           style: { fontSize: 16, fontWeight: 700, color: "#ffffff" },
+          zIndex: 1,
+        }),
+        b("text", {
+          name: "Ship date",
+          x: 480,
+          y: 40,
+          w: 200,
+          h: 24,
+          content: {
+            text: "Ship {{ship_date|date:short}}",
+          },
+          style: { fontSize: 11, color: "#c8c2b8", textAlign: "right" },
           zIndex: 1,
         }),
         b("paragraph", {

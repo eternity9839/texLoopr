@@ -1,15 +1,22 @@
 # Build context: repository root
-FROM rust:1.85-bookworm AS build
+FROM rust:1.88-bookworm AS build
+ARG TEXLOOPER_GIT_COMMIT=dev
+ARG TEXLOOPER_GIT_TAG=unknown
+ENV TEXLOOPER_GIT_COMMIT=$TEXLOOPER_GIT_COMMIT
+ENV TEXLOOPER_GIT_TAG=$TEXLOOPER_GIT_TAG
 WORKDIR /src
 COPY src-tauri /src/src-tauri
+COPY assets /src/assets
 WORKDIR /src/src-tauri
-RUN cargo build --release --bin texlooper-cli
+RUN cargo build --release --bin texlooper-cli --no-default-features
 
 FROM debian:bookworm-slim
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl \
   && rm -rf /var/lib/apt/lists/*
 COPY --from=build /src/src-tauri/target/release/texlooper-cli /usr/local/bin/texlooper-cli
+COPY assets /assets
 ENV TEXLOOPER_DATA_DIR=/data
+ENV TEXLOOPER_ASSETS=/assets
 VOLUME ["/data"]
 EXPOSE 8787
 ENTRYPOINT ["texlooper-cli"]

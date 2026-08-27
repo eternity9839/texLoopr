@@ -15,6 +15,21 @@ export type TexLooperRuntime = {
   transport?: BackendTransport;
   /** Deploy profile label for diagnostics */
   profile?: "desktop" | "official" | "inhouse" | "ephemeral" | "dev";
+  /** Emit layout size snapshots to console (desktop debugging). */
+  layoutDebug?: boolean;
+  /**
+   * Logical window size from the Tauri host (WebKitGTK often reports
+   * corrupt innerWidth/innerHeight — prefer this when present).
+   */
+  windowSize?: { w: number; h: number };
+  /**
+   * Inflated CSS viewport (logical × factor) when WebKit dpr ≈ ±1/96.
+   * Used by the desktop host iframe scaler.
+   */
+  cssWindowSize?: { w: number; h: number; factor: number };
+  /** True when running inside the desktop iframe host. */
+  embeddedInDesktopHost?: boolean;
+  hostScale?: number;
 };
 
 declare global {
@@ -30,6 +45,29 @@ export function runtimeConfig(): TexLooperRuntime {
 
 export function isEphemeral(): boolean {
   return Boolean(runtimeConfig().ephemeral);
+}
+
+/** Native Tauri shell (not browser / hosted demo). */
+export function isDesktopShell(): boolean {
+  if (typeof window === "undefined") return false;
+  if (runtimeConfig().profile === "desktop") return true;
+  return "__TAURI_INTERNALS__" in window;
+}
+
+/** Opt-in layout diagnostics (console + window.__TEXLOOPER_LAYOUT__). */
+export function isLayoutDebugEnabled(): boolean {
+  if (typeof window === "undefined") return false;
+  if (runtimeConfig().layoutDebug) return true;
+  try {
+    if (sessionStorage.getItem("texlooper:layoutDebug") === "1") return true;
+    if (new URLSearchParams(location.search).get("layoutDebug") === "1") {
+      sessionStorage.setItem("texlooper:layoutDebug", "1");
+      return true;
+    }
+  } catch {
+    /* ignore */
+  }
+  return false;
 }
 
 export function getApiBaseUrl(): string | null {

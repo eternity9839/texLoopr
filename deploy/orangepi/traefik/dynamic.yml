@@ -1,4 +1,5 @@
 # Local Traefik only — Pangolin terminates public HTTPS and tunnels here via Newt.
+# Access control is at Pangolin; no in-app demo login (ForwardAuth removed).
 http:
   middlewares:
     crowdsec:
@@ -20,23 +21,7 @@ http:
             - 127.0.0.1/32
             - 100.64.0.0/10
 
-    texlooper-auth:
-      forwardAuth:
-        address: http://auth:3000/auth/verify
-        trustForwardHeader: true
-        authResponseHeaders:
-          - X-Forwarded-User
-
   routers:
-    texlooper-login:
-      rule: PathPrefix(`/login`) || PathPrefix(`/logout`) || PathPrefix(`/auth/logout`) || PathPrefix(`/auth/verify`) || PathPrefix(`/healthz`)
-      entryPoints:
-        - web
-      middlewares:
-        - crowdsec
-      service: auth
-      priority: 100
-
     # Rust API (same origin as SPA — config.js apiBaseUrl: "/")
     texlooper-api:
       rule: PathPrefix(`/v1`) || PathPrefix(`/health`)
@@ -44,7 +29,6 @@ http:
         - web
       middlewares:
         - crowdsec
-        - texlooper-auth
       service: api
       priority: 50
 
@@ -54,15 +38,10 @@ http:
         - web
       middlewares:
         - crowdsec
-        - texlooper-auth
       service: app
       priority: 1
 
   services:
-    auth:
-      loadBalancer:
-        servers:
-          - url: http://auth:3000
     app:
       loadBalancer:
         servers:

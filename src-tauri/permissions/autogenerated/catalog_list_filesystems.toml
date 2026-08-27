@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-catalog-list-filesystems"
+description = "Enables the catalog_list_filesystems command without any pre-configured scope."
+commands.allow = ["catalog_list_filesystems"]
+
+[[permission]]
+identifier = "deny-catalog-list-filesystems"
+description = "Denies the catalog_list_filesystems command without any pre-configured scope."
+commands.deny = ["catalog_list_filesystems"]

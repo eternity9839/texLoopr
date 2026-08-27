@@ -1,0 +1,74 @@
+import { describe, expect, it } from "vitest";
+import { email } from "../demos/mass-publication/index";
+import { buildEmailArtifacts, buildEmlMessage } from "./index";
+
+describe("email pipeline", () => {
+  it("buildEmlMessage emits multipart headers", () => {
+    const eml = buildEmlMessage({
+      subject: "Hello",
+      text: "plain",
+      html: "<p>hi</p>",
+      appVersion: "0.3.2-alpha",
+      appChannel: "alpha",
+      installId: "11111111-2222-4333-8444-555555555555",
+      projectId: "proj-demo",
+    });
+    expect(eml).toContain("MIME-Version: 1.0");
+    expect(eml).toContain("multipart/alternative");
+    expect(eml).toContain("Subject: Hello");
+    expect(eml).toContain("text/plain");
+    expect(eml).toContain("text/html");
+    expect(eml).toContain("X-Mailer: texLooper/0.3.2-alpha (alpha)");
+    expect(eml).toContain("X-TexLooper-Version: 0.3.2-alpha");
+    expect(eml).toContain(
+      "X-TexLooper-Instance-Id: 11111111-2222-4333-8444-555555555555",
+    );
+    expect(eml).toContain("X-TexLooper-Project-Id: proj-demo");
+    expect(eml).toMatch(/Message-ID: </);
+  });
+
+  it("buildEmailArtifacts for newsletter demo", () => {
+    const project = email();
+    const row = {
+      preheader: "Skim in a minute",
+      title: "Ship notes",
+      intro: "We shipped reliability work.",
+      first_name: "Ada",
+      email: "ada@example.com",
+      language: "en",
+      cta_label: "Read more",
+      cta_url: "https://example.com",
+      mod1_title: "Reliability",
+      mod1_body: "Fewer incidents",
+      mod2_title: "Docs",
+      mod2_body: "Clearer guides",
+      sender_name: "Northline",
+      sender_role: "Lifecycle",
+      unsub_url: "https://example.com/unsub",
+      year: "2026",
+      subject: "Ship notes for {{first_name}}",
+    };
+    const output =
+      project.outputs?.find((o) => o.kind === "email") ??
+      ({
+        id: "out-email",
+        name: "Email",
+        kind: "email" as const,
+      });
+
+    const art = buildEmailArtifacts({
+      project,
+      row,
+      output,
+      installId: "aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee",
+    });
+    expect(art.html).toContain("Ship notes");
+    expect(art.html.toLowerCase()).toContain("<table");
+    expect(art.eml).toMatch(/multipart\//);
+    expect(art.eml).toMatch(/^From:/m);
+    expect(art.eml).toContain("X-TexLooper-Instance-Id: aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee");
+    expect(art.eml).toContain("X-Mailer: texLooper/");
+    expect(art.text).toContain("Ship notes");
+    expect(art.subject).toContain("Ada");
+  });
+});

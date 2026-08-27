@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-catalog-save-project"
+description = "Enables the catalog_save_project command without any pre-configured scope."
+commands.allow = ["catalog_save_project"]
+
+[[permission]]
+identifier = "deny-catalog-save-project"
+description = "Denies the catalog_save_project command without any pre-configured scope."
+commands.deny = ["catalog_save_project"]

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-pdf-import-structure"
+description = "Enables the pdf_import_structure command without any pre-configured scope."
+commands.allow = ["pdf_import_structure"]
+
+[[permission]]
+identifier = "deny-pdf-import-structure"
+description = "Denies the pdf_import_structure command without any pre-configured scope."
+commands.deny = ["pdf_import_structure"]

@@ -263,6 +263,17 @@ export function PlaceToolOptions() {
 
       {draft.type === "signature" && (
         <>
+          <select
+            class="options-bar__select"
+            aria-label="Signature mode"
+            value={String(draft.content.mode ?? "open")}
+            onChange={(e) =>
+              updatePlaceDraft({ content: { mode: e.currentTarget.value } })
+            }
+          >
+            <option value="open">Open pad</option>
+            <option value="preset">Prefilled ink</option>
+          </select>
           <input
             class="options-bar__text"
             aria-label="Signature image"

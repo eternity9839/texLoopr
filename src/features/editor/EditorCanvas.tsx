@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "preact/hooks";
+import { observeResize } from "../../ui/observeResize";
 import {
   AppContextMenu,
   type ContextMenuEntry,
@@ -10,6 +11,7 @@ import {
   insertBlock,
   select,
   selectBlockToggle,
+  selectBlockAdd,
   selectBlocks,
   selection,
   selectedBlock,
@@ -42,6 +44,7 @@ import {
   updatePage,
   focusDataFieldFromBindingPath,
   previewLanguageOverride,
+  previewConditionOverrides,
   cycleActiveVisiblePage,
 } from "../../state/store";
 import {
@@ -61,6 +64,8 @@ import { composeChromeBlocks, ensurePageChrome } from "../../model/pageChrome";
 import { parseTableHeightMode } from "../../model/tableLayout";
 import { dataColumnNames } from "../../model/bindings";
 import { blockMeetsCondition, pageMeetsCondition } from "../../model/bindings";
+import { resolveBlockPresentation } from "../../model/blockVariants";
+import { resolveDocumentLanguage } from "../../model/documentLanguage";
 import { renderBlock } from "./blocks";
 import type { RuntimeContext } from "../../model/expr";
 import type { BlockType } from "../../model/document";
@@ -77,6 +82,8 @@ import {
   type CanvasZoomMode,
 } from "./canvasScale";
 import { pageCoordsFromEvent } from "./pageCoords";
+import { measureBoardViewport } from "./measureBoardViewport";
+import { maxCanvasScaleForViewport } from "../../ui/viewportMetrics";
 
 interface EditorCanvasProps {
   preview?: boolean;
@@ -108,8 +115,8 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   const comments = project.value.comments ?? [];
   const spacing = gridSpacing(prefs.value);
   const canvasSize = canvasSizeForSession(project.value, prefs.value);
-  const pageW = canvasSize.w;
-  const pageH = canvasSize.h;
+  const pageW = Math.round(canvasSize.w);
+  const pageH = Math.round(canvasSize.h);
   const viewMode = prefs.value.pageViewMode ?? "continuous";
   const boardRotate = prefs.value.canvasRotate ?? 0;
   const zoomMode = (prefs.value.canvasZoomMode ?? "fit") as CanvasZoomMode;
@@ -144,14 +151,12 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
   const [scale, setScale] = useState(1);
   useEffect(() => {
     const board = boardRef.current;
-    const el = fitAreaRef.current;
-    if (!board && !el) return;
+    if (!board) return;
     let raf = 0;
     const update = () => {
-      const box = board ?? el;
+      const box = boardRef.current;
       if (!box) return;
-      const w = box.clientWidth;
-      const h = box.clientHeight;
+      const { w, h } = measureBoardViewport(box);
       if (w > 1 && h > 1) {
         const next = resolveCanvasScale({
           mode: zoomMode,
@@ -160,6 +165,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
           availH: Math.max(40, h - 48),
           pageW,
           pageH,
+          maxScale: maxCanvasScaleForViewport(),
         });
         setScale(next);
         canvasViewScale.value = next;
@@ -171,13 +177,16 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
       raf = requestAnimationFrame(update);
     });
     const t = window.setTimeout(update, 300);
-    const ro = new ResizeObserver(update);
-    if (board) ro.observe(board);
-    else if (el) ro.observe(el);
+    const onWinResize = () => update();
+    window.addEventListener("resize", onWinResize);
+    window.visualViewport?.addEventListener("resize", onWinResize);
+    const stopResize = observeResize(board, update);
     return () => {
       cancelAnimationFrame(raf);
       window.clearTimeout(t);
-      ro.disconnect();
+      window.removeEventListener("resize", onWinResize);
+      window.visualViewport?.removeEventListener("resize", onWinResize);
+      stopResize();
     };
   }, [pageW, pageH, viewMode, zoomMode, zoomPref]);
 
@@ -246,8 +255,15 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
       output,
       {},
       previewLanguageOverride.value,
+      previewConditionOverrides.value,
     );
-  }, [output, row, project.value, previewLanguageOverride.value]);
+  }, [
+    output,
+    row,
+    project.value,
+    previewLanguageOverride.value,
+    previewConditionOverrides.value,
+  ]);
 
   const showInactiveBranches =
     !preview && prefs.value.showInactiveBranches === true;
@@ -260,20 +276,39 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
         itemContexts: new Map<string, RuntimeContext>(),
       };
     }
+    const lang = resolveDocumentLanguage(
+      project.value,
+      row,
+      previewLanguageOverride.value,
+    );
+    const outputKind = String(output?.kind ?? "preview");
     const formatFiltered = showInactiveBranches
       ? source
       : source.filter((b) =>
           blockMeetsCondition(b, row, runtime, { preview }),
         );
+    const presented = formatFiltered.map((b) =>
+      resolveBlockPresentation(b, lang, outputKind),
+    );
     if (!preview) {
       return {
-        renderBlocks: formatFiltered,
+        renderBlocks: presented,
         itemContexts: new Map<string, RuntimeContext>(),
       };
     }
-    const flat = flattenBlocksForPreview(formatFiltered, row, runtime);
+    const flat = flattenBlocksForPreview(presented, row, runtime);
     return { renderBlocks: flat.blocks, itemContexts: flat.itemContexts };
-  }, [page?.blocks, preview, runtime, row, showInactiveBranches]);
+  }, [
+    page?.blocks,
+    preview,
+    runtime,
+    row,
+    showInactiveBranches,
+    output?.kind,
+    project.value,
+    previewLanguageOverride.value,
+    previewConditionOverrides.value,
+  ]);
 
   useEffect(() => {
     if (preview) return;
@@ -756,18 +791,27 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
         contexts: new Map<string, RuntimeContext>(),
       };
     }
+    const lang = resolveDocumentLanguage(
+      project.value,
+      row,
+      previewLanguageOverride.value,
+    );
+    const outputKind = String(output?.kind ?? "preview");
     const formatFiltered = source.filter((b) =>
       blockMeetsCondition(b, row, runtime, { preview }),
     );
+    const presented = formatFiltered.map((b) =>
+      resolveBlockPresentation(b, lang, outputKind),
+    );
     if (!preview) {
       return {
-        blocks: [...formatFiltered].sort(
+        blocks: [...presented].sort(
           (a, b) => effectiveZ(a) - effectiveZ(b) || a.id.localeCompare(b.id),
         ),
         contexts: new Map<string, RuntimeContext>(),
       };
     }
-    const flat = flattenBlocksForPreview(formatFiltered, row, runtime);
+    const flat = flattenBlocksForPreview(presented, row, runtime);
     return { blocks: flat.blocks, contexts: flat.itemContexts };
   };
 
@@ -992,6 +1036,7 @@ export function EditorCanvas({ preview = false }: EditorCanvasProps) {
                   return;
                 }
                 if (opts?.toggle) selectBlockToggle(id);
+                else if (opts?.additive) selectBlockAdd(id);
                 else select({ kind: "block", id });
               },
               onContextMenu: isInteractive

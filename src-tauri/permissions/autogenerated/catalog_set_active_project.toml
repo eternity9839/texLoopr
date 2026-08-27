@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-catalog-set-active-project"
+description = "Enables the catalog_set_active_project command without any pre-configured scope."
+commands.allow = ["catalog_set_active_project"]
+
+[[permission]]
+identifier = "deny-catalog-set-active-project"
+description = "Denies the catalog_set_active_project command without any pre-configured scope."
+commands.deny = ["catalog_set_active_project"]

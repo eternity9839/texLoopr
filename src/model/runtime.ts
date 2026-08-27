@@ -16,6 +16,11 @@ import {
 import { noteIssue } from "../state/issueLog";
 import { envClock } from "./envClock";
 import { injectDocumentLanguage } from "./documentLanguage";
+import {
+  injectProjectConditions,
+  type ConditionOverrides,
+} from "./documentConditions";
+import { buildEmitTrace } from "./emitIdentity";
 
 export interface RunOptions {
   project: Project;
@@ -62,6 +67,7 @@ function buildContext(opts: RunOptions): RuntimeContext {
     },
   };
   injectDocumentLanguage(ctx, opts.project, opts.row);
+  injectProjectConditions(ctx, opts.project, opts.row);
   attachProjectDatasets(opts.project, ctx, opts.row);
   return ctx;
 }
@@ -130,9 +136,11 @@ export function enrichPreviewContext(
   output: OutputProfile,
   vars: Record<string, ExprValue> = {},
   languageOverride?: string | null,
+  conditionOverrides?: ConditionOverrides | null,
 ): RuntimeContext {
   const ctx = previewContext(row, output, vars, true);
   injectDocumentLanguage(ctx, project, row, languageOverride);
+  injectProjectConditions(ctx, project, row, conditionOverrides);
   attachProjectDatasets(project, ctx, row);
   const steps: WorkflowStep[] = (project.workflow ?? []).filter(
     (s) => s.type === "bind" || s.type === "script" || s.type === "condition",
@@ -272,7 +280,8 @@ export function runWorkflow(opts: RunOptions): WorkflowResult {
             detail: skippedRow ? "skipped (row)" : "render ready",
           });
           break;
-        case "emit":
+        case "emit": {
+          const trace = buildEmitTrace();
           emit = {
             kind: String(ctx.output.kind ?? "preview"),
             payload: {
@@ -281,6 +290,11 @@ export function runWorkflow(opts: RunOptions): WorkflowResult {
               api: opts.output.api ?? null,
               data: ctx.data,
               scripts: scriptResults,
+              texlooper: {
+                version: trace.version,
+                channel: trace.channel,
+                instanceId: trace.instanceId,
+              },
             },
           };
           logs.push({
@@ -292,6 +306,7 @@ export function runWorkflow(opts: RunOptions): WorkflowResult {
             detail: `emit ${emit.kind}`,
           });
           break;
+        }
         default:
           logs.push({
             stepId: step.id,

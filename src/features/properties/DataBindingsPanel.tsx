@@ -5,35 +5,17 @@ import {
   updateBlock,
   dataRows,
   saveSelectionAsCustomObject,
-  project,
 } from "../../state/store";
 import { dataColumnNames } from "../../model/bindings";
 import { defaultRepeatChildren } from "../../model/repeat";
 import { getChildBlocks, isContainerBlock } from "../../model/groups";
-import { OUTPUT_KINDS, OUTPUT_KIND_LABEL } from "../../model/workflow";
-import { LANGUAGE_CONDITION_PRESETS } from "../../model/documentLanguage";
-import {
-  conditionHasClause,
-  toggleConditionClause,
-} from "../../model/conditionCompose";
+import type { Block } from "../../model/document";
 import { LINK_HOOKS, LINK_HOOK_LABEL } from "../../model/linkHook";
 import { Field, Section, SelectField } from "../../ui/controls";
-import {
-  indentedTextToListItems,
-  listItemsToIndentedText,
-  normalizeListItems,
-} from "../../model/listData";
-
-const CONDITION_PRESETS: { label: string; value: string }[] = [
-  ...OUTPUT_KINDS.map((kind) => ({
-    label: OUTPUT_KIND_LABEL[kind],
-    value: `output.kind == '${kind}'`,
-  })),
-  ...LANGUAGE_CONDITION_PRESETS,
-  { label: "Has role", value: "role" },
-  { label: "Not empty email", value: "!empty(email)" },
-  { label: "Status paid", value: "status == 'paid'" },
-];
+import { ListItemsField } from "./ListItemsField";
+import { ListDataSourceFields } from "./ListDataSourceFields";
+import { VisibilityConditionField } from "./VisibilityConditionField";
+import { BlockVariantsField } from "./BlockVariantsField";
 
 /** Inspector Data tab — merge fields, conditions, block content. */
 export function DataBindingsPanel() {
@@ -53,6 +35,11 @@ export function DataBindingsPanel() {
   const setCondition = (next: string) =>
     updateBlock(block.id, { condition: next || undefined });
 
+  const listIsStatic =
+    block.type === "list" &&
+    !String(block.content.datasetName ?? "").trim() &&
+    !String(block.content.sourcePath ?? "").trim();
+
   return (
     <div class="panel-pad" aria-label="Data bindings">
       {isContainerBlock(block) && (
@@ -64,49 +51,24 @@ export function DataBindingsPanel() {
           </p>
         </Section>
       )}
-      <Section title="Merge">
-        <Field
-          label="Condition"
-          forId="data-condition"
-          hint="Show when true in Edit and Preview. Chips toggle clauses with &&. Use vars.language, output.kind, or CSV fields."
-        >
-          <input
-            id="data-condition"
-            placeholder="vars.language == 'fr' && output.kind == 'pdf'"
-            value={block.condition ?? ""}
-            onInput={(e) => setCondition(e.currentTarget.value)}
+      <Section title="Merge" defaultOpen>
+        {block.type === "list" && listIsStatic && (
+          <ListItemsField
+            id="data-list"
+            items={block.content.items}
+            onChange={(nodes) =>
+              updateBlock(block.id, { content: { items: nodes } })
+            }
           />
-        </Field>
-        <div class="condition-presets" role="group" aria-label="Condition presets">
-          {CONDITION_PRESETS.map((p) => {
-            const on = conditionHasClause(block.condition, p.value);
-            return (
-              <button
-                type="button"
-                key={p.value}
-                class={
-                  on
-                    ? "condition-presets__btn condition-presets__btn--on"
-                    : "condition-presets__btn"
-                }
-                title={`${on ? "Remove" : "Add"}: ${p.value}`}
-                aria-pressed={on}
-                onClick={() =>
-                  setCondition(toggleConditionClause(block.condition, p.value))
-                }
-              >
-                {p.label}
-              </button>
-            );
-          })}
-          <button
-            type="button"
-            class="condition-presets__btn"
-            onClick={() => setCondition("")}
-          >
-            Clear
-          </button>
-        </div>
+        )}
+        {block.type === "list" && !listIsStatic && (
+          <p class="prop-hint">
+            Items are loaded from a data source. Edit item templates below or
+            switch back to static items. Double-click a row on the canvas to
+            edit inline.
+          </p>
+        )}
+
         {cols.length === 0 ? (
           <p class="muted prop-hint">Load Data rows to pick merge fields.</p>
         ) : (
@@ -145,6 +107,7 @@ export function DataBindingsPanel() {
             }}
           />
         )}
+
         {block.type === "data" && (
           <>
             <Field
@@ -246,141 +209,18 @@ export function DataBindingsPanel() {
             </Field>
           </>
         )}
+
         {block.type === "list" && (
-          <>
-            <Field
-              label="Items from"
-              forId="data-list-mode"
-              hint="Static (Tab-indent for nesting), JSON path, or named dataset."
-            >
-              <select
-                id="data-list-mode"
-                value={
-                  String(block.content.datasetName ?? "").trim()
-                    ? "dataset"
-                    : String(block.content.sourcePath ?? "").trim()
-                      ? "path"
-                      : "static"
-                }
-                onChange={(e) => {
-                  const mode = e.currentTarget.value;
-                  if (mode === "static") {
-                    updateBlock(block.id, {
-                      content: { datasetName: "", sourcePath: "" },
-                    });
-                  } else if (mode === "path") {
-                    updateBlock(block.id, {
-                      content: {
-                        datasetName: "",
-                        sourcePath:
-                          String(block.content.sourcePath ?? "").trim() ||
-                          "line_items",
-                      },
-                    });
-                  } else {
-                    const first = project.value.datasets?.[0]?.name ?? "";
-                    updateBlock(block.id, {
-                      content: {
-                        sourcePath: "",
-                        datasetName:
-                          String(block.content.datasetName ?? "").trim() ||
-                          first,
-                      },
-                    });
-                  }
-                }}
-              >
-                <option value="static">Static items</option>
-                <option value="path">Field on row</option>
-                <option value="dataset">Named dataset</option>
-              </select>
-            </Field>
-            {String(block.content.datasetName ?? "").trim() ? (
-              <SelectField
-                id="data-list-dataset"
-                label="Dataset"
-                value={String(block.content.datasetName ?? "")}
-                options={[
-                  { value: "", label: "— choose —" },
-                  ...(project.value.datasets ?? []).map((d) => ({
-                    value: d.name,
-                    label: d.name,
-                  })),
-                ]}
-                onChange={(v) =>
-                  updateBlock(block.id, {
-                    content: { datasetName: v, sourcePath: "" },
-                  })
-                }
-              />
-            ) : null}
-            {String(block.content.sourcePath ?? "").trim() ? (
-              <Field label="Array path" forId="data-list-path">
-                <input
-                  id="data-list-path"
-                  value={String(block.content.sourcePath ?? "")}
-                  onInput={(e) =>
-                    updateBlock(block.id, {
-                      content: {
-                        sourcePath: e.currentTarget.value,
-                        datasetName: "",
-                      },
-                    })
-                  }
-                />
-              </Field>
-            ) : null}
-            {(String(block.content.datasetName ?? "").trim() ||
-              String(block.content.sourcePath ?? "").trim()) && (
-              <>
-                <Field label="Item text" forId="data-list-item-text">
-                  <input
-                    id="data-list-item-text"
-                    value={String(block.content.itemText ?? "{{label}}")}
-                    onInput={(e) =>
-                      updateBlock(block.id, {
-                        content: { itemText: e.currentTarget.value },
-                      })
-                    }
-                  />
-                </Field>
-                <Field label="Children field" forId="data-list-children">
-                  <input
-                    id="data-list-children"
-                    value={String(block.content.childrenPath ?? "children")}
-                    onInput={(e) =>
-                      updateBlock(block.id, {
-                        content: { childrenPath: e.currentTarget.value },
-                      })
-                    }
-                  />
-                </Field>
-              </>
-            )}
-            {!String(block.content.datasetName ?? "").trim() &&
-              !String(block.content.sourcePath ?? "").trim() && (
-                <Field
-                  label="List items (Tab = nest)"
-                  forId="data-list"
-                >
-                  <textarea
-                    id="data-list"
-                    value={listItemsToIndentedText(
-                      normalizeListItems(block.content.items),
-                    )}
-                    onInput={(e) =>
-                      updateBlock(block.id, {
-                        content: {
-                          items: indentedTextToListItems(e.currentTarget.value),
-                        },
-                      })
-                    }
-                  />
-                </Field>
-              )}
-          </>
+          <ListDataSourceFields block={block as Block & { type: "list" }} />
         )}
       </Section>
+
+      <VisibilityConditionField
+        value={block.condition ?? ""}
+        onChange={setCondition}
+      />
+
+      <BlockVariantsField block={block} />
 
       {(block.type === "repeat" || block.type === "group") && (
         <Section title="Group / repeat">

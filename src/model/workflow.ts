@@ -14,9 +14,22 @@ export const OUTPUT_KINDS: OutputKind[] = [
   "image",
 ];
 
+/**
+ * Channel modalities shown in Preview. API is data ingress, not a Preview output.
+ */
+export const PREVIEW_OUTPUT_KINDS: OutputKind[] = [
+  "preview",
+  "pdf",
+  "print",
+  "email",
+  "sms",
+  "mobile",
+  "image",
+];
+
 export const OUTPUT_KIND_LABEL: Record<OutputKind, string> = {
   preview: "Screen",
-  pdf: "PDF",
+  pdf: "Page",
   print: "Print",
   email: "Email",
   sms: "SMS",
@@ -24,6 +37,9 @@ export const OUTPUT_KIND_LABEL: Record<OutputKind, string> = {
   api: "API",
   image: "Image",
 };
+
+/** Kinds selectable when adding an Automation output profile (no API). */
+export const AUTOMATION_OUTPUT_KINDS: OutputKind[] = PREVIEW_OUTPUT_KINDS;
 
 export interface OutputDevice {
   id: string;
@@ -75,7 +91,7 @@ export interface ProjectScript {
 }
 
 export function defaultOutputs(): OutputProfile[] {
-  // Keep the starter set small. Channel layouts (SMS, push, label, API) are
+  // Keep the starter set small. Channel layouts (SMS, push, label) are
   // opt-in via Automation — otherwise preview offers artboards the project
   // never configured and content looks cropped.
   return [
@@ -87,7 +103,7 @@ export function defaultOutputs(): OutputProfile[] {
     },
     {
       id: "out-pdf-a4",
-      name: "PDF A4",
+      name: "Page A4",
       kind: "pdf",
       pageSize: "A4",
       enabled: true,
@@ -127,13 +143,6 @@ export function optionalOutputTemplates(): OutputProfile[] {
       id: "out-mobile",
       name: "Mobile push",
       kind: "mobile",
-      enabled: true,
-    },
-    {
-      id: "out-api",
-      name: "API webhook",
-      kind: "api",
-      api: { url: "https://example.com/hooks/texlooper", method: "POST" },
       enabled: true,
     },
   ];

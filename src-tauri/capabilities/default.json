@@ -1,10 +1,48 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the main window",
+  "description": "Main window — loopback UI (127.0.0.1:14201) and tauri dev (localhost:1420)",
   "windows": ["main"],
+  "remote": {
+    "urls": [
+      "http://127.0.0.1:14201",
+      "http://127.0.0.1:14201/*",
+      "http://localhost:1420",
+      "http://localhost:1420/*"
+    ]
+  },
   "permissions": [
     "core:default",
-    "shell:allow-open"
+    "core:window:allow-close",
+    "core:window:allow-minimize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-start-dragging",
+    "shell:allow-open",
+    "allow-get-app-version",
+    "allow-get-runtime-info",
+    "allow-desktop-set-zoom",
+    "allow-data-parse",
+    "allow-dataset-sql-query",
+    "allow-dataset-read-file",
+    "allow-template-resolve",
+    "allow-workflow-run",
+    "allow-pdf-import-structure",
+    "allow-render-project-pdf-cmd",
+    "allow-render-batch-cmd",
+    "allow-catalog-db-path",
+    "allow-catalog-list-filesystems",
+    "allow-catalog-upsert-filesystem",
+    "allow-catalog-list-projects",
+    "allow-catalog-get-project",
+    "allow-catalog-get-active-project",
+    "allow-catalog-save-project",
+    "allow-catalog-set-active-project",
+    "allow-catalog-delete-project",
+    "allow-catalog-list-files",
+    "allow-catalog-upsert-file",
+    "allow-catalog-list-variables",
+    "allow-catalog-set-variable",
+    "allow-catalog-get-app-state",
+    "allow-catalog-set-app-state"
   ]
 }

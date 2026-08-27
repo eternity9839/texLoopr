@@ -23,10 +23,13 @@ import {
   activePage,
   select,
   setGroupIsolation,
+  showStartHub,
 } from "../state/store";
 import { findBlockAncestors } from "../model/outlineTree";
-import { isEphemeral } from "../runtimeConfig";
+import { isEphemeral, isDesktopShell } from "../runtimeConfig";
 import { usePdfImport } from "../features/import/PdfImportControl";
+import { useProjectJsonImport } from "../features/import/ProjectJsonImport";
+import { DesktopWindowControls } from "./DesktopWindowControls";
 
 const VIEWS: { id: StudioView; labelKey: "edit" | "data"; icon: IconName }[] = [
   { id: "edit", labelKey: "edit", icon: "edit" },
@@ -108,12 +111,26 @@ export function ContextBar() {
       : t("saveDraftToCatalog");
   const closeProjectMenu = () => setProjectMenuOpen(false);
   const pdfImport = usePdfImport(closeProjectMenu);
+  const jsonImport = useProjectJsonImport(closeProjectMenu);
 
   return (
     <header class="context-bar" role="banner">
       {pdfImport.fileInput}
+      {jsonImport.fileInput}
       {pdfImport.modal}
+      {jsonImport.modal}
       <div class="context-bar__brand-wrap" ref={projectMenuRef}>
+        {!ephemeral && (
+          <button
+            type="button"
+            class="btn btn--ghost btn--small btn--icon context-bar__home"
+            aria-label={t("startHubHome")}
+            title={t("startHubHome")}
+            onClick={() => showStartHub()}
+          >
+            <Icon name="home" size={15} />
+          </button>
+        )}
         <button
           type="button"
           class="context-bar__brand"
@@ -153,6 +170,15 @@ export function ContextBar() {
               }}
             >
               {t("importPdf")}
+            </MenuItem>
+            <MenuItem
+              icon="folder"
+              onClick={() => {
+                jsonImport.openPicker();
+                closeProjectMenu();
+              }}
+            >
+              {t("openProjectJson")}
             </MenuItem>
             {!ephemeral && (
               <MenuItem
@@ -323,6 +349,12 @@ export function ContextBar() {
       )}
 
       {view === "edit" && <AppearanceMenu />}
+      {isDesktopShell() && (
+        <>
+          <div class="context-bar__drag" data-tauri-drag-region />
+          <DesktopWindowControls />
+        </>
+      )}
     </header>
   );
 }

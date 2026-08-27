@@ -27,6 +27,7 @@ stable language signal that works in Edit, Preview, and headless render.
 
 ## Consequences
 
-- Welcome and wedding-style demos ship paired siblings at the same geometry.
+- Welcome and wedding-style demos may still use paired siblings at the same geometry.
 - Formats tree dimming respects active language as well as output kind.
-- A future “variant group” model could collapse duplicate geometry; not required yet.
+- Prefer [`Block.variants`](0017-block-variants-email-emit.md) when the same component
+  should adapt presentation per language/output without duplicating identity.

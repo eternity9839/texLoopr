@@ -54,9 +54,23 @@ rsync -az --delete -e "$RSYNC_RSH" \
   dist/ \
   "${USER}@${HOST}:${REMOTE}/deploy/orangepi/app/html/"
 
+rsync -az -e "$RSYNC_RSH" \
+  --exclude target --exclude gen/android/build \
+  deploy/inhouse/ \
+  "${USER}@${HOST}:${REMOTE}/deploy/inhouse/"
+
+rsync -az -e "$RSYNC_RSH" \
+  --exclude target --exclude gen/android \
+  src-tauri/ \
+  "${USER}@${HOST}:${REMOTE}/src-tauri/"
+
+rsync -az -e "$RSYNC_RSH" \
+  assets/ \
+  "${USER}@${HOST}:${REMOTE}/assets/"
+
 ts_ssh bash -s <<EOF
 set -euo pipefail
 cd ${REMOTE}/deploy/orangepi
 chmod +x ci-deploy.sh
-./ci-deploy.sh
+FORCE_APP=${FORCE_APP:-0} FORCE_API=${FORCE_API:-0} ./ci-deploy.sh
 EOF

@@ -362,6 +362,72 @@
   overflow: hidden;
 }
 
+.email-preview {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  background: var(--chrome);
+}
+
+.email-preview__chrome {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.email-preview__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+  font-size: var(--text-sm);
+}
+
+.email-preview__label {
+  color: var(--ink-muted);
+}
+
+.email-preview__frame {
+  flex: 1;
+  min-height: 0;
+  padding: 1rem;
+  overflow: auto;
+}
+
+.email-preview__iframe {
+  display: block;
+  width: min(640px, 100%);
+  height: min(720px, 100%);
+  min-height: 480px;
+  margin: 0 auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.block-variant-card {
+  margin-bottom: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--chrome-inset, var(--surface));
+}
+
+.block-variant-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+}
+
+
 .tool {
   display: grid;
   place-items: center;
@@ -462,7 +528,7 @@
 }
 
 .editor-board__scroll {
-  flex: 1;
+  flex: 1 1 0;
   min-width: 0;
   min-height: 0;
   overflow: auto;
@@ -679,13 +745,13 @@
   background-color: var(--board);
 }
 
-/* Centers the scaled sheet inside the scrollable board — size follows
-   the page transform, not a fake full-aspect placeholder. */
+/* Centers the scaled sheet inside the scrollable board.
+   Content-sized only — never min-width/min-height: 100% (circular with
+   parent overflow:auto in WebKitGTK → multi-million-px explosion). */
 .editor-fit-area {
   position: relative;
   width: max-content;
-  min-width: 100%;
-  min-height: 100%;
+  height: max-content;
   margin-inline: auto;
   display: flex;
   align-items: center;
@@ -2736,6 +2802,17 @@
   line-height: 1.35;
 }
 
+.block-runtime {
+  padding: 0.1rem 0.45rem;
+  border-radius: var(--radius-sm, 4px);
+  background: color-mix(in srgb, var(--runtime-field-ink, #9b87d9) 16%, transparent);
+  color: var(--runtime-field-ink, #9b87d9);
+  font-family: var(--font-ui, "Sora", sans-serif);
+  font-weight: 600;
+  font-size: inherit;
+  line-height: 1.35;
+}
+
 /* Merge chips on dark block fills (CTA teal, etc.) — keep readable */
 .block-body--dark-fill .block-data {
   --data-field-ink: #d8f3e8;
@@ -2744,8 +2821,21 @@
   box-shadow: inset 0 0 0 1px color-mix(in srgb, #ffffff 28%, transparent);
 }
 
+.block-body--dark-fill .block-runtime {
+  --runtime-field-ink: #e4d9ff;
+  background: color-mix(in srgb, #ffffff 18%, transparent);
+  color: #f3edff;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ffffff 28%, transparent);
+}
+
 .block-body--dark-fill .merge-aware-text__chip--warn.block-data {
   --data-field-ink: #ffe8a8;
+  color: #fff3c4;
+  background: color-mix(in srgb, #f5c542 22%, transparent);
+}
+
+.block-body--dark-fill .merge-aware-text__chip--warn.block-runtime {
+  --runtime-field-ink: #ffe8a8;
   color: #fff3c4;
   background: color-mix(in srgb, #f5c542 22%, transparent);
 }
@@ -2802,6 +2892,34 @@
   gap: 0.25rem;
   box-sizing: border-box;
   padding: 0.25rem 0.15rem 0.1rem;
+  position: relative;
+}
+
+.block-signature__mode {
+  position: absolute;
+  top: 0.15rem;
+  right: 0.15rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 0.1rem 0.35rem;
+  border-radius: 2px;
+  opacity: 0.85;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.block-signature--open .block-signature__mode,
+.block-signature__mode[data-mode="open"] {
+  color: #5c6570;
+  background: color-mix(in srgb, #e8e4dc 80%, transparent);
+}
+
+.block-signature--preset .block-signature__mode,
+.block-signature__mode[data-mode="preset"] {
+  color: #1d4a3a;
+  background: color-mix(in srgb, #c8e6d8 70%, transparent);
 }
 
 .block-signature__pad {
@@ -2840,6 +2958,12 @@
 .block-signature__caption {
   white-space: pre-wrap;
   opacity: 0.9;
+}
+
+.block-signature__dated {
+  font-size: 0.92em;
+  opacity: 0.7;
+  margin-top: 0.1rem;
 }
 
 .block-signature--binding,

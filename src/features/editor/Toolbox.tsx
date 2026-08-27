@@ -1,10 +1,13 @@
-import { useState } from "preact/hooks";
+import { useEffect, useState } from "preact/hooks";
 import { Icon, BLOCK_TYPE_ICON } from "../../ui/icons";
 import {
   ALL_PLACE_TOOLS,
   LINK_DATE_TOOLS,
+  MEDIA_SHEET_TOOLS,
+  SHAPE_SHEET_TOOLS,
   SIGNATURE_QR_TOOLS,
-  TOOL_GROUPS,
+  STRUCTURE_TOOLS,
+  TEXT_SHEET_TOOLS,
   WORD_HELPER_TOOLS,
   type PlaceToolDef,
 } from "../../model/placeTools";
@@ -37,7 +40,10 @@ const TOOL_LABEL_KEYS: Partial<Record<BlockType, MessageKey>> = {
   group: "toolGroup",
 };
 
-export function localizedBlockTypeLabel(type: BlockType, fallback?: string): string {
+export function localizedBlockTypeLabel(
+  type: BlockType,
+  fallback?: string,
+): string {
   const key = TOOL_LABEL_KEYS[type];
   return key ? t(key) : (fallback ?? type);
 }
@@ -46,18 +52,40 @@ function localizedToolLabel(tool: PlaceToolDef): string {
   return localizedBlockTypeLabel(tool.type, tool.label);
 }
 
-function toolKey(t: PlaceToolDef): string {
-  return t.preset ? `${t.type}:${t.preset}` : t.type;
+function toolKey(tool: PlaceToolDef): string {
+  return tool.preset ? `${tool.type}:${tool.preset}` : tool.type;
 }
 
-function isArmed(t: PlaceToolDef): boolean {
+function isArmed(tool: PlaceToolDef): boolean {
   return (
-    activeTool.value === t.type &&
-    (activeToolPreset.value ?? null) === (t.preset ?? null)
+    activeTool.value === tool.type &&
+    (activeToolPreset.value ?? null) === (tool.preset ?? null)
   );
 }
 
-type SheetId = "none" | "word" | "customs" | "linkDate" | "signQr";
+function anyArmed(tools: PlaceToolDef[]): boolean {
+  return tools.some(isArmed);
+}
+
+type SheetId =
+  | "none"
+  | "text"
+  | "shape"
+  | "media"
+  | "word"
+  | "customs"
+  | "linkDate"
+  | "signQr";
+
+/** Open a toolbox flyout from shortcuts (or elsewhere). */
+export const TOOLBOX_SHEET_EVENT = "texlooper-toolbox-sheet";
+
+export function openToolboxSheet(id: Exclude<SheetId, "none">): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent(TOOLBOX_SHEET_EVENT, { detail: { sheet: id } }),
+  );
+}
 
 function ToolSheet({
   title,
@@ -88,7 +116,7 @@ function ToolSheet({
             onClick={() => arm(tool)}
           >
             <Icon name={BLOCK_TYPE_ICON[tool.type]} size={12} />
-            <span>{tool.label}</span>
+            <span>{localizedToolLabel(tool)}</span>
           </button>
         ))}
       </div>
@@ -101,6 +129,16 @@ export function Toolbox() {
   void prefs.value.locale;
   const customs = project.value.customObjects ?? [];
   const [sheet, setSheet] = useState<SheetId>("none");
+
+  useEffect(() => {
+    const onSheet = (e: Event) => {
+      const detail = (e as CustomEvent<{ sheet: Exclude<SheetId, "none"> }>)
+        .detail;
+      if (detail?.sheet) setSheet(detail.sheet);
+    };
+    window.addEventListener(TOOLBOX_SHEET_EVENT, onSheet);
+    return () => window.removeEventListener(TOOLBOX_SHEET_EVENT, onSheet);
+  }, []);
 
   const arm = (tool: PlaceToolDef) => {
     setStudioView("edit");
@@ -115,8 +153,11 @@ export function Toolbox() {
   const toggleSheet = (id: Exclude<SheetId, "none">) =>
     setSheet((s) => (s === id ? "none" : id));
 
-  const linkDateArmed = LINK_DATE_TOOLS.some(isArmed);
-  const signQrArmed = SIGNATURE_QR_TOOLS.some(isArmed);
+  const textArmed = anyArmed(TEXT_SHEET_TOOLS);
+  const shapeArmed = anyArmed(SHAPE_SHEET_TOOLS);
+  const mediaArmed = anyArmed(MEDIA_SHEET_TOOLS);
+  const linkDateArmed = anyArmed(LINK_DATE_TOOLS);
+  const signQrArmed = anyArmed(SIGNATURE_QR_TOOLS);
 
   return (
     <div class="tool-palette" aria-label="Blocks toolbox" data-tour="toolbox">
@@ -136,57 +177,82 @@ export function Toolbox() {
           <Icon name="pointer" size={15} />
         </button>
         <span class="tool-palette__sep" aria-hidden="true" />
-        {TOOL_GROUPS.map((group, gi) => (
-          <div class="tool-palette__group" key={group.id} role="group">
-            {gi > 0 && <span class="tool-palette__sep" aria-hidden="true" />}
-            {group.tools.map((tool) => {
-              const label = localizedToolLabel(tool);
-              return (
-                <button
-                  type="button"
-                  class={isArmed(tool) ? "tool tool--on" : "tool"}
-                  key={toolKey(tool)}
-                  title={`${label} — ${tool.hint}`}
-                  aria-label={`${label}. ${tool.hint}`}
-                  aria-pressed={isArmed(tool)}
-                  onClick={() => arm(tool)}
-                >
-                  <Icon name={BLOCK_TYPE_ICON[tool.type]} size={15} />
-                </button>
-              );
-            })}
-            {group.id === "text" && (
-              <button
-                type="button"
-                class={
-                  sheet === "linkDate" || linkDateArmed
-                    ? "tool tool--on"
-                    : "tool"
-                }
-                title="Link & date — fold open to choose"
-                aria-label="Link and date"
-                aria-expanded={sheet === "linkDate"}
-                onClick={() => toggleSheet("linkDate")}
-              >
-                <Icon name="link" size={15} />
-              </button>
-            )}
-            {group.id === "media" && (
-              <button
-                type="button"
-                class={
-                  sheet === "signQr" || signQrArmed ? "tool tool--on" : "tool"
-                }
-                title="Signature & QR — fold open to choose"
-                aria-label="Signature and QR code"
-                aria-expanded={sheet === "signQr"}
-                onClick={() => toggleSheet("signQr")}
-              >
-                <Icon name="signature" size={15} />
-              </button>
-            )}
-          </div>
-        ))}
+
+        <button
+          type="button"
+          class={sheet === "text" || textArmed ? "tool tool--on" : "tool"}
+          title={`${t("toolTextSet")} (T)`}
+          aria-label={t("toolTextSet")}
+          aria-expanded={sheet === "text"}
+          onClick={() => toggleSheet("text")}
+        >
+          <Icon name="text" size={15} />
+        </button>
+        <button
+          type="button"
+          class={
+            sheet === "linkDate" || linkDateArmed ? "tool tool--on" : "tool"
+          }
+          title="Link & date — fold open to choose"
+          aria-label="Link and date"
+          aria-expanded={sheet === "linkDate"}
+          onClick={() => toggleSheet("linkDate")}
+        >
+          <Icon name="link" size={15} />
+        </button>
+
+        <span class="tool-palette__sep" aria-hidden="true" />
+
+        <button
+          type="button"
+          class={sheet === "shape" || shapeArmed ? "tool tool--on" : "tool"}
+          title={`${t("toolShapeSet")} (S)`}
+          aria-label={t("toolShapeSet")}
+          aria-expanded={sheet === "shape"}
+          onClick={() => toggleSheet("shape")}
+        >
+          <Icon name="shape" size={15} />
+        </button>
+        <button
+          type="button"
+          class={sheet === "media" || mediaArmed ? "tool tool--on" : "tool"}
+          title={`${t("toolMediaSet")} (I)`}
+          aria-label={t("toolMediaSet")}
+          aria-expanded={sheet === "media"}
+          onClick={() => toggleSheet("media")}
+        >
+          <Icon name="picture" size={15} />
+        </button>
+        <button
+          type="button"
+          class={sheet === "signQr" || signQrArmed ? "tool tool--on" : "tool"}
+          title="Signature & QR — fold open to choose"
+          aria-label="Signature and QR code"
+          aria-expanded={sheet === "signQr"}
+          onClick={() => toggleSheet("signQr")}
+        >
+          <Icon name="signature" size={15} />
+        </button>
+
+        <span class="tool-palette__sep" aria-hidden="true" />
+
+        {STRUCTURE_TOOLS.map((tool) => {
+          const label = localizedToolLabel(tool);
+          return (
+            <button
+              type="button"
+              class={isArmed(tool) ? "tool tool--on" : "tool"}
+              key={toolKey(tool)}
+              title={`${label} — ${tool.hint}`}
+              aria-label={`${label}. ${tool.hint}`}
+              aria-pressed={isArmed(tool)}
+              onClick={() => arm(tool)}
+            >
+              <Icon name={BLOCK_TYPE_ICON[tool.type]} size={15} />
+            </button>
+          );
+        })}
+
         <span class="tool-palette__sep" aria-hidden="true" />
         <button
           type="button"
@@ -210,10 +276,34 @@ export function Toolbox() {
         </button>
       </div>
 
+      {sheet === "text" && (
+        <ToolSheet
+          title={t("toolTextSet")}
+          hint={t("toolSheetHint")}
+          tools={TEXT_SHEET_TOOLS}
+          arm={arm}
+        />
+      )}
+      {sheet === "shape" && (
+        <ToolSheet
+          title={t("toolShapeSet")}
+          hint={t("toolSheetHint")}
+          tools={SHAPE_SHEET_TOOLS}
+          arm={arm}
+        />
+      )}
+      {sheet === "media" && (
+        <ToolSheet
+          title={t("toolMediaSet")}
+          hint={t("toolSheetHint")}
+          tools={MEDIA_SHEET_TOOLS}
+          arm={arm}
+        />
+      )}
       {sheet === "linkDate" && (
         <ToolSheet
           title="Link & date"
-          hint="Pick a variant, then click the page to place."
+          hint={t("toolSheetHint")}
           tools={LINK_DATE_TOOLS}
           arm={arm}
         />
@@ -221,7 +311,7 @@ export function Toolbox() {
       {sheet === "signQr" && (
         <ToolSheet
           title="Signature & QR"
-          hint="Pick a variant, then click the page to place."
+          hint={t("toolSheetHint")}
           tools={SIGNATURE_QR_TOOLS}
           arm={arm}
         />

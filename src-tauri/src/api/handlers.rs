@@ -10,19 +10,26 @@ use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
 
 pub fn runtime_info() -> Value {
-    serde_json::json!({
+    let mut info = serde_json::json!({
         "version": env!("CARGO_PKG_VERSION"),
         "backbone": "rust",
         "engines": [
             "catalog",
             "data_parse",
+            "data_sources",
             "template_resolve",
             "workflow_run",
             "pdf_import_structure",
             "render_project_pdf",
             "render_batch"
         ],
-    })
+    });
+    if let Value::Object(ref mut map) = info {
+        if let Value::Object(extra) = crate::build_info::json() {
+            map.extend(extra);
+        }
+    }
+    info
 }
 
 pub fn handle_data_parse(text: &str) -> Result<ParseResult, String> {

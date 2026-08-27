@@ -36,6 +36,8 @@ export function mimeForOutputKind(kind: string): string {
       return "application/pdf";
     case "image":
       return "image/png";
+    case "email":
+      return "message/rfc822";
     default:
       return "application/octet-stream";
   }

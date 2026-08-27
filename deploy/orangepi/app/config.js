@@ -2,6 +2,6 @@
 window.__TEXLOOPER__ = {
   profile: "ephemeral",
   ephemeral: true,
-  // Same origin: Traefik routes /v1 → texlooper-api (auth already at edge).
+  // Same origin: Traefik routes /v1 → texlooper-api (Pangolin handles access).
   apiBaseUrl: "/",
 };

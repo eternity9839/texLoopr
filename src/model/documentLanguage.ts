@@ -7,10 +7,6 @@ export const LANGUAGE_ROW_KEYS = ["language", "lang"] as const;
 
 export const DEFAULT_DOCUMENT_LANGUAGE = "en";
 
-/** Languages offered in Preview override chips and condition presets. */
-export const PREVIEW_LANGUAGE_OPTIONS = ["en", "fr", "nl", "de"] as const;
-export type PreviewLanguageCode = (typeof PREVIEW_LANGUAGE_OPTIONS)[number];
-
 function normalizeLang(raw: unknown): string | null {
   if (raw == null) return null;
   const s = String(raw).trim().toLowerCase();
@@ -64,11 +60,3 @@ export function injectDocumentLanguage(
   ctx.env = { ...ctx.env, language };
   return ctx;
 }
-
-/** Shared language condition presets for block/page visibility UI. */
-export const LANGUAGE_CONDITION_PRESETS: { label: string; value: string }[] = [
-  { label: "Lang EN", value: "vars.language == 'en'" },
-  { label: "Lang FR", value: "vars.language == 'fr'" },
-  { label: "Lang NL", value: "vars.language == 'nl'" },
-  { label: "Lang DE", value: "vars.language == 'de'" },
-];

@@ -1,15 +1,15 @@
 # texLooper — Orange Pi 5 hosted demo (via Pangolin Newt)
 
-Ephemeral web SPA behind Traefik ForwardAuth + CrowdSec. Public HTTPS is
-terminated by **Pangolin**; the Pi runs a native **Newt** systemd unit (NixOS)
-and exposes Traefik only on loopback.
+Ephemeral web SPA behind Traefik + CrowdSec. Public HTTPS and access control
+are handled by **Pangolin**; the Pi runs a native **Newt** systemd unit (NixOS)
+and exposes Traefik only on loopback (no demo login page).
 
 ## Architecture
 
 ```text
 Browser → Pangolin (TLS)
        → Newt (systemd on Pi)
-       → http://127.0.0.1:8788  (Traefik + CrowdSec + auth + SPA + Rust /v1)
+       → http://127.0.0.1:8788  (Traefik + CrowdSec + SPA + Rust /v1)
 ```
 
 Postgres is provisioned but **not** wired to the catalog yet (ephemeral demo uses `--no-catalog`).
@@ -22,7 +22,7 @@ Goal: **no full `docker compose build` on every change.**
 | Change | On Pi |
 |--------|--------|
 | SPA (`src/`, …) | CI builds `dist/` → rsync → `app/html` bind-mount → nginx reload |
-| `deploy/orangepi/auth/` | `docker compose build auth` + recreate auth only |
+| `deploy/orangepi/auth/` | optional `demo-auth` profile only (legacy demo login) |
 | Rust API (`src-tauri/`, Dockerfile.api) | `docker compose build api` (slow first time) + recreate |
 | Traefik / CrowdSec / compose | recreate those services only |
 | `.env` / Newt | never from CI (stay on the Pi) |
@@ -83,6 +83,6 @@ docker exec texlooper-crowdsec cscli decisions list
 | Unit / container | Role |
 |------------------|------|
 | `newt.service` | Pangolin site connector |
-| `texlooper-traefik` | `127.0.0.1:8788` + CrowdSec + ForwardAuth |
+| `texlooper-traefik` | `127.0.0.1:8788` + CrowdSec |
 | `texlooper-crowdsec` | LAPI |
-| `texlooper-auth` / `app` / `api` / `db` | Demo login, SPA, Rust engines (`/v1`), Postgres (unused catalog) |
+| `texlooper-app` / `api` / `db` | SPA, Rust engines (`/v1`), Postgres (unused catalog) |

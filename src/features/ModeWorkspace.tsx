@@ -6,6 +6,7 @@ import {
   overlay,
   cyclePreviewRow,
   cycleActiveOutput,
+  appPhase,
 } from "../state/store";
 import { handleEditStudioKeydown } from "./editor/editorShortcuts";
 import { AppShell } from "../ui/AppShell";
@@ -13,6 +14,9 @@ import { EditStudio } from "./studio/EditStudio";
 import { DataStudio } from "./studio/DataStudio";
 import { StudioOverlay } from "./overlays/StudioOverlay";
 import { EditionTour } from "./tour/EditionTour";
+import { LayoutDiagnosticsHost } from "../ui/LayoutDiagnosticsHost";
+import { StartHub } from "./start/StartHub";
+import { DocsMode } from "./modes/DocsMode";
 
 function isTypingTarget(t: EventTarget | null): boolean {
   if (!(t instanceof HTMLElement)) return false;
@@ -25,11 +29,14 @@ function isTypingTarget(t: EventTarget | null): boolean {
 }
 
 export function ModeWorkspace() {
+  const phase = appPhase.value;
   const view = studioView.value;
   const body = view === "data" ? <DataStudio /> : <EditStudio />;
 
   useEffect(() => {
+    if (appPhase.value !== "studio") return;
     const onKey = (e: KeyboardEvent) => {
+      if (appPhase.value !== "studio") return;
       if (
         handleEditStudioKeydown(e, {
           preview: previewMode.value,
@@ -43,7 +50,6 @@ export function ModeWorkspace() {
       if (studioView.value !== "edit") return;
       if (isTypingTarget(e.target)) return;
 
-      // Ctrl/⌘ + . — toggle preview
       if ((e.ctrlKey || e.metaKey) && e.key === ".") {
         e.preventDefault();
         setPreviewMode(!previewMode.value);
@@ -52,8 +58,6 @@ export function ModeWorkspace() {
 
       if (!previewMode.value) return;
 
-      // Preview navigation (only while Preview is on).
-      // Use e.code so Shift+[ still matches BracketLeft (e.key becomes "{").
       if (e.code === "BracketLeft" || e.code === "BracketRight") {
         e.preventDefault();
         const back = e.code === "BracketLeft";
@@ -75,11 +79,30 @@ export function ModeWorkspace() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  if (phase === "start") {
+    return (
+      <>
+        <StartHub />
+        <LayoutDiagnosticsHost />
+      </>
+    );
+  }
+
+  if (phase === "docs") {
+    return (
+      <>
+        <DocsMode />
+        <LayoutDiagnosticsHost />
+      </>
+    );
+  }
+
   return (
     <AppShell>
-      {body}
+      <div class="mode-workspace">{body}</div>
       <StudioOverlay />
       <EditionTour />
+      <LayoutDiagnosticsHost />
     </AppShell>
   );
 }

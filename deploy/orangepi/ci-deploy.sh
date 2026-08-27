@@ -54,7 +54,7 @@ install -m 0644 "$ROOT/app/config.js" "$DIST_DIR/config.js"
 
 new_dist=$(hash_tree "$DIST_DIR")
 new_auth=$(hash_tree "$ROOT/auth")
-new_api=$(hash_tree "$REPO_ROOT/deploy/inhouse/Dockerfile.api" "$REPO_ROOT/src-tauri")
+new_api=$(hash_tree "$REPO_ROOT/deploy/inhouse/Dockerfile.api" "$REPO_ROOT/src-tauri" "$REPO_ROOT/assets")
 new_proxy=$(hash_tree "$ROOT/traefik/dynamic.yml" "$ROOT/crowdsec" "$ROOT/docker-compose.yml")
 
 old_dist=$(cat "$DIST_STAMP" 2>/dev/null || echo "")
@@ -94,6 +94,9 @@ if [[ "$need_auth" == "1" ]]; then
 fi
 
 if [[ "$need_api" == "1" ]]; then
+  export TEXLOOPER_GIT_COMMIT="${TEXLOOPER_GIT_COMMIT:-$(git -C "$REPO_ROOT" rev-parse --short=7 HEAD 2>/dev/null || echo dev)}"
+  export TEXLOOPER_GIT_TAG="${TEXLOOPER_GIT_TAG:-$(git -C "$REPO_ROOT" describe --tags --always 2>/dev/null || echo unknown)}"
+  echo "api build identity: tag=${TEXLOOPER_GIT_TAG} commit=${TEXLOOPER_GIT_COMMIT}"
   echo "building Rust API image (first time is slow on the Pi)…"
   docker compose build api
   docker compose up -d --no-deps --force-recreate api
@@ -115,8 +118,8 @@ if [[ "$need_proxy" == "1" ]]; then
 fi
 
 # First boot / ensure everything is up without rebuilding images
-docker compose up -d db crowdsec auth api app traefik
+docker compose up -d db crowdsec api app traefik
 
 echo "smoke:"
-curl -sS -o /dev/null -w "  login %{http_code}\n" http://127.0.0.1:8788/login || true
+curl -sS -o /dev/null -w "  app %{http_code}\n" http://127.0.0.1:8788/ || true
 curl -sS -o /dev/null -w "  api-health (no cookie) %{http_code}\n" http://127.0.0.1:8788/v1/health || true

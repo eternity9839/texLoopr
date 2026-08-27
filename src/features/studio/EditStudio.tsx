@@ -11,10 +11,11 @@ import { DataBindingsPanel } from "../properties/DataBindingsPanel";
 import { MetadataPanel } from "../properties/PropertiesPanel";
 import { CommentsPanel } from "../editor/CommentsPanel";
 import { HistoryPanel } from "../properties/HistoryPanel";
+import { EmailPreviewFrame } from "../preview/EmailPreviewFrame";
 import { INSPECTOR_TABS } from "./inspectorTabs";
 import { t } from "../../i18n";
 import {
-  OUTPUT_KINDS,
+  PREVIEW_OUTPUT_KINDS,
   OUTPUT_KIND_LABEL,
   type OutputKind,
 } from "../../model/workflow";
@@ -28,14 +29,15 @@ import {
   inspectorTab,
   prefs,
   updatePrefs,
-  previewLanguageOverride,
-  setPreviewLanguageOverride,
+  previewConditionOverrides,
+  setPreviewConditionOverride,
 } from "../../state/store";
 import { ensureProjectAutomation } from "../../model/document";
+import { resolveDocumentLanguage } from "../../model/documentLanguage";
 import {
-  PREVIEW_LANGUAGE_OPTIONS,
-  resolveDocumentLanguage,
-} from "../../model/documentLanguage";
+  conditionChipValues,
+  resolveConditionValue,
+} from "../../model/documentConditions";
 
 export function EditStudio() {
   const preview = previewMode.value;
@@ -54,11 +56,13 @@ export function EditStudio() {
     outputs.find((o) => o.id === proj.activeOutputId)?.kind ??
     outputs[0]?.kind;
 
-  const langOverride = previewLanguageOverride.value;
-  const rowLang = resolveDocumentLanguage(
-    proj,
-    rows[idx],
-    null,
+  const row = rows[idx];
+  const rowLang = resolveDocumentLanguage(proj, row, null);
+  const conditionAxes = proj.conditions ?? [];
+  const overrides = previewConditionOverrides.value;
+
+  const previewKinds = PREVIEW_OUTPUT_KINDS.filter((kind) =>
+    outputs.some((o) => o.kind === kind),
   );
 
   const selectKind = (kind: OutputKind) => {
@@ -110,68 +114,83 @@ export function EditStudio() {
                   aria-label="Preview data row"
                   title="Previous/next: [ ] or Alt+← →"
                 >
-                  {rows.map((row, i) => (
+                  {rows.map((r, i) => (
                     <option value={i} key={i}>
                       {i + 1}:{" "}
                       {String(
-                        row.headline ??
-                          row.name ??
-                          row[Object.keys(row)[0] ?? ""] ??
+                        r.headline ??
+                          r.name ??
+                          r[Object.keys(r)[0] ?? ""] ??
                           `Row ${i + 1}`,
                       ).slice(0, 48)}
                     </option>
                   ))}
                 </select>
               )}
-              <div
-                class="preview-kinds"
-                role="group"
-                aria-label="Document language"
-                title="Override language for conditions (or use From row)"
-              >
-                <button
-                  type="button"
-                  class={
-                    langOverride == null
-                      ? "preview-kinds__btn preview-kinds__btn--on"
-                      : "preview-kinds__btn"
-                  }
-                  title={`From row (${rowLang})`}
-                  aria-pressed={langOverride == null}
-                  onClick={() => setPreviewLanguageOverride(null)}
-                >
-                  Row
-                </button>
-                {PREVIEW_LANGUAGE_OPTIONS.map((code) => {
-                  const active = langOverride === code;
-                  return (
+              {conditionAxes.map((cond) => {
+                const axisKey = cond.id;
+                const ov = overrides[axisKey] ?? overrides[cond.var];
+                const followRow = ov === undefined || ov === null;
+                const chips = conditionChipValues(cond, rows);
+                const resolved = resolveConditionValue(
+                  cond,
+                  row,
+                  typeof ov === "string" ? ov : undefined,
+                );
+                return (
+                  <div
+                    class="preview-kinds"
+                    role="group"
+                    aria-label={cond.name || cond.var}
+                    title={`${cond.name}: override vars.${cond.var} (or follow row)`}
+                    key={cond.id}
+                  >
                     <button
                       type="button"
-                      key={code}
                       class={
-                        active
+                        followRow
                           ? "preview-kinds__btn preview-kinds__btn--on"
                           : "preview-kinds__btn"
                       }
-                      title={`Language ${code.toUpperCase()}`}
-                      aria-label={`Language ${code}`}
-                      aria-pressed={active}
-                      onClick={() => setPreviewLanguageOverride(code)}
+                      title={`From row (${resolved || "—"})`}
+                      aria-pressed={followRow}
+                      onClick={() => setPreviewConditionOverride(axisKey, null)}
                     >
-                      {code.toUpperCase()}
+                      Row
                     </button>
-                  );
-                })}
-              </div>
+                    {chips.map((chip) => {
+                      const active = !followRow && ov === chip.value;
+                      return (
+                        <button
+                          type="button"
+                          key={chip.value}
+                          class={
+                            active
+                              ? "preview-kinds__btn preview-kinds__btn--on"
+                              : "preview-kinds__btn"
+                          }
+                          title={`${cond.name}: ${chip.label}`}
+                          aria-label={`${cond.name} ${chip.label}`}
+                          aria-pressed={active}
+                          onClick={() =>
+                            setPreviewConditionOverride(axisKey, chip.value)
+                          }
+                        >
+                          {chip.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                );
+              })}
               <div
                 class="preview-kinds"
                 role="group"
                 aria-label="Output kind"
                 title="Previous/next output: Shift+[ ]"
               >
-                {OUTPUT_KINDS.map((kind) => {
-                  const enabled = outputs.some((o) => o.kind === kind);
-                  const active = enabled && activeKind === kind;
+                {previewKinds.map((kind) => {
+                  const active = activeKind === kind;
                   return (
                     <button
                       type="button"
@@ -179,15 +198,12 @@ export function EditStudio() {
                       class={
                         active
                           ? "preview-kinds__btn preview-kinds__btn--on"
-                          : enabled
-                            ? "preview-kinds__btn"
-                            : "preview-kinds__btn preview-kinds__btn--off"
+                          : "preview-kinds__btn"
                       }
-                      disabled={!enabled}
                       title={
-                        enabled
-                          ? `${OUTPUT_KIND_LABEL[kind]} preview`
-                          : `No ${OUTPUT_KIND_LABEL[kind]} output yet`
+                        kind === "email"
+                          ? `${OUTPUT_KIND_LABEL[kind]} — HTML email preview`
+                          : `${OUTPUT_KIND_LABEL[kind]} preview`
                       }
                       aria-label={OUTPUT_KIND_LABEL[kind]}
                       aria-pressed={active}
@@ -200,13 +216,19 @@ export function EditStudio() {
               </div>
               {activeKind && (
                 <span class="muted preview-kind-hint">
-                  {(langOverride ?? rowLang).toUpperCase()} ·{" "}
-                  {OUTPUT_KIND_LABEL[activeKind]} · [ ] row · Shift+[ ] output
+                  {rowLang.toUpperCase()} · {OUTPUT_KIND_LABEL[activeKind]}
+                  {activeKind === "email" ? " · HTML" : ""} · [ ] row · Shift+[ ]
+                  output
                 </span>
               )}
             </div>
-          )}          <div class="editor-stage">
-            <EditorCanvas preview={preview} />
+          )}
+          <div class="editor-stage">
+            {preview && activeKind === "email" ? (
+              <EmailPreviewFrame />
+            ) : (
+              <EditorCanvas preview={preview} />
+            )}
           </div>
           {showStatus && <StatusBar />}
         </div>
@@ -241,13 +263,10 @@ export function EditStudio() {
                   <button
                     type="button"
                     key={tabDef.id}
-                    class={
-                      tab === tabDef.id
-                        ? "nav-icon-btn nav-icon-btn--on"
-                        : "nav-icon-btn"
-                    }
+                    class="insp-icons__btn"
                     title={t(tabDef.labelKey)}
                     aria-label={t(tabDef.labelKey)}
+                    aria-pressed={tab === tabDef.id}
                     onClick={() => {
                       inspectorTab.value = tabDef.id;
                       updatePrefs({ inspectorCollapsed: false });
@@ -258,7 +277,7 @@ export function EditStudio() {
                 ))}
               </div>
             ) : (
-              inspectorBody
+              <div class="inspector-body">{inspectorBody}</div>
             )}
           </div>
         )

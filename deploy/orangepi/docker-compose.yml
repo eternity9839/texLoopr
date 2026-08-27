@@ -64,8 +64,6 @@ services:
     depends_on:
       crowdsec:
         condition: service_healthy
-      auth:
-        condition: service_started
       app:
         condition: service_started
       api:
@@ -76,6 +74,7 @@ services:
     mem_limit: 256m
 
   auth:
+    profiles: ["demo-auth"]
     build:
       context: ./auth
     container_name: texlooper-auth
@@ -116,11 +115,14 @@ services:
       - texlooper
     mem_limit: 64m
 
-  # Rust engines (ADR 0016) — PDF import/render/workflow. Auth is at Traefik.
+  # Rust engines (ADR 0016) — PDF import/render/workflow. Edge auth is Pangolin.
   api:
     build:
       context: ../..
       dockerfile: deploy/inhouse/Dockerfile.api
+      args:
+        TEXLOOPER_GIT_COMMIT: ${TEXLOOPER_GIT_COMMIT:-dev}
+        TEXLOOPER_GIT_TAG: ${TEXLOOPER_GIT_TAG:-unknown}
     container_name: texlooper-api
     environment:
       TEXLOOPER_TRUST_EDGE: "1"

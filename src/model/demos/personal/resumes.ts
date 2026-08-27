@@ -1064,7 +1064,7 @@ export function transformsDemo(): Project {
           w: 624,
           h: 72,
           content: {
-            text: "Select any stamp and open Design → Geometry for Rotate ° and Mirror H/V. Surface transform lives under Design when nothing is selected.\n\nUse these samples to compare resting cards with rotated badges in the same composition.",
+            text: "Select any stamp and open Design → Geometry for Rotate ° and Mirror H/V. Surface transform lives under Design when nothing is selected.\n\nUse these samples to compare resting cards with rotated badges in the same composition.\n\nMerge demo: {{full_name|title}} · printed {{env.today|date:short}}.",
           },
           style: { fontSize: 12, lineHeight: 1.5, color: MUTED },
         }),

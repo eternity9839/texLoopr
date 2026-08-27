@@ -16,7 +16,11 @@ import type {
   ProjectScript,
   ScriptKind,
 } from "../../model/workflow";
-import { OUTPUT_KINDS, outputToCtx } from "../../model/workflow";
+import {
+  AUTOMATION_OUTPUT_KINDS,
+  OUTPUT_KIND_LABEL,
+  outputToCtx,
+} from "../../model/workflow";
 import { Icon, type IconName } from "../../ui/icons";
 const SCRIPT_KINDS: ScriptKind[] = ["expr", "template"];
 
@@ -150,9 +154,9 @@ export function AutomationPanel() {
                     patchOutputs(nextOutputs);
                   }}
                 >
-                  {OUTPUT_KINDS.map((k) => (
+                  {AUTOMATION_OUTPUT_KINDS.map((k) => (
                     <option key={k} value={k}>
-                      {k}
+                      {OUTPUT_KIND_LABEL[k] ?? k}
                     </option>
                   ))}
                 </select>
@@ -212,44 +216,6 @@ export function AutomationPanel() {
                           id: o.device?.id ?? "device",
                           ...o.device,
                           dpi: Number(e.currentTarget.value) || undefined,
-                        },
-                      };
-                      patchOutputs(nextOutputs);
-                    }}
-                  />
-                </div>
-              )}
-              {o.kind === "api" && (
-                <div class="field-row">
-                  <select
-                    value={o.api?.method ?? "POST"}
-                    onChange={(e) => {
-                      const nextOutputs = [...outputs];
-                      nextOutputs[i] = {
-                        ...o,
-                        api: {
-                          url: o.api?.url ?? "",
-                          method: e.currentTarget.value as "GET" | "POST" | "PUT",
-                        },
-                      };
-                      patchOutputs(nextOutputs);
-                    }}
-                  >
-                    <option value="GET">GET</option>
-                    <option value="POST">POST</option>
-                    <option value="PUT">PUT</option>
-                  </select>
-                  <input
-                    style={{ flex: 1 }}
-                    placeholder="https://…"
-                    value={o.api?.url ?? ""}
-                    onInput={(e) => {
-                      const nextOutputs = [...outputs];
-                      nextOutputs[i] = {
-                        ...o,
-                        api: {
-                          method: o.api?.method ?? "POST",
-                          url: e.currentTarget.value,
                         },
                       };
                       patchOutputs(nextOutputs);

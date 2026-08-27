@@ -125,11 +125,15 @@ async fn main() {
             // Edge trust: Traefik/auth already gate access; do not require client API keys.
             let open_for_edge = trust_edge && !require_auth;
             let state = ApiState {
-                catalog,
+                catalog: catalog.clone(),
                 api_key,
                 force_auth: require_auth,
                 bind_is_loopback: loopback || open_for_edge,
             };
+            if let Some(c) = catalog {
+                texlooper_lib::data_sources::spawn_interval_refreshers(c);
+                println!("data-source interval refresh armed");
+            }
             let app = build_router(state);
             if trust_edge {
                 println!("texlooper-cli edge-trust enabled (no client API key)");

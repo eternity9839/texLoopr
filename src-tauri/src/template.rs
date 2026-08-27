@@ -39,6 +39,7 @@ pub struct RuntimeContext {
     pub device: Map<String, Value>,
     pub vars: Map<String, Value>,
     pub env: Map<String, Value>,
+    pub datasets: Map<String, Value>,
 }
 
 impl RuntimeContext {
@@ -105,6 +106,7 @@ impl RuntimeContext {
             device,
             vars,
             env,
+            datasets: Map::new(),
         }
     }
 
@@ -115,6 +117,9 @@ impl RuntimeContext {
         m.insert("device".into(), Value::Object(self.device.clone()));
         m.insert("vars".into(), Value::Object(self.vars.clone()));
         m.insert("env".into(), Value::Object(self.env.clone()));
+        if !self.datasets.is_empty() {
+            m.insert("datasets".into(), Value::Object(self.datasets.clone()));
+        }
         Value::Object(m)
     }
 }
@@ -334,7 +339,7 @@ fn looks_like_bool_expr(s: &str) -> bool {
 }
 
 pub fn lookup_value(path: &str, row: &Value, ctx: &RuntimeContext) -> Option<Value> {
-    let roots = ["data", "output", "device", "vars", "env"];
+    let roots = ["data", "output", "device", "vars", "env", "datasets"];
     if roots.iter().any(|r| path == *r || path.starts_with(&format!("{r}."))) {
         let mut parts = path.split('.');
         let root = parts.next()?;
@@ -344,6 +349,7 @@ pub fn lookup_value(path: &str, row: &Value, ctx: &RuntimeContext) -> Option<Val
             "device" => Value::Object(ctx.device.clone()),
             "vars" => Value::Object(ctx.vars.clone()),
             "env" => Value::Object(ctx.env.clone()),
+            "datasets" => Value::Object(ctx.datasets.clone()),
             _ => return None,
         };
         for p in parts {
@@ -409,6 +415,16 @@ fn apply_filters(value: &str, filters: &[&str]) -> String {
             "upper" => out = out.to_uppercase(),
             "lower" => out = out.to_lowercase(),
             "trim" => out = out.trim().to_string(),
+            "capitalize" => {
+                out = capitalize_word(&out);
+            }
+            "title" => {
+                out = out
+                    .split_whitespace()
+                    .map(capitalize_word)
+                    .collect::<Vec<_>>()
+                    .join(" ");
+            }
             "default" if out.is_empty() => out = arg.to_string(),
             "slice" => {
                 let args: Vec<&str> = arg.split(':').collect();
@@ -419,10 +435,97 @@ fn apply_filters(value: &str, filters: &[&str]) -> String {
                     None => out.chars().skip(start).collect(),
                 };
             }
+            "date" => {
+                if let Some(ymd) = parse_loose_ymd(&out) {
+                    out = format_ymd(ymd, arg);
+                }
+            }
             _ => {}
         }
     }
     out
+}
+
+fn capitalize_word(s: &str) -> String {
+    let mut chars = s.chars();
+    match chars.next() {
+        None => String::new(),
+        Some(f) => {
+            let rest: String = chars.as_str().to_lowercase();
+            format!("{}{}", f.to_uppercase(), rest)
+        }
+    }
+}
+
+/// (year, month 1-12, day)
+fn parse_loose_ymd(raw: &str) -> Option<(i32, u32, u32)> {
+    let t = raw.trim();
+    if t.is_empty() {
+        return None;
+    }
+    if let Ok(n) = t.parse::<i64>() {
+        if t.len() >= 10 && t.len() <= 13 {
+            let ms = if t.len() <= 10 { n * 1000 } else { n };
+            return unix_ms_to_ymd(ms);
+        }
+    }
+    // YYYY-MM-DD or ISO prefix
+    if t.len() >= 10 && t.as_bytes().get(4) == Some(&b'-') && t.as_bytes().get(7) == Some(&b'-') {
+        let y: i32 = t[0..4].parse().ok()?;
+        let m: u32 = t[5..7].parse().ok()?;
+        let d: u32 = t[8..10].parse().ok()?;
+        if (1..=12).contains(&m) && (1..=31).contains(&d) {
+            return Some((y, m, d));
+        }
+    }
+    None
+}
+
+fn unix_ms_to_ymd(ms: i64) -> Option<(i32, u32, u32)> {
+    // Civil from days since Unix epoch (Howard Hinnant algorithm).
+    let days = ms.div_euclid(86_400_000);
+    let z = days + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 }.div_euclid(146_097);
+    let doe = (z - era * 146_097) as u32;
+    let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146_096) / 365;
+    let y = (yoe as i32) + (era as i32) * 400;
+    let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+    let mp = (5 * doy + 2) / 153;
+    let d = doy - (153 * mp + 2) / 5 + 1;
+    let m = if mp < 10 { mp + 3 } else { mp - 9 };
+    let y = if m <= 2 { y + 1 } else { y };
+    Some((y, m, d))
+}
+
+const MONTH_SHORT: [&str; 12] = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+const MONTH_LONG: [&str; 12] = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+];
+
+fn format_ymd(ymd: (i32, u32, u32), arg: &str) -> String {
+    let (y, m, d) = ymd;
+    let mi = (m.saturating_sub(1) as usize).min(11);
+    if arg == "iso" || arg.is_empty() {
+        format!("{y:04}-{m:02}-{d:02}")
+    } else if arg == "long" {
+        format!("{} {}, {}", MONTH_LONG[mi], d, y)
+    } else {
+        // short (and any other arg)
+        format!("{} {}, {}", MONTH_SHORT[mi], d, y)
+    }
 }
 
 #[cfg(test)]
@@ -435,6 +538,40 @@ mod tests {
         let row = json!({"name": "Ada"});
         let out = resolve_template("Hi {{name|upper}}", &row, None, true);
         assert_eq!(out, "Hi ADA");
+    }
+
+    #[test]
+    fn applies_date_and_title_filters() {
+        let row = json!({ "when": "2024-03-05", "role": "staff engineer" });
+        assert_eq!(
+            resolve_template("{{when|date:iso}}", &row, None, true),
+            "2024-03-05"
+        );
+        assert_eq!(
+            resolve_template("{{when|date:short}}", &row, None, true),
+            "Mar 5, 2024"
+        );
+        assert_eq!(
+            resolve_template("{{when|date:long}}", &row, None, true),
+            "March 5, 2024"
+        );
+        assert_eq!(
+            resolve_template("{{role|title}}", &row, None, true),
+            "Staff Engineer"
+        );
+        assert_eq!(
+            resolve_template("{{role|capitalize}}", &row, None, true),
+            "Staff engineer"
+        );
+    }
+
+    #[test]
+    fn resolves_env_today_date_filter() {
+        let row = json!({});
+        let mut ctx = RuntimeContext::default();
+        ctx.env.insert("today".into(), json!("2025-01-15"));
+        let out = resolve_template("{{env.today|date:short}}", &row, Some(&ctx), true);
+        assert_eq!(out, "Jan 15, 2025");
     }
 
     #[test]

@@ -71,6 +71,7 @@ export type IconName =
   | "alert"
   | "sparkles"
   | "folder"
+  | "home"
   | "check"
   | "close"
   | "play"
@@ -263,6 +264,10 @@ const PATHS: Record<IconName, string[]> = {
     "M19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14z",
   ],
   folder: ["M4 6h5l2 2h9v10a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z"],
+  home: [
+    "M3 10.5 12 3l9 7.5",
+    "M5 9.5V20a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1V9.5",
+  ],
   check: ["M5 13l4 4L19 7"],
   close: ["M18 6L6 18", "M6 6l12 12"],
   play: ["M8 5v14l11-7z"],

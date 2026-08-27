@@ -8,8 +8,9 @@ import {
   defaultScripts,
   defaultWorkflow,
 } from "./workflow";
+import type { BlockVariant } from "./blockVariants";
 
-export type { OutputProfile, ProjectScript, WorkflowStep };
+export type { OutputProfile, ProjectScript, WorkflowStep, BlockVariant };
 
 export type StudioView = "edit" | "data";
 
@@ -191,12 +192,20 @@ export interface Block {
   bindings?: Record<string, string>;
   /** Prevent move/resize when true */
   locked?: boolean;
+  /** Keep width/height ratio when resizing (Shift also locks temporarily) */
+  lockAspectRatio?: boolean;
   /** Stacking order within the page (higher = front) */
   zIndex?: number;
   /** Parent group id when nested (optional; children also live in content.blocks) */
   parentId?: string;
   /** Lock edges to the surface (header/footer/sidebars) */
   pin?: BlockPin;
+  /**
+   * Presentation overrides for language and/or output kind.
+   * Base fields remain the shared identity; the best-matching variant
+   * merges on top at preview/render time.
+   */
+  variants?: BlockVariant[];
 }
 
 /** Saved reusable group (letterhead, address block, …) */
@@ -415,6 +424,8 @@ export interface Project {
   /** Extended document metadata */
   keywords?: string;
   language?: string;
+  /** Declared data axes for Preview chips + vars.* injection (ADR 0018) */
+  conditions?: import("./documentConditions").ProjectCondition[];
   version?: string;
   category?: string;
   tags?: string;
@@ -437,12 +448,30 @@ export interface Project {
   pageChrome?: ProjectPageChrome;
 }
 
+export type {
+  DataSourceConfig,
+  DataSourceKind,
+  DataSourceRefresh,
+} from "./dataSources/types";
+
+import type {
+  DataSourceConfig,
+  DataSourceRefresh,
+} from "./dataSources/types";
+
 export interface ProjectDataset {
   id: string;
   name: string;
   /** Field used to join from the primary row into this dataset */
   keyField?: string;
   rows: Record<string, unknown>[];
+  /** How rows are loaded/refreshed; omit or kind none = paste/grid only */
+  source?: DataSourceConfig;
+  refresh?: DataSourceRefresh;
+  /** ISO timestamp of last successful load */
+  lastLoadedAt?: string;
+  /** Last load error message (cleared on success) */
+  lastError?: string;
 }
 
 export type Selection =
@@ -579,6 +608,8 @@ export const BLOCK_DEFAULTS: Record<
       items: ["First item", "Second item", "Third item"],
       start: 1,
       markerColor: "",
+      listIndent: 19,
+      nestGap: 4,
       datasetName: "",
       sourcePath: "",
       itemText: "{{label}}",
@@ -666,9 +697,11 @@ export const BLOCK_DEFAULTS: Record<
     w: 200,
     h: 96,
     content: {
+      mode: "open",
       src: "",
       label: "Signature",
       caption: "{{name}}\n{{role}}",
+      signedAt: "",
       showLine: true,
     },
   },

@@ -1,21 +1,22 @@
 import type { Project } from "../../document";
 import {
   defaultOutputs,
-  optionalOutputTemplates,
 } from "../../workflow";
 import { DEMO_IMG } from "../assets";
-import { b, page, shell } from "../helpers";
+import { b, page, shell, id } from "../helpers";
 import { northlineStyleExtras, nlText, NL } from "../brand/northlineStyles";
 
 export function email(): Project {
-  const api = optionalOutputTemplates().find((o) => o.kind === "api");
+  const outputs = defaultOutputs().filter(
+    (o) => o.kind === "preview" || o.kind === "pdf" || o.kind === "email",
+  );
   return shell(
     {
       name: "Email newsletter",
       author: "Northline Lifecycle",
       subject: "Transactional + marketing email frame",
       description:
-        "Email-safe single column: preheader, logo, hero, modules, footer unsubscribe. API output ready.",
+        "Single layout: Email keeps inbox chrome; Page/Screen use document footers.",
     },
     [
       page("Message", [
@@ -39,6 +40,7 @@ export function email(): Project {
           content: { text: "{{preheader}}" },
           style: { fontSize: 9, color: "#9aa3ad" },
           zIndex: 1,
+          condition: "output.kind == 'email'",
         }),
         b("shape", {
           name: "Canvas",
@@ -58,6 +60,7 @@ export function email(): Project {
           h: 36,
           content: { src: DEMO_IMG.logoMark, alt: "Northline" },
           zIndex: 1,
+          variants: [{ id: id(), output: "email", x: 40, w: 100 }],
         }),
         b("picture", {
           name: "Hero",
@@ -67,6 +70,7 @@ export function email(): Project {
           h: 180,
           content: { src: DEMO_IMG.productHero, alt: "Feature" },
           zIndex: 1,
+          variants: [{ id: id(), output: "email", x: 40, w: 520, h: 160 }],
         }),
         b("text", {
           name: "Title",
@@ -77,6 +81,20 @@ export function email(): Project {
           content: { text: "{{title}}" },
           style: { fontSize: 20, fontWeight: 700, color: "#1c2430" },
           zIndex: 1,
+          variants: [
+            {
+              id: id(),
+              language: "fr",
+              content: { text: "{{title}}" },
+              style: { fontSize: 20, fontWeight: 700, color: "#1c2430" },
+            },
+            {
+              id: id(),
+              output: "email",
+              w: 520,
+              x: 40,
+            },
+          ],
         }),
         b("paragraph", {
           name: "Intro",
@@ -89,6 +107,21 @@ export function email(): Project {
           },
           style: { fontSize: 13, color: "#3d4a5c", lineHeight: 1.55 },
           zIndex: 1,
+          variants: [
+            {
+              id: id(),
+              language: "fr",
+              content: {
+                text: "Bonjour {{first_name}},\n\n{{intro}}\n\nVoici les mises à jour essentielles — moins d’une minute pour parcourir, puis le changelog complet quand vous avez le temps.",
+              },
+            },
+            {
+              id: id(),
+              output: "email",
+              w: 520,
+              x: 40,
+            },
+          ],
         }),
         b("table", {
           name: "Modules",
@@ -107,9 +140,25 @@ export function email(): Project {
           },
           style: { fontSize: 11 },
           zIndex: 1,
+          variants: [
+            {
+              id: id(),
+              language: "fr",
+              content: {
+                rows: 3,
+                cols: 2,
+                cells: [
+                  ["Mise à jour", "Détail"],
+                  ["{{mod1_title}}", "{{mod1_body}}"],
+                  ["{{mod2_title}}", "{{mod2_body}}"],
+                ],
+              },
+            },
+            { id: id(), output: "email", w: 520, x: 40 },
+          ],
         }),
         b("text", {
-          name: "CTA EN",
+          name: "CTA",
           x: 64,
           y: 652,
           w: 400,
@@ -117,18 +166,15 @@ export function email(): Project {
           content: { text: "→ {{cta_label}}" },
           style: { ...nlText("nl-h3"), color: NL.accent },
           zIndex: 1,
-          condition: "vars.language != 'fr'",
-        }),
-        b("text", {
-          name: "CTA FR",
-          x: 64,
-          y: 652,
-          w: 400,
-          h: 28,
-          content: { text: "→ {{cta_label}}" },
-          style: { ...nlText("nl-h3"), color: NL.accent },
-          zIndex: 1,
-          condition: "vars.language == 'fr'",
+          variants: [
+            {
+              id: id(),
+              language: "fr",
+              content: { text: "→ {{cta_label}}" },
+              style: { ...nlText("nl-h3"), color: NL.accent },
+            },
+            { id: id(), output: "email", w: 480, x: 40 },
+          ],
         }),
         b("picture", {
           name: "Avatar",
@@ -138,6 +184,7 @@ export function email(): Project {
           h: 48,
           content: { src: DEMO_IMG.headshot, alt: "Author" },
           zIndex: 1,
+          variants: [{ id: id(), output: "email", x: 40 }],
         }),
         b("text", {
           name: "From",
@@ -148,30 +195,45 @@ export function email(): Project {
           content: { text: "{{sender_name}}\n{{sender_role}}" },
           style: { fontSize: 11, color: "#5c6570" },
           zIndex: 1,
+          variants: [{ id: id(), output: "email", x: 100 }],
         }),
         b("text", {
-          name: "Footer",
+          name: "Email footer",
           x: 64,
           y: 900,
           w: 592,
           h: 40,
           content: {
-            text: "You’re receiving this because you subscribed as {{email}}.\nUnsubscribe · {{unsub_url}} · © {{year}} Northline",
+            text: "You’re receiving this because you subscribed as {{email}}.\nUnsubscribe · {{unsub_url}} · © {{year}} Northline · {{env.today|date:short}}",
           },
           style: { fontSize: 9, color: "#9aa3ad", textAlign: "center" },
           zIndex: 1,
           pin: { bottom: true, left: true, right: true },
+          condition: "output.kind == 'email'",
+          variants: [
+            {
+              id: id(),
+              language: "fr",
+              content: {
+                text: "Vous recevez ce message car vous êtes abonné(e) avec {{email}}.\nSe désabonner · {{unsub_url}} · © {{year}} Northline · {{env.today|date:short}}",
+              },
+            },
+            { id: id(), output: "email", w: 520, x: 40 },
+          ],
         }),
         b("text", {
-          name: "API hint",
+          name: "Page footer",
           x: 64,
-          y: 860,
-          w: 400,
-          h: 16,
-          content: { text: "Emit via API · {{output.apiMethod}} {{output.apiUrl}}" },
-          style: { fontSize: 9, color: "#0f6b63" },
-          condition: "output.kind == 'api'",
+          y: 900,
+          w: 592,
+          h: 40,
+          content: {
+            text: "Confidential · © {{year}} Northline · {{env.today|date:short}}",
+          },
+          style: { fontSize: 9, color: "#5c6570", textAlign: "center" },
           zIndex: 1,
+          pin: { bottom: true, left: true, right: true },
+          condition: "output.kind != 'email'",
         }),
       ]),
       page("Plain-text version", [
@@ -287,10 +349,13 @@ export function email(): Project {
           style: { fontSize: 9, lineHeight: 1.5, color: "#9aa3ad", textAlign: "center" },
           pin: { bottom: true, left: true, right: true },
         }),
-      ]),
+      ],
+        { condition: "output.kind == 'email'" },
+      ),
     ],
     {
-      outputs: api ? [...defaultOutputs(), api] : defaultOutputs(),
+      outputs,
+      activeOutputId: outputs.find((o) => o.kind === "email")?.id,
       ...northlineStyleExtras("en"),
     },
   );
@@ -299,11 +364,11 @@ export function email(): Project {
 export function paper(): Project {
   return shell(
     {
-      name: "Research paper cover",
+      name: "Research paper",
       author: "Northline Research",
-      subject: "Academic-style title page + abstract",
+      subject: "Cover, article body, figures & references",
       description:
-        "Paper cover: title, authors, affiliation, abstract, keywords, figure placeholder.",
+        "Multi-page research article: cover with date, abstract reprise, sections, figures, references stub.",
     },
     [
       page("Cover", [
@@ -321,11 +386,25 @@ export function paper(): Project {
         b("text", {
           name: "Journal",
           x: 40,
-          y: 24,
-          w: 640,
+          y: 14,
+          w: 440,
           h: 18,
           content: { text: "{{journal}} · Vol. {{volume}} · {{year}}" },
           style: { fontSize: 11, color: "#0f6b63" },
+          zIndex: 1,
+        }),
+        b("date", {
+          name: "Issue date",
+          x: 500,
+          y: 12,
+          w: 180,
+          h: 20,
+          content: {
+            source: "today",
+            format: "long",
+            label: "",
+          },
+          style: { fontSize: 10, color: "#5c6570", textAlign: "right", fontFamily: "ui" },
           zIndex: 1,
         }),
         b("paragraph", {
@@ -335,7 +414,13 @@ export function paper(): Project {
           w: 620,
           h: 88,
           content: { text: "{{paper_title}}" },
-          style: { fontSize: 22, fontWeight: 700, color: "#1c2430", textAlign: "center", lineHeight: 1.25 },
+          style: {
+            fontSize: 22,
+            fontWeight: 700,
+            color: "#1c2430",
+            textAlign: "center",
+            lineHeight: 1.25,
+          },
         }),
         b("text", {
           name: "Authors",
@@ -416,7 +501,115 @@ export function paper(): Project {
           y: 900,
           w: 640,
           h: 18,
-          content: { text: "© {{year}} {{affiliation}} · CC BY 4.0" },
+          content: {
+            text: "© {{year}} {{affiliation}} · {{env.today|date:long}}",
+          },
+          style: { fontSize: 9, color: "#5c6570", textAlign: "center" },
+          pin: { bottom: true, left: true, right: true },
+        }),
+      ]),
+      page("Article", [
+        b("shape", {
+          name: "Header bar",
+          x: 0,
+          y: 0,
+          w: 720,
+          h: 44,
+          content: { shape: "rect", filled: true },
+          style: { background: "#f8fafb" },
+          zIndex: 0,
+          pin: { top: true, left: true, right: true },
+        }),
+        b("text", {
+          name: "Running head",
+          x: 40,
+          y: 14,
+          w: 640,
+          h: 18,
+          content: { text: "{{journal}} · {{paper_title}}" },
+          style: { fontSize: 9.5, color: "#5c6570", textAlign: "center" },
+          zIndex: 1,
+        }),
+        b("text", {
+          name: "Abstract reprise label",
+          x: 40,
+          y: 64,
+          w: 200,
+          h: 18,
+          content: { text: "1. Motivation" },
+          style: { fontSize: 13, fontWeight: 700, color: "#1c2430" },
+        }),
+        b("paragraph", {
+          name: "Motivation",
+          x: 40,
+          y: 90,
+          w: 620,
+          h: 110,
+          content: {
+            text: "{{abstract}}\n\nThis section restates the problem for readers who skip the cover abstract: how conditional blocks and output-aware workflows behave when source rows are incomplete.",
+          },
+          style: { fontSize: 11, color: "#1c2430", lineHeight: 1.55 },
+        }),
+        b("text", {
+          name: "Method label",
+          x: 40,
+          y: 220,
+          w: 200,
+          h: 18,
+          content: { text: "2. Method" },
+          style: { fontSize: 13, fontWeight: 700, color: "#1c2430" },
+        }),
+        b("paragraph", {
+          name: "Method col A",
+          x: 40,
+          y: 248,
+          w: 300,
+          h: 220,
+          content: {
+            text: "We evaluate letter and invoice corpora under three merge strategies: static templates, expression-gated blocks, and output-kind variants. Each strategy is scored on correction rate, render latency, and reviewer minutes per thousand documents.",
+          },
+          style: { fontSize: 11, color: "#1c2430", lineHeight: 1.55 },
+        }),
+        b("paragraph", {
+          name: "Method col B",
+          x: 360,
+          y: 248,
+          w: 300,
+          h: 220,
+          content: {
+            text: "Sandboxed expressions isolate template injection risk. Pinned chrome keeps letterhead and footer consistent across batches. Language variants exercise ADR 0015 document language without forking the layout.",
+          },
+          style: { fontSize: 11, color: "#1c2430", lineHeight: 1.55 },
+        }),
+        b("text", {
+          name: "Discussion label",
+          x: 40,
+          y: 492,
+          w: 200,
+          h: 18,
+          content: { text: "3. Discussion" },
+          style: { fontSize: 13, fontWeight: 700, color: "#1c2430" },
+        }),
+        b("paragraph", {
+          name: "Discussion",
+          x: 40,
+          y: 520,
+          w: 620,
+          h: 160,
+          content: {
+            text: "Operators prefer a single master template with variants over forked language files. Date filters (`|date:long`) and `env.today` keep journal footers current without editing the project JSON. Keywords: {{keywords}}.",
+          },
+          style: { fontSize: 11, color: "#1c2430", lineHeight: 1.55 },
+        }),
+        b("text", {
+          name: "Footer",
+          x: 40,
+          y: 900,
+          w: 640,
+          h: 18,
+          content: {
+            text: "{{journal}} · page 2 · {{env.today|date:long}}",
+          },
           style: { fontSize: 9, color: "#5c6570", textAlign: "center" },
           pin: { bottom: true, left: true, right: true },
         }),
@@ -544,12 +737,219 @@ export function paper(): Project {
           y: 900,
           w: 640,
           h: 18,
-          content: { text: "© {{year}} {{affiliation}} · CC BY 4.0" },
+          content: {
+            text: "© {{year}} {{affiliation}} · {{env.today|date:long}}",
+          },
           style: { fontSize: 9, color: "#5c6570", textAlign: "center" },
           pin: { bottom: true, left: true, right: true },
         }),
       ]),
     ],
+  );
+}
+
+export function newspaper(): Project {
+  return shell(
+    {
+      name: "City newspaper",
+      author: "Northline Press",
+      subject: "Broadsheet front page with columns",
+      description:
+        "Masthead, edition date, multi-column body, pull quote, byline, folio. EN/FR headline variants; slim email column.",
+    },
+    [
+      page("Front page", [
+        b("shape", {
+          name: "Masthead wash",
+          x: 0,
+          y: 0,
+          w: 960,
+          h: 88,
+          content: { shape: "rect", filled: true },
+          style: { background: "#1c2430" },
+          zIndex: 0,
+          pin: { top: true, left: true, right: true },
+        }),
+        b("text", {
+          name: "Masthead",
+          x: 32,
+          y: 18,
+          w: 560,
+          h: 40,
+          content: { text: "The {{edition}} Herald" },
+          style: {
+            fontSize: 28,
+            fontWeight: 700,
+            color: "#f7f4ef",
+            fontFamily: "display",
+          },
+          zIndex: 1,
+        }),
+        b("date", {
+          name: "Edition date",
+          x: 620,
+          y: 28,
+          w: 300,
+          h: 24,
+          content: { source: "today", format: "long", label: "" },
+          style: {
+            fontSize: 12,
+            color: "#c8c2b8",
+            textAlign: "right",
+            fontFamily: "ui",
+          },
+          zIndex: 1,
+        }),
+        b("text", {
+          name: "Dateline",
+          x: 32,
+          y: 100,
+          w: 896,
+          h: 18,
+          content: {
+            text: "{{city}} · Vol. {{volume|default:42}} · {{env.today|date:short}}",
+          },
+          style: { fontSize: 11, color: "#5c6570", letterSpacing: 0.04 },
+        }),
+        b("shape", {
+          name: "Rule",
+          x: 32,
+          y: 124,
+          w: 896,
+          h: 2,
+          content: { shape: "rect", filled: true },
+          style: { background: "#1c2430" },
+        }),
+        b("text", {
+          name: "Headline",
+          x: 32,
+          y: 140,
+          w: 600,
+          h: 64,
+          content: { text: "{{headline}}" },
+          style: {
+            fontSize: 26,
+            fontWeight: 700,
+            color: "#1c2430",
+            lineHeight: 1.15,
+            fontFamily: "display",
+          },
+          variants: [
+            {
+              id: id(),
+              language: "fr",
+              content: { text: "{{headline_fr}}" },
+            },
+            {
+              id: id(),
+              output: "email",
+              w: 896,
+              x: 32,
+              style: { fontSize: 22, fontWeight: 700, color: "#1c2430" },
+            },
+          ],
+        }),
+        b("paragraph", {
+          name: "Lede",
+          x: 32,
+          y: 212,
+          w: 600,
+          h: 72,
+          content: { text: "{{lede}}" },
+          style: { fontSize: 13, color: "#1c2430", lineHeight: 1.45, fontWeight: 600 },
+          variants: [
+            {
+              id: id(),
+              language: "fr",
+              content: { text: "{{lede_fr}}" },
+            },
+            {
+              id: id(),
+              output: "email",
+              w: 896,
+              x: 32,
+            },
+          ],
+        }),
+        b("paragraph", {
+          name: "Col 1",
+          x: 32,
+          y: 296,
+          w: 288,
+          h: 180,
+          content: {
+            text: "{{body_col1|default:City officials confirmed overnight that the new document pipeline will cut print turnaround for municipal notices. Residents will see personalized letters instead of generic flyers starting next quarter.}}",
+          },
+          style: { fontSize: 11, color: "#1c2430", lineHeight: 1.5 },
+          condition: "output.kind != 'email'",
+        }),
+        b("paragraph", {
+          name: "Col 2",
+          x: 336,
+          y: 296,
+          w: 288,
+          h: 180,
+          content: {
+            text: "{{body_col2|default:Editors praised the merge-field approach for keeping French and Dutch editions in sync without duplicating layouts. A slim email edition strips side columns for inbox reading.}}",
+          },
+          style: { fontSize: 11, color: "#1c2430", lineHeight: 1.5 },
+          condition: "output.kind != 'email'",
+        }),
+        b("paragraph", {
+          name: "Pull quote",
+          x: 640,
+          y: 140,
+          w: 288,
+          h: 140,
+          content: {
+            text: "“{{pull_quote|default:One master page. Many languages. Zero paste errors.}}”",
+          },
+          style: {
+            fontSize: 15,
+            fontWeight: 600,
+            color: "#0f6b63",
+            lineHeight: 1.35,
+            fontFamily: "display",
+            background: "#f3f7f6",
+            borderRadius: 4,
+          },
+          condition: "output.kind != 'email'",
+        }),
+        b("paragraph", {
+          name: "Email body",
+          x: 32,
+          y: 300,
+          w: 896,
+          h: 140,
+          content: {
+            text: "{{body_col1|default:City officials confirmed overnight that the new document pipeline will cut print turnaround for municipal notices.}}\n\n{{body_col2|default:Editors praised merge fields for keeping language editions in sync.}}",
+          },
+          style: { fontSize: 12, color: "#1c2430", lineHeight: 1.5 },
+          condition: "output.kind == 'email'",
+        }),
+        b("text", {
+          name: "Byline",
+          x: 32,
+          y: 488,
+          w: 480,
+          h: 20,
+          content: { text: "By {{byline}} · {{city}}" },
+          style: { fontSize: 10, fontWeight: 600, color: "#5c6570" },
+        }),
+        b("text", {
+          name: "Folio",
+          x: 520,
+          y: 488,
+          w: 408,
+          h: 20,
+          content: {
+            text: "A1 · {{edition}} Herald · {{env.today|date:short}}",
+          },
+          style: { fontSize: 10, color: "#5c6570", textAlign: "right" },
+        }),
+      ]),
+    ],
+    { artboard: "landscape", ...northlineStyleExtras("en") },
   );
 }
 
@@ -754,7 +1154,7 @@ export function a5Handout(): Project {
             w: 200,
             h: 18,
             pin: { top: true, right: true },
-            content: { text: "{{date|date:short}}" },
+            content: { text: "{{date|date:short}} · {{env.today|date:iso}}" },
             style: { fontSize: 11, color: "#d4ece8", textAlign: "right" },
             zIndex: 1,
           }),
@@ -810,28 +1210,29 @@ export function a5Handout(): Project {
             },
           }),
           b("text", {
-            name: "Contact",
+            name: "Footer contact",
             x: 32,
             y: 648,
             w: 441,
             h: 36,
             pin: { bottom: true, left: true, right: true },
-            condition: "output.kind != 'email'",
             content: {
-              text: "{{contact}} · {{company}}",
+              text: "{{contact}} · {{company}} · {{env.today|date:short}}",
             },
             style: { fontSize: 10, color: "#5c6570", textAlign: "center" },
-          }),
-          b("text", {
-            name: "Email lead",
-            x: 32,
-            y: 648,
-            w: 441,
-            h: 36,
-            pin: { bottom: true, left: true, right: true },
-            condition: "output.kind == 'email'",
-            content: { text: "Reply to: {{contact}}" },
-            style: { fontSize: 11, fontWeight: 600, color: "#1c2430", textAlign: "center" },
+            variants: [
+              {
+                id: id(),
+                output: "email",
+                content: { text: "Reply to: {{contact}}" },
+                style: {
+                  fontSize: 11,
+                  fontWeight: 600,
+                  color: "#1c2430",
+                  textAlign: "center",
+                },
+              },
+            ],
           }),
         ],
         {

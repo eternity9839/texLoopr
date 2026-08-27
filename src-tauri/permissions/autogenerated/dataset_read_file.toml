@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-dataset-read-file"
+description = "Enables the dataset_read_file command without any pre-configured scope."
+commands.allow = ["dataset_read_file"]
+
+[[permission]]
+identifier = "deny-dataset-read-file"
+description = "Denies the dataset_read_file command without any pre-configured scope."
+commands.deny = ["dataset_read_file"]
