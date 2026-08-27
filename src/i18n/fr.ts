@@ -189,8 +189,9 @@ export const fr: Messages = {
   renderGenerate: "Générer",
   renderRunning: "Rendu en cours…",
   renderResults: "Résultats",
-  renderDownloadFile: "Télécharger le fichier",
-  renderDownloadZip: "Télécharger le ZIP",
+  renderDownloadFile: "Enregistrer le fichier",
+  renderDownloadZip: "Enregistrer le ZIP",
+  renderSavedTo: "Enregistré dans",
   renderNoOutput: "Sélectionnez d’abord un profil de sortie.",
   renderNoRows: "Chargez des lignes de données avant le rendu.",
   renderNoPdfOutput:

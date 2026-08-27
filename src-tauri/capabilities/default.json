@@ -29,6 +29,7 @@
     "allow-pdf-import-structure",
     "allow-render-project-pdf-cmd",
     "allow-render-batch-cmd",
+    "allow-save-bytes-cmd",
     "allow-catalog-db-path",
     "allow-catalog-list-filesystems",
     "allow-catalog-upsert-filesystem",

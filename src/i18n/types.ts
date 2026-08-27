@@ -176,6 +176,7 @@ export type MessageKey =
   | "renderResults"
   | "renderDownloadFile"
   | "renderDownloadZip"
+  | "renderSavedTo"
   | "renderNoOutput"
   | "renderNoRows"
   | "renderNoPdfOutput"

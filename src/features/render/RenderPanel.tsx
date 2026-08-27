@@ -43,6 +43,7 @@ export function RenderPanel() {
   const [includeZip, setIncludeZip] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savedPath, setSavedPath] = useState<string | null>(null);
   const [result, setResult] = useState<
     import("../../model/backend").RenderBatchResult | null
   >(null);
@@ -71,6 +72,7 @@ export function RenderPanel() {
 
     setBusy(true);
     setError(null);
+    setSavedPath(null);
     setResult(null);
     try {
       const { renderBatchBackend } = await import("../../model/backend");
@@ -180,7 +182,17 @@ export function RenderPanel() {
                 type="button"
                 class="btn btn--ghost btn--small"
                 onClick={() =>
-                  downloadBase64(result.zipBase64!, zipName, "application/zip")
+                  void downloadBase64(
+                    result.zipBase64!,
+                    zipName,
+                    "application/zip",
+                  )
+                    .then((path) => {
+                      if (path) setSavedPath(path);
+                    })
+                    .catch((e) =>
+                      setError(e instanceof Error ? e.message : String(e)),
+                    )
                 }
               >
                 <Icon name="files" size={14} />
@@ -205,11 +217,17 @@ export function RenderPanel() {
                   title={t("renderDownloadFile")}
                   aria-label={t("renderDownloadFile")}
                   onClick={() =>
-                    downloadBase64(
+                    void downloadBase64(
                       file.bytesBase64,
                       file.name,
                       mimeForOutputKind(renderOutput?.kind ?? "pdf"),
                     )
+                      .then((path) => {
+                        if (path) setSavedPath(path);
+                      })
+                      .catch((e) =>
+                        setError(e instanceof Error ? e.message : String(e)),
+                      )
                   }
                 >
                   <Icon name="save" size={14} />
@@ -217,6 +235,11 @@ export function RenderPanel() {
               </li>
             ))}
           </ul>
+          {savedPath && (
+            <p class="render-panel__saved muted" role="status">
+              {t("renderSavedTo")}: <code>{savedPath}</code>
+            </p>
+          )}
         </div>
       )}
     </div>

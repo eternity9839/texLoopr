@@ -13,6 +13,7 @@ fn main() {
             "pdf_import_structure",
             "render_project_pdf_cmd",
             "render_batch_cmd",
+            "save_bytes_cmd",
             "catalog_db_path",
             "catalog_list_filesystems",
             "catalog_upsert_filesystem",

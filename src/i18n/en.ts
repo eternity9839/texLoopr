@@ -188,8 +188,9 @@ export const en: Messages = {
   renderGenerate: "Generate",
   renderRunning: "Rendering…",
   renderResults: "Results",
-  renderDownloadFile: "Download file",
-  renderDownloadZip: "Download ZIP",
+  renderDownloadFile: "Save file",
+  renderDownloadZip: "Save ZIP",
+  renderSavedTo: "Saved to",
   renderNoOutput: "Select an output profile first.",
   renderNoRows: "Load data rows before rendering.",
   renderNoPdfOutput:

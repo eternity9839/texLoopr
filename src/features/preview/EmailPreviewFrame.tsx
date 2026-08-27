@@ -59,7 +59,7 @@ export function EmailPreviewFrame() {
   const onDownload = () => {
     const bytes = new TextEncoder().encode(artifacts.eml);
     const safe = artifacts.subject.replace(/[^\w.-]+/g, "_").slice(0, 48);
-    downloadBytes(bytes, `${safe || "message"}.eml`, mimeForOutputKind("email"));
+    void downloadBytes(bytes, `${safe || "message"}.eml`, mimeForOutputKind("email"));
   };
 
   return (

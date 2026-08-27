@@ -203,6 +203,80 @@ fn render_batch_cmd(
     })
 }
 
+/// Write bytes to the user Downloads folder and return the absolute path.
+/// Native `<a download>` / rfd dialogs are unreliable in the desktop WebKit iframe
+/// (especially on Wayland), so we always persist to disk and open the file.
+#[tauri::command]
+fn save_bytes_cmd(default_name: String, bytes_base64: String) -> Result<String, String> {
+    use base64::Engine as _;
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(bytes_base64.trim())
+        .map_err(|e| format!("invalid base64: {e}"))?;
+
+    let name = sanitize_download_name(&default_name);
+    let dir = download_dir()?;
+    std::fs::create_dir_all(&dir).map_err(|e| format!("create Downloads: {e}"))?;
+
+    let mut path = dir.join(&name);
+    if path.exists() {
+        let stem = path
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("file");
+        let ext = path
+            .extension()
+            .and_then(|s| s.to_str())
+            .map(|e| format!(".{e}"))
+            .unwrap_or_default();
+        for n in 2..1000 {
+            let candidate = dir.join(format!("{stem}-{n}{ext}"));
+            if !candidate.exists() {
+                path = candidate;
+                break;
+            }
+        }
+    }
+
+    std::fs::write(&path, &bytes).map_err(|e| format!("write {}: {e}", path.display()))?;
+
+    // Best-effort open so the user sees the file immediately.
+    let _ = std::process::Command::new("xdg-open").arg(&path).spawn();
+
+    Ok(path.to_string_lossy().into_owned())
+}
+
+fn download_dir() -> Result<PathBuf, String> {
+    if let Ok(xdg) = std::env::var("XDG_DOWNLOAD_DIR") {
+        let p = PathBuf::from(xdg.trim());
+        if !p.as_os_str().is_empty() {
+            return Ok(p);
+        }
+    }
+    let home = std::env::var_os("HOME")
+        .map(PathBuf::from)
+        .ok_or_else(|| "HOME is unset".to_string())?;
+    Ok(home.join("Downloads"))
+}
+
+fn sanitize_download_name(raw: &str) -> String {
+    let trimmed = raw.trim();
+    let base = if trimmed.is_empty() { "texlooper-export" } else { trimmed };
+    let cleaned: String = base
+        .chars()
+        .map(|c| match c {
+            '/' | '\\' | ':' | '*' | '?' | '"' | '<' | '>' | '|' => '_',
+            c if c.is_control() => '_',
+            c => c,
+        })
+        .collect();
+    let cleaned = cleaned.trim_matches('.').trim();
+    if cleaned.is_empty() {
+        "texlooper-export".into()
+    } else {
+        cleaned.chars().take(180).collect()
+    }
+}
+
 #[tauri::command]
 fn catalog_db_path(db: State<'_, DbState>) -> String {
     db.0.db_path()
@@ -435,6 +509,7 @@ pub fn run() {
             pdf_import_structure,
             render_project_pdf_cmd,
             render_batch_cmd,
+            save_bytes_cmd,
             catalog_db_path,
             catalog_list_filesystems,
             catalog_upsert_filesystem,

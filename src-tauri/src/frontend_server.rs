@@ -51,7 +51,7 @@ const DESKTOP_HOST_HTML: &str = r#"<!DOCTYPE html>
   </style>
 </head>
 <body>
-  <iframe id="frame" title="texLooper" allow="clipboard-read; clipboard-write"></iframe>
+  <iframe id="frame" title="texLooper" allow="clipboard-read; clipboard-write; downloads"></iframe>
   <script>
   (function () {
     var frame = document.getElementById('frame');
