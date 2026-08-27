@@ -3,6 +3,8 @@ import type { RuntimeContext } from "./expr";
 
 export type LinkHook = "url" | "mailto" | "tel" | "sms" | "anchor";
 
+export const DEMO_URL_FALLBACK = "https://northline.example/demo";
+
 export const LINK_HOOKS: LinkHook[] = ["url", "mailto", "tel", "sms", "anchor"];
 
 export const LINK_HOOK_LABEL: Record<LinkHook, string> = {
@@ -34,12 +36,15 @@ export function resolveLinkTarget(
   target: string,
   row: DataRow | undefined,
   ctx?: RuntimeContext,
+  opts?: { allowEmpty?: boolean },
 ): string {
   const resolved = resolveTemplate(String(target ?? ""), row, {
     missingAsEmpty: true,
     ctx,
   }).trim();
-  if (!resolved) return "";
+  if (!resolved) {
+    return hook === "url" && !opts?.allowEmpty ? DEMO_URL_FALLBACK : "";
+  }
   if (hook === "url") {
     if (/^(https?:|mailto:|tel:|sms:|#|\/)/i.test(resolved)) return resolved;
     return `https://${resolved}`;

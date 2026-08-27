@@ -15,6 +15,10 @@ import {
 import type { RuntimeContext } from "../../../model/expr";
 import { resolveDateBlockText } from "../../../model/dateBlock";
 import { resolveSignatureMode } from "../../../model/signatureMode";
+import {
+  resolveSignatureInk,
+  signatureInkFromName,
+} from "../../../model/signatureInk";
 import { parseQrEcc, qrDataUrl } from "../../../model/qrCode";
 import {
   dataFieldLabel,
@@ -56,6 +60,7 @@ import {
   resolveBindingPreview,
 } from "../../../model/bindingPreview";
 import {
+  DEMO_URL_FALLBACK,
   linkEditLabel,
   parseLinkHook,
   resolveLinkTarget,
@@ -1396,7 +1401,7 @@ export function SignatureBlock(props: BlockViewProps) {
   const { block, preview, row, runtime } = props;
   const mode = resolveSignatureMode(block.content);
   const rawSrc = String(block.content.src ?? "");
-  const src = resolveTemplate(rawSrc, row, {
+  const resolvedSrc = resolveTemplate(rawSrc, row, {
     missingAsEmpty: preview,
     ctx: runtime,
     diagnose: preview,
@@ -1413,6 +1418,22 @@ export function SignatureBlock(props: BlockViewProps) {
     missingAsEmpty: preview,
     ctx: runtime,
   });
+  const signatureName = resolveTemplate(
+    String(block.content.name ?? caption.split(/\r?\n/, 1)[0] ?? ""),
+    row,
+    { missingAsEmpty: preview, ctx: runtime },
+  );
+  const resolvedInk = resolveSignatureInk({
+    mode,
+    src: resolvedSrc,
+    caption,
+    name: signatureName,
+  });
+  const src =
+    resolvedInk ||
+    (mode === "preset"
+      ? signatureInkFromName(signatureName || caption.split(/\r?\n/, 1)[0] || "")
+      : "");
   const showLine = block.content.showLine !== false;
   const firstRow = dataRows.value[0];
   const bindingEdit = !preview && hasMergeBinding(rawSrc);
@@ -1481,11 +1502,12 @@ export function SignatureBlock(props: BlockViewProps) {
 export function QrCodeBlock(props: BlockViewProps) {
   const { block, preview, row, runtime } = props;
   const rawValue = String(block.content.value ?? "");
-  const value = resolveTemplate(rawValue, preview ? row : dataRows.value[0], {
-    missingAsEmpty: true,
-    ctx: runtime,
-    diagnose: preview,
-  });
+  const value =
+    resolveTemplate(rawValue, preview ? row : dataRows.value[0], {
+      missingAsEmpty: true,
+      ctx: runtime,
+      diagnose: preview,
+    }).trim() || DEMO_URL_FALLBACK;
   const src = qrDataUrl(value, {
     ecc: parseQrEcc(block.content.ecc),
     dark: String(block.content.dark ?? "#1c2430"),
@@ -1555,6 +1577,8 @@ export function GroupBlock(props: BlockViewProps) {
     page &&
     findBlockAncestors(page.blocks, sel.id).some((a) => a.id === block.id);
   const drillIn = !preview && (isolated || selectedInside) && !repeating;
+  // Static groups always show full nested chrome in edit (not name stubs).
+  const showFullChildren = !preview && !repeating;
 
   return (
     <BlockFrame
@@ -1572,7 +1596,7 @@ export function GroupBlock(props: BlockViewProps) {
       <div
         class={[
           repeating ? "block-group block-group--repeat" : "block-group",
-          drillIn ? "block-group--drill" : "",
+          showFullChildren || drillIn ? "block-group--drill" : "",
           isolated ? "block-group--isolated" : "",
         ]
           .filter(Boolean)
@@ -1583,15 +1607,19 @@ export function GroupBlock(props: BlockViewProps) {
           setGroupIsolation(block.id);
         }}
       >
-        {!nests && !drillIn && (
+        {repeating && !nests && (
           <div class="block-group__badge">
-            {repeating
-              ? `Group · repeat ${itemsPath || "line_items"}`
-              : `Group · ${children.length} item(s) — double-click to isolate`}
-            {preview && repeating ? " (expanded)" : ""}
+            {`Group · repeat ${itemsPath || "line_items"}`}
+            {preview ? " (expanded)" : ""}
           </div>
         )}
-        {drillIn &&
+        {!repeating && !preview && (
+          <div class="block-group__badge block-group__badge--quiet">
+            {`Group · ${children.length}`}
+            {isolated ? " · isolated" : " · double-click to isolate"}
+          </div>
+        )}
+        {(showFullChildren || drillIn) &&
           children.map((child) => {
             const r = flexRects.get(child.id);
             const placed: Block = {
@@ -1622,6 +1650,7 @@ export function GroupBlock(props: BlockViewProps) {
             );
           })}
         {!preview &&
+          repeating &&
           !drillIn &&
           children.map((child) => {
             const r = flexRects.get(child.id);

@@ -74,3 +74,16 @@ describe("defaultOutputs", () => {
     expect(defaultOutputs().find((o) => o.kind === "pdf")?.name).toBe("Page A4");
   });
 });
+
+describe("enrichPreviewContext row variables", () => {
+  it("copies common row fields without replacing explicit variables", () => {
+    const ctx = enrichPreviewContext(
+      createEmptyProject(),
+      { palette: "teal", decision: "approved" },
+      defaultOutputs()[0]!,
+      { decision: "manual" },
+    );
+    expect(ctx.vars.palette).toBe("teal");
+    expect(ctx.vars.decision).toBe("manual");
+  });
+});

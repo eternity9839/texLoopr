@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveLinkTarget } from "./linkHook";
+import { DEMO_URL_FALLBACK, resolveLinkTarget } from "./linkHook";
 
 describe("linkHook", () => {
   it("builds mailto and tel hrefs", () => {
@@ -17,5 +17,15 @@ describe("linkHook", () => {
     expect(
       resolveLinkTarget("mailto", "{{email}}", { email: "a@b.co" }),
     ).toBe("mailto:a@b.co");
+  });
+
+  it("uses the demo fallback for empty URL hooks unless allowed", () => {
+    expect(resolveLinkTarget("url", "{{missing}}", {})).toBe(
+      DEMO_URL_FALLBACK,
+    );
+    expect(
+      resolveLinkTarget("url", "", {}, undefined, { allowEmpty: true }),
+    ).toBe("");
+    expect(resolveLinkTarget("mailto", "", {})).toBe("");
   });
 });

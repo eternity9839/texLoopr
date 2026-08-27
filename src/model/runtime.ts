@@ -22,6 +22,29 @@ import {
 } from "./documentConditions";
 import { buildEmitTrace } from "./emitIdentity";
 
+const ROW_VAR_KEYS = [
+  "palette",
+  "decision",
+  "status",
+  "coverage",
+  "segment",
+  "view",
+  "fine_type",
+  "furnished",
+  "insurance",
+  "sworn",
+] as const;
+
+function injectRowVars(ctx: RuntimeContext, row: DataRow | undefined): void {
+  if (!row) return;
+  for (const k of ROW_VAR_KEYS) {
+    if (ctx.vars[k] == null || ctx.vars[k] === "") {
+      const v = row[k];
+      if (v != null && String(v) !== "") ctx.vars[k] = String(v);
+    }
+  }
+}
+
 export interface RunOptions {
   project: Project;
   row: DataRow;
@@ -67,6 +90,7 @@ function buildContext(opts: RunOptions): RuntimeContext {
     },
   };
   injectDocumentLanguage(ctx, opts.project, opts.row);
+  injectRowVars(ctx, opts.row);
   injectProjectConditions(ctx, opts.project, opts.row);
   attachProjectDatasets(opts.project, ctx, opts.row);
   return ctx;
@@ -140,6 +164,7 @@ export function enrichPreviewContext(
 ): RuntimeContext {
   const ctx = previewContext(row, output, vars, true);
   injectDocumentLanguage(ctx, project, row, languageOverride);
+  injectRowVars(ctx, row);
   injectProjectConditions(ctx, project, row, conditionOverrides);
   attachProjectDatasets(project, ctx, row);
   const steps: WorkflowStep[] = (project.workflow ?? []).filter(
