@@ -2149,11 +2149,25 @@ body {
   flex-direction: column;
 }
 
+/* Same grid contract as web: fixed gutter + shrinkable scroll cell.
+ * Do not use `auto` tracks — they expand to page content and break
+ * scroll + ruler flag alignment on WebKitGTK. */
 [data-shell="desktop"] .editor-board--rulers {
   display: grid;
-  /* Fixed px + auto — avoid rem and 1fr under corrupt WebKit viewport */
-  grid-template-columns: 18px auto;
-  grid-template-rows: 18px auto;
+  --ruler-gutter: 18px;
+  grid-template-columns: var(--ruler-gutter) minmax(0, 1fr);
+  grid-template-rows: var(--ruler-gutter) minmax(0, 1fr);
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+}
+
+[data-shell="desktop"] .editor-board--rulers > .editor-board__scroll {
+  flex: unset;
+  min-height: 0;
+  min-width: 0;
+  width: auto;
+  overflow: auto;
 }
 
 [data-shell="desktop"] .editor-board__scroll {

@@ -37,6 +37,11 @@ function measureOrigin(scroll: HTMLElement, page: Element): PageOrigin {
   return { x: pr.left - sr.left, y: pr.top - sr.top };
 }
 
+/** Tick spacing in CSS px so marks track canvas zoom. */
+export function rulerTickPeriod(scale: number): number {
+  return Math.max(4, 8 * scale);
+}
+
 function clampSide(
   side: MarginSide,
   value: number,
@@ -71,12 +76,16 @@ export function EditorRulers({
     const scroll = scrollRef.current;
     if (!scroll) return;
 
+    let raf = 0;
     const sync = () => {
-      const page = scroll.querySelector(
-        ".editor-page--active, .editor-page",
-      );
-      if (!page) return;
-      setOrigin(measureOrigin(scroll, page));
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        const page = scroll.querySelector(
+          ".editor-page--active, .editor-page",
+        );
+        if (!page) return;
+        setOrigin(measureOrigin(scroll, page));
+      });
     };
 
     sync();
@@ -85,11 +94,17 @@ export function EditorRulers({
     const page = scroll.querySelector(".editor-page--active, .editor-page");
     const stopResize = observeResizeMany([scroll, fit, page], sync);
     window.addEventListener("resize", sync);
+    const vv = window.visualViewport;
+    vv?.addEventListener("resize", sync);
+    vv?.addEventListener("scroll", sync);
 
     return () => {
+      cancelAnimationFrame(raf);
       scroll.removeEventListener("scroll", sync);
       stopResize();
       window.removeEventListener("resize", sync);
+      vv?.removeEventListener("resize", sync);
+      vv?.removeEventListener("scroll", sync);
     };
   }, [scrollRef, pageW, pageH, scale, margins]);
 
@@ -170,6 +185,12 @@ export function EditorRulers({
   const rightFlag = origin.x + (pageW - margins.right) * scale;
   const topFlag = origin.y + margins.top * scale;
   const bottomFlag = origin.y + (pageH - margins.bottom) * scale;
+  const tickPeriod = rulerTickPeriod(scale);
+  const tickStyle = {
+    "--ruler-tick-period": `${tickPeriod}px`,
+    "--ruler-origin-x": `${origin.x}px`,
+    "--ruler-origin-y": `${origin.y}px`,
+  } as JSX.CSSProperties;
 
   return (
     <>
@@ -178,6 +199,7 @@ export function EditorRulers({
       </div>
       <div
         class="editor-ruler editor-ruler--x"
+        style={tickStyle}
         onPointerMove={(e) => onRulerMove("x", e)}
         onPointerLeave={() => setHover(null)}
       >
@@ -208,6 +230,7 @@ export function EditorRulers({
       </div>
       <div
         class="editor-ruler editor-ruler--y"
+        style={tickStyle}
         onPointerMove={(e) => onRulerMove("y", e)}
         onPointerLeave={() => setHover(null)}
       >
