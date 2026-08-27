@@ -30,7 +30,7 @@ export const fr: Messages = {
   demo: "Démo",
   demoNotSaved: "Démo — non enregistré",
   demoCatalogHint:
-    "Démo hébergée : les projets restent en mémoire. Ouvrez un JSON (menu texLooper), un exemple, ou ?load=yassin-bousaadi-resume.json.",
+    "Démo hébergée : les projets restent en mémoire. Ouvrez un JSON (menu texLooper) ou choisissez un exemple dans le catalogue.",
   close: "Fermer",
   sampleDocuments: "Documents exemples",
   preferences: "Préférences",
@@ -334,6 +334,9 @@ export const fr: Messages = {
   emailPreviewSubject: "Objet",
   emailPreviewFrom: "De",
   emailPreviewTo: "À",
+  emailPreviewReplyTo: "Répondre à",
+  emailPreviewCc: "Cc",
+  emailPreviewBcc: "Cci",
   emailPreviewPreheader: "Aperçu",
   emailPreviewHint: "Message HTML final",
   emailPreviewEmpty: "Rien à prévisualiser pour cette sortie e-mail.",

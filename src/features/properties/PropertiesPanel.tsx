@@ -33,6 +33,7 @@ import {
 import { INSPECTOR_TABS } from "../studio/inspectorTabs";
 import { t } from "../../i18n";
 import { ClearFormatButton, type AppearanceCtx } from "./appearance";
+import { EmailEnvelopeFields } from "./EmailEnvelopeFields";
 import {
   indentedTextToListItems,
   listItemsToIndentedText,
@@ -389,6 +390,18 @@ export function MetadataPanel() {
         >
           Add condition axis
         </button>
+      </Section>
+
+      <Section title="Email defaults" defaultOpen={Boolean(proj.email)}>
+        <p class="muted prop-hint">
+          Document-level envelope used by every Email output unless the output
+          overrides it in Automation. Contact email is the From fallback.
+        </p>
+        <EmailEnvelopeFields
+          idPrefix="meta-email"
+          value={proj.email}
+          onChange={(email) => updateProjectMeta({ email })}
+        />
       </Section>
 
       <Section title="Description & custom">

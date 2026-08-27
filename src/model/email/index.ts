@@ -11,6 +11,11 @@ import {
   getOrCreateInstallId,
 } from "./identity";
 import { collectPresentedBlocks } from "./channelPreview";
+import {
+  mergeEmailEnvelope,
+  parseHeaderLines,
+  type EmailEnvelope,
+} from "./envelope";
 
 export interface EmailArtifacts {
   subject: string;
@@ -21,7 +26,11 @@ export interface EmailArtifacts {
   installId: string;
   from: string;
   to: string;
+  replyTo: string;
+  cc: string;
+  bcc: string;
   preheader: string;
+  extraHeaders: { name: string; value: string }[];
 }
 
 export interface BuildEmailOptions {
@@ -36,6 +45,17 @@ export interface BuildEmailOptions {
   projectId?: string | null;
   /** Override install id (tests) */
   installId?: string;
+}
+
+function resolveField(
+  raw: string | undefined,
+  row: DataRow,
+  ctx: import("../expr").RuntimeContext,
+  missingAsEmpty = true,
+): string {
+  const s = String(raw ?? "").trim();
+  if (!s) return "";
+  return resolveTemplate(s, row, { missingAsEmpty, ctx });
 }
 
 /**
@@ -53,19 +73,45 @@ export function buildEmailArtifacts(opts: BuildEmailOptions): EmailArtifacts {
   });
   const { language, blocks, ctx } = presented;
 
-  const subjectRaw = String(
-    row.subject ?? project.subject ?? project.name ?? "Message",
+  const envelope: EmailEnvelope = mergeEmailEnvelope(
+    project.email,
+    output.email,
   );
+
+  const subjectRaw =
+    envelope.subject ||
+    String(row.subject ?? project.subject ?? project.name ?? "Message");
   const subject = resolveTemplate(subjectRaw, row, {
     missingAsEmpty: false,
     ctx,
   });
 
-  const preheader = resolveTemplate(
-    String(row.preheader ?? row.preview_text ?? ""),
+  const preheader = resolveField(
+    envelope.preheader ||
+      String(row.preheader ?? row.preview_text ?? ""),
     row,
-    { missingAsEmpty: true, ctx },
+    ctx,
   );
+
+  const from =
+    opts.from ||
+    resolveField(envelope.from, row, ctx) ||
+    String(project.contactEmail ?? "").trim() ||
+    "noreply@texlooper.local";
+
+  const to =
+    opts.to ||
+    resolveField(envelope.to, row, ctx) ||
+    String(row.email ?? row.to ?? "recipient@example.com");
+
+  const replyTo = resolveField(envelope.replyTo, row, ctx);
+  const cc = resolveField(envelope.cc, row, ctx);
+  const bcc = resolveField(envelope.bcc, row, ctx);
+
+  const extraHeaders = parseHeaderLines(envelope.headers ?? "").map((h) => ({
+    name: h.name,
+    value: resolveField(h.value, row, ctx) || h.value,
+  })).filter((h) => h.value.trim());
 
   const { cidByBlockId, images } = imagesFromDataUriBlocks(blocks);
 
@@ -87,17 +133,18 @@ export function buildEmailArtifacts(opts: BuildEmailOptions): EmailArtifacts {
   });
 
   const text = buildEmailText(blocks, row, ctx, "emit");
-  const to =
-    opts.to ?? String(row.email ?? row.to ?? "recipient@example.com");
-  const from = opts.from ?? "noreply@northline.example";
   const installId = opts.installId ?? getOrCreateInstallId();
   const eml = buildEmlMessage({
     from,
     to,
+    replyTo: replyTo || undefined,
+    cc: cc || undefined,
+    bcc: bcc || undefined,
     subject,
     text,
     html: htmlEmit,
     images,
+    extraHeaders,
     appVersion: appVersionLabel(),
     appChannel: appChannelLabel(),
     installId,
@@ -113,7 +160,11 @@ export function buildEmailArtifacts(opts: BuildEmailOptions): EmailArtifacts {
     installId,
     from,
     to,
+    replyTo,
+    cc,
+    bcc,
     preheader,
+    extraHeaders,
   };
 }
 
@@ -126,3 +177,9 @@ export {
   buildSmsText,
   collectPresentedBlocks,
 } from "./channelPreview";
+export {
+  mergeEmailEnvelope,
+  parseHeaderLines,
+  patchEmailEnvelope,
+  type EmailEnvelope,
+} from "./envelope";

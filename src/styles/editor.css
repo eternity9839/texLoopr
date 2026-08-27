@@ -450,6 +450,23 @@
   white-space: nowrap;
 }
 
+.mail-client__headers {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-top: 0.35rem;
+  padding-top: 0.35rem;
+  border-top: 1px dashed var(--border);
+}
+
+.email-envelope-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.35rem;
+}
+
+
 .mail-client__body {
   flex: 1;
   min-height: 420px;

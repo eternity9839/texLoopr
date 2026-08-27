@@ -831,6 +831,7 @@ export function updateProjectMeta(
       | "createdAt"
       | "company"
       | "contactEmail"
+      | "email"
       | "customMeta"
       | "artboard"
     >

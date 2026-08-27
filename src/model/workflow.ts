@@ -68,6 +68,8 @@ export interface OutputProfile {
   kind: OutputKind;
   device?: OutputDevice;
   api?: OutputApi;
+  /** Email channel envelope (From / Reply-To / Cc / headers, …) */
+  email?: import("./email/envelope").EmailEnvelope;
   pageSize?: "A4" | "Letter" | "custom";
   enabled?: boolean;
 }

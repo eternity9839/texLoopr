@@ -22,6 +22,7 @@ import {
   outputToCtx,
 } from "../../model/workflow";
 import { Icon, type IconName } from "../../ui/icons";
+import { EmailEnvelopeFields } from "../properties/EmailEnvelopeFields";
 const SCRIPT_KINDS: ScriptKind[] = ["expr", "template"];
 
 const AUTO_TABS: {
@@ -222,6 +223,18 @@ export function AutomationPanel() {
                     }}
                   />
                 </div>
+              )}
+              {o.kind === "email" && (
+                <EmailEnvelopeFields
+                  idPrefix={`out-email-${o.id}`}
+                  value={o.email}
+                  showTo
+                  onChange={(email) => {
+                    const nextOutputs = [...outputs];
+                    nextOutputs[i] = { ...o, email };
+                    patchOutputs(nextOutputs);
+                  }}
+                />
               )}
             </div>
           ))}

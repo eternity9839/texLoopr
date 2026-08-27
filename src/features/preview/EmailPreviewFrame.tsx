@@ -75,6 +75,24 @@ export function EmailPreviewFrame() {
               <span class="mail-client__key">{t("emailPreviewTo")}</span>
               <span class="mail-client__val">{artifacts.to}</span>
             </div>
+            {artifacts.replyTo ? (
+              <div class="mail-client__row">
+                <span class="mail-client__key">{t("emailPreviewReplyTo")}</span>
+                <span class="mail-client__val">{artifacts.replyTo}</span>
+              </div>
+            ) : null}
+            {artifacts.cc ? (
+              <div class="mail-client__row">
+                <span class="mail-client__key">{t("emailPreviewCc")}</span>
+                <span class="mail-client__val">{artifacts.cc}</span>
+              </div>
+            ) : null}
+            {artifacts.bcc ? (
+              <div class="mail-client__row mail-client__row--muted">
+                <span class="mail-client__key">{t("emailPreviewBcc")}</span>
+                <span class="mail-client__val">{artifacts.bcc}</span>
+              </div>
+            ) : null}
             <div class="mail-client__row">
               <span class="mail-client__key">{t("emailPreviewSubject")}</span>
               <strong class="mail-client__val">{artifacts.subject}</strong>
@@ -83,6 +101,16 @@ export function EmailPreviewFrame() {
               <div class="mail-client__row mail-client__row--muted">
                 <span class="mail-client__key">{t("emailPreviewPreheader")}</span>
                 <span class="mail-client__val">{artifacts.preheader}</span>
+              </div>
+            ) : null}
+            {artifacts.extraHeaders.length > 0 ? (
+              <div class="mail-client__headers">
+                {artifacts.extraHeaders.map((h) => (
+                  <div class="mail-client__row mail-client__row--muted" key={h.name}>
+                    <span class="mail-client__key">{h.name}</span>
+                    <span class="mail-client__val">{h.value}</span>
+                  </div>
+                ))}
               </div>
             ) : null}
           </div>

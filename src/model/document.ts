@@ -432,6 +432,8 @@ export interface Project {
   createdAt?: string;
   company?: string;
   contactEmail?: string;
+  /** Document-level email envelope defaults (overridden per email output) */
+  email?: import("./email/envelope").EmailEnvelope;
   /** Free-form key=value lines (one per line) */
   customMeta?: string;
   /** Logical artboard size for this project (drives canvas prefs on load) */

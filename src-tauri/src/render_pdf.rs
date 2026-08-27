@@ -80,6 +80,14 @@ fn apply_emit_metadata(doc: PdfDocumentReference, project: &Value) -> PdfDocumen
     if let Some(pid) = project_id {
         keywords.push(format!("X-TexLooper-Project-Id={pid}"));
     }
+    if let Some(user_kw) = project.get("keywords").and_then(|v| v.as_str()) {
+        for part in user_kw.split(',') {
+            let t = part.trim();
+            if !t.is_empty() {
+                keywords.push(t.to_string());
+            }
+        }
+    }
 
     let mut doc = doc
         .with_creator("texLooper")
@@ -87,6 +95,11 @@ fn apply_emit_metadata(doc: PdfDocumentReference, project: &Value) -> PdfDocumen
         .with_keywords(keywords)
         .with_identifier(instance.to_string());
 
+    if let Some(title) = project.get("name").and_then(|v| v.as_str()) {
+        if !title.is_empty() {
+            doc = doc.with_title(title);
+        }
+    }
     if let Some(author) = project.get("author").and_then(|v| v.as_str()) {
         if !author.is_empty() {
             doc = doc.with_author(author);

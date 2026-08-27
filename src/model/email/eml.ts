@@ -9,6 +9,9 @@ export interface EmlImagePart {
 export interface BuildEmlInput {
   from?: string;
   to?: string;
+  replyTo?: string;
+  cc?: string;
+  bcc?: string;
   subject: string;
   text: string;
   html: string;
@@ -22,6 +25,8 @@ export interface BuildEmlInput {
   installId?: string;
   /** Optional project catalog id when known */
   projectId?: string | null;
+  /** Extra headers already sanitized (name/value) */
+  extraHeaders?: { name: string; value: string }[];
 }
 
 function foldHeader(value: string): string {
@@ -111,6 +116,11 @@ export function buildEmlMessage(input: BuildEmlInput): string {
   const headers = [
     `From: ${input.from ?? "texlooper@localhost"}`,
     `To: ${input.to ?? "recipient@example.com"}`,
+  ];
+  if (input.replyTo) headers.push(`Reply-To: ${headerToken(input.replyTo)}`);
+  if (input.cc) headers.push(`Cc: ${headerToken(input.cc)}`);
+  if (input.bcc) headers.push(`Bcc: ${headerToken(input.bcc)}`);
+  headers.push(
     `Subject: ${foldHeader(input.subject)}`,
     `Date: ${date}`,
     `Message-ID: ${messageId}`,
@@ -118,9 +128,15 @@ export function buildEmlMessage(input: BuildEmlInput): string {
     `X-TexLooper-Version: ${version}`,
     `X-TexLooper-Channel: ${channel}`,
     `X-TexLooper-Instance-Id: ${installId}`,
-  ];
+  );
   if (input.projectId) {
     headers.push(`X-TexLooper-Project-Id: ${headerToken(input.projectId)}`);
+  }
+  for (const h of input.extraHeaders ?? []) {
+    const name = headerToken(h.name);
+    const value = headerToken(h.value);
+    if (!name || !value) continue;
+    headers.push(`${name}: ${value}`);
   }
   headers.push("MIME-Version: 1.0");
   headers.push(
